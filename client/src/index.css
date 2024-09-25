@@ -4,11 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-* > *{
+*>* {
     font-family: 'Poppins', sans-serif;
 }
 
-body{
-    background: #dcdce6;
-    background-image: url('./assets/Background.png');
+body {
+    background: #ffffff;
 }
