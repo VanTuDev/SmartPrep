@@ -107,7 +107,10 @@ const RegisterPage = () => {
 
    return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
-         <div className="bg-white p-4 rounded-lg shadow-md w-full max-w-md">
+         <div className="bg-white p-9 rounded-lg shadow-md w-full max-w-md">
+            <div className="flex justify-center mb-6">
+  <img src="path_to_your_logo_image" alt="logo" className="text-xl" />
+</div>
             <h2 className="text-xl text-center mb-6">Đăng ký thành viên</h2>
 
             <form onSubmit={handleRegister}>
@@ -203,15 +206,33 @@ const RegisterPage = () => {
 
                   <button
                      type="submit"
-                     className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition duration-200"
+                     className="w-full bg-gray-300 text-white py-3 rounded hover:bg-indigo-700 transition duration-200"
                   >
                      Đăng Ký
                   </button>
                </div>
+                  <div className="flex justify-center items-center my-4">
+                     <span className="text-gray-500">Hoặc</span>
+                  </div>
+
+                  {/* Google Login Button (dummy for UI) */}
+                  <div className="flex  justify-center text-gray-600 font-bold ">
+                     <button
+                        type="button"
+                        className="bg-white border shadow-lg border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-100 flex items-center"
+                     >
+                        <img
+                           src="https://www.svgrepo.com/show/355037/google.svg"
+                           alt="Google Icon"
+                           className="w-6 h-6 mr-2 "
+                        />
+                        Sign in with google
+                     </button>
+                  </div>
             </form>
 
             <p className="text-center mt-4">
-               Đã có tài khoản? <a href="/login" className="text-indigo-600">Đăng nhập</a>
+               Đã có tài khoản? <a href="/login" className="text-indigo-900 text-xl font-bold">Đăng nhập</a>
             </p>
          </div>
       </div>

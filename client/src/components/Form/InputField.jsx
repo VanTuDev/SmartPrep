@@ -1,17 +1,18 @@
 import React from 'react';
 
-const InputField = ({ label, value, onChange, type = 'text' }) => {
-    return (
-        <div className="mb-4">
-            <label className="block text-sm font-bold mb-2">{label}</label>
-            <input
-                type={type}
-                value={value}
-                onChange={onChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-        </div>
-    );
+const InputField = ({ label, type = 'text', value, onChange, placeholder }) => {
+  return (
+    <div className="mb-4">
+      <label className="block text-gray-700 text-sm font-bold mb-2">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full py-2 border-b-[1px] text-sm border-gray-500 focus:outline-none"
+      />
+    </div>
+  );
 };
 
 export default InputField;

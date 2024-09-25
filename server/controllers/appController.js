@@ -70,13 +70,13 @@ export async function login(req, res) {
 
         // Nếu không tìm thấy người dùng
         if (!user) {
-            return res.status(404).json({ error: "Không tìm thấy tên đăng nhập hoặc email" });
+            return res.status(404).json({ error: "Username hoặc Email không tồn tại." });
         }
 
         // Kiểm tra mật khẩu
         const passwordCheck = await bcrypt.compare(password, user.password);
         if (!passwordCheck) {
-            return res.status(400).json({ error: "Mật khẩu không đúng" });
+            return res.status(400).json({ error: "Mật khẩu không đúng." });
         }
 
         // Tạo JWT token
@@ -88,16 +88,14 @@ export async function login(req, res) {
         // Trả về kết quả đăng nhập thành công
         return res.status(200).json({
             msg: "Đăng nhập thành công",
-            fullname: user.fullname,
             username: user.username,
-            email: user.email,
-            password: user.password,
             token
         });
     } catch (error) {
-        return res.status(500).json({ error: "Lỗi khi đăng nhập" });
+        return res.status(500).json({ error: "Có lỗi xảy ra trong quá trình đăng nhập." });
     }
 }
+
 
 /** Lấy thông tin người dùng dựa trên username */
 export async function getUser(req, res) {

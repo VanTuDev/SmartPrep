@@ -1,16 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import HomePage from './pages/common/HomePage.jsx';
-import LoginPage from './pages/common/LoginPage.jsx';
-import RegisterPage from './pages/common/RegisterPage.jsx';
+// Import các trang
+import HomePage from './pages/common/HomePage';
+import LoginPage from './pages/common/LoginPage';
+import RegisterPage from './pages/common/RegisterPage';
 
-import LearnerDashboard from './pages/learner/LearnerDashboard.jsx';
-import InstructorDashboard from './pages/Instructor/InstructorDashboard.jsx';
-import AdminDashboard from './pages/admin/AdminDashboard.jsx';
+// Import dashboard của Learner, Instructor, Admin
+import LearnerDashboard from './pages/learner/LearnerDashboard';
+import InstructorDashboard from './pages/instructor/InstructorDashboard.jsx'; // Không cần đuôi .jsx
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Import PrivateRoute
-import PrivateRoute from './components/PrivateRoute.js';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
