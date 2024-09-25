@@ -10,6 +10,7 @@ import Profile from './components/Profile';
 import Recovery from './components/Recovery';
 import Reset from './components/Reset';
 import PageNotFound from './components/PageNotFound';
+import QuestionForm from './pages/Teacher/QuestionLibrary';
 
 
 /** auth middleware */
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
     {
         path : '/reset',
         element : <Reset></Reset>
+    },
+    {
+        path : '/addquestion',
+        element : <QuestionForm></QuestionForm>
     },
     {
         path : '*',
