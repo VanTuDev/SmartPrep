@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const PrivateRoute = ({ children }) => {
-   const isAuthenticated = localStorage.getItem('token'); // Giả sử token được lưu trong localStorage
+   const isAuthenticated = localStorage.getItem('token'); // Assuming token is stored in localStorage
 
    return isAuthenticated ? children : <Navigate to="/login" />;
 };
