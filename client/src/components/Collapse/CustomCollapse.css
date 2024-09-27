@@ -1,0 +1,12 @@
+.custom-header {
+    font-weight: bold;
+}
+  
+.custom-body {
+    padding: 10px;
+    font-weight: normal;
+}
+
+.bg-color {
+    background-color: #e8e7e7;
+}
