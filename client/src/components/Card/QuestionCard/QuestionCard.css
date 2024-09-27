@@ -1,0 +1,8 @@
+:root {
+    --dark_slate_blue-color: #585890;
+    --blur_slate_blue-color: #E6E6FF;
+}
+
+.primary-color {
+    color: var(--dark_slate_blue-color);
+}
