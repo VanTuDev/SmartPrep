@@ -1,44 +1,29 @@
-# Client Project Structure
 
-This is the structure of the client-side project for the exam preparation system.
+b1:cd .\client\
+B2: npm i
+#Run: npm start
 
-## Project Structure
-```bash
-/client
-├── /public
-├── /src
-│   ├── /common
-│   │   ├── Header.jsx
-│   │   ├── Footer.jsx 
-│   │   └── Button.jsx
-│   ├── /components
-│   │   ├── /Layout
-│   │   │   └── Sidebar.jsx
-│   │   ├── /Form
-│   │   │   ├── InputField.jsx
-│   │   │   └── TextAreaField.jsx
-│   │   ├── /Learner
-│   │   │   ├── LearnerDashboard.jsx
-│   │   │   └── LearnerExamList.jsx
-│   │   ├── /Instructor
-│   │   │   ├── InstructorDashboard.jsx
-│   │   │   └── ManageExams.jsx
-│   │   └── /Admin
-│   │       ├── AdminDashboard.jsx
-│   │       └── ManageUsers.jsx
-│   ├── /pages
-│   │   ├── HomePage.jsx
-│   │   ├── LoginPage.jsx
-│   │   ├── RegisterPage.jsx
-│   │   ├── LearnerPage.jsx
-│   │   ├── InstructorPage.jsx
-│   │   └── AdminPage.jsx
-│   ├── /utils
-│   │   └── api.js
-│   ├── /hooks
-│   │   └── useAuth.js
-│   ├── /styles
-│   │   └── tailwind.css
-│   ├── App.jsx
-│   ├── index.jsx
-└── package.json
+
+Base
+
+Client
+└── build
+└── node_modules
+└── public
+    └── image
+└── src
+    ├── components (Public)
+    │   └── Button
+    |   └── Form
+    |
+    ├── hooks
+    │
+    ├── page (Public)
+    │   └── admin
+    │   └── common
+    │   └── instructor
+    │   └── learner
+└── store
+└── style
+└── utils
+    └── api.js

@@ -1,56 +1,66 @@
-import React from 'react'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+// Import common pages
+import HomePage from './pages/common/HomePage';
+import LoginPage from './pages/common/LoginPage';
+import RegisterPage from './pages/common/RegisterPage';
 
-/** import all components */
-import Username from './components/Username';
-import Password from './components/Password';
-import Register from './components/Register';
-import Profile from './components/Profile';
-import Recovery from './components/Recovery';
-import Reset from './components/Reset';
-import PageNotFound from './components/PageNotFound';
+// Import dashboards for Learner, Instructor, and Admin
+import LearnerDashboard from './pages/learner/LearnerDashboard';
+import InstructorDashboard from './pages/instructor/InstructorDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
+// Import PrivateRoute for protecting routes
+import PrivateRoute from './components/PrivateRoute';
 
-/** auth middleware */
-import { AuthorizeUser, ProtectRoute } from './middleware/auth'
-
-/** root routes */
-const router = createBrowserRouter([
-    {
-        path : '/',
-        element : <Username></Username>
-    },
-    {
-        path : '/register',
-        element : <Register></Register>
-    },
-    {
-        path : '/password',
-        element : <ProtectRoute><Password /></ProtectRoute>
-    },
-    {
-        path : '/profile',
-        element : <AuthorizeUser><Profile /></AuthorizeUser>
-    },
-    {
-        path : '/recovery',
-        element : <Recovery></Recovery>
-    },
-    {
-        path : '/reset',
-        element : <Reset></Reset>
-    },
-    {
-        path : '*',
-        element : <PageNotFound></PageNotFound>
-    },
-])
-
-export default function App() {
+function App() {
   return (
-    <main>
-        <RouterProvider router={router}></RouterProvider>
-    </main>
-  )
+    <Router>
+      <div>
+        <Routes>
+
+
+          {/* Public Pages */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+
+
+
+          {/* Learner Dashboard */}
+          <Route
+            path="/learner/dashboard" element={
+              <PrivateRoute>
+                <LearnerDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Instructor Dashboard */}
+          <Route
+            path="/instructor/dashboard"
+            element={
+              <PrivateRoute>
+                <InstructorDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Admin Dashboard */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
+
+export default App;
