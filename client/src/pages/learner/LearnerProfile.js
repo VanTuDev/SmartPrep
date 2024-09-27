@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import PhoneModal from "./PhoneModal";
+import PhoneModal from "../../components/LearnerProfileModal/PhoneModal";
 import PasswordModal from "../../components/LearnerProfileModal/PasswordModal";
 import FullNameModal from "../../components/LearnerProfileModal/FullNameModal";
 import BirthdayModal from "../../components/LearnerProfileModal/BirthdayModal";

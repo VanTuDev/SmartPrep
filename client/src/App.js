@@ -14,6 +14,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 // Import PrivateRoute for protecting routes
 import PrivateRoute from './components/PrivateRoute';
 import ExamCreate from './pages/instructor/Exam/ExamCreate';
+import LearnerProfile from 'pages/learner/LearnerProfile';
 
 function App() {
   return (
@@ -35,6 +36,13 @@ function App() {
             path="/learner/dashboard" element={
               <PrivateRoute>
                 <LearnerDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/learner/profile" element={
+              <PrivateRoute>
+                <LearnerProfile />
               </PrivateRoute>
             }
           />
