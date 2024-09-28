@@ -41,9 +41,9 @@ function App() {
           />
           <Route
             path="/learner/profile" element={
-              // <PrivateRoute>
+              <PrivateRoute>
                 <LearnerProfile />
-              // </PrivateRoute>
+              </PrivateRoute>
             }
           />
 
