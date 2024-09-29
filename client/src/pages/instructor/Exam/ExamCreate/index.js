@@ -3,8 +3,9 @@ import 'styles/instructor/ExamCreate.css'
 import SingleCollapse from "components/Collapse/SingleCollapse";
 import GeneralInformation from "./GeneralInformation";
 import SectionCollapse from "components/Collapse/SectionCollapse";
-import { Input, Button } from "antd";
+import { Input, Button, message } from "antd";
 import QuestionCard from 'components/Card/QuestionCard';
+import QuestionAdding from './QuestionAdding';
 
 const { TextArea } = Input;
 
@@ -24,10 +25,11 @@ function ExamCreate() {
 
     const handleRemoveQuestion = (id) => {
         setQuestions(questions.filter((q) => q.id !== id));
+        message.success('Deleted!');
     };
     return (
         <>
-            <div className="w-3/5 mx-auto mt-5">
+            <div className="w-3/5 mx-auto mt-5 mb-24">
                 <div className='mb-4'>
                     <SingleCollapse header="General information">
                         <GeneralInformation />
@@ -66,11 +68,9 @@ function ExamCreate() {
                             onRemove={() => handleRemoveQuestion(question.id)}
                         />
                     ))}
-
-                    <Button type="dashed" onClick={handleAddQuestion} className="w-full mt-4">
-                        Add question
-                    </Button>
                 </div>
+
+                <QuestionAdding handleAddQuestion={handleAddQuestion}/>
             </div>
         </>
     );

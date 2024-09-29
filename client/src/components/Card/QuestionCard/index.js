@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 // import './QuestionCard.css'
 import { Card, Input, Button, Radio, Space, message, Tooltip } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import { Trash2 } from 'lucide-react';
 
-const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate }) => {
+const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemove }) => {
     const [localQuestion, setLocalQuestion] = useState(question);
 
     // Update data to local state when changing question
@@ -127,8 +128,13 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate }) => {
                         </button>
                     </Tooltip>
 
-                    <div className='flex justify-end'>
-                        <button className='button-normal-custom p-2' onClick={handleSaveQuestion}>
+                    <div className='flex justify-end space-x-2'>
+                        <Tooltip title="Delete question" >
+                            <button className='button-error-custom' onClick={onRemove}>
+                                <Trash2 />
+                            </button>
+                        </Tooltip>
+                        <button className='button-normal-custom px-3 py-2' onClick={handleSaveQuestion}>
                             Update
                         </button>
 

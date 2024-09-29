@@ -13,7 +13,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Import PrivateRoute for protecting routes
 import PrivateRoute from './components/PrivateRoute';
-import ExamCreate from './pages/instructor/Exam/ExamCreate';
+import Exam from './pages/instructor/Exam';
 import LearnerProfile from 'pages/learner/LearnerProfile';
 
 function App() {
@@ -62,7 +62,7 @@ function App() {
             path="/instructor/exam/exam-create"
             element={
               // <PrivateRoute>
-                <ExamCreate />
+                <Exam />
               // {/* </PrivateRoute> */}
             }
           />
