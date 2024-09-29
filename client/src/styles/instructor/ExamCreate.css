@@ -69,6 +69,24 @@
     border: 1px solid transparent;
 }
 
+.button-error-custom {
+    color: red;
+    background-color: transparent;
+    border: 1px solid red;
+    padding: 10px 24px;
+    font-size: 1rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-out;
+}
+
+.button-error-custom:hover {
+    color: #fff;
+    background-color: red;
+    border: 1px solid transparent;
+}
+
 .button-outlined-custom-non-p {
     color: var(--dark_slate_blue-color);
     background-color: transparent;
@@ -112,4 +130,32 @@
 /* Card  */
 .card-custom {
     box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+
+/* Tabs  */
+
+/* Tab item chiếm toàn bộ chiều cao của header */
+.ant-tabs-nav {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Chiều cao cho từng tab label */
+.ant-tabs-tab {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ant-tabs-tab-btn{
+    color: var(--dark_slate_blue-color) !important;
+    font-weight: bold;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.ant-tabs-ink-bar {
+    background: var(--dark_slate_blue-color) !important;
 }
