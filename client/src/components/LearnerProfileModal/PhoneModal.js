@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 
-function FullNameModal({ value, onSave, onClose, dialogPosition }) {
-  const [fullName, setFullName] = useState(value);
+function PhoneModal({ value, onSave, onClose, dialogPosition }) {
+  const [newPhone, setNewPhone] = useState(value);
 
   return (
     <div
       className="fixed z-50 bg-white p-6 rounded-lg shadow-lg w-96"
       style={{ top: dialogPosition.top, left: dialogPosition.left }} // Đặt vị trí modal dựa trên tọa độ của `dialogPosition`
     >
-      <h3 className="text-lg font-bold">Change Full Name</h3>
+      <h3 className="text-lg font-bold">Change Phone Number</h3>
       <div className="mt-4">
-        <label className="text-sm text-gray-500">Full Name</label>
+        <label className="text-sm text-gray-500">Phone Number</label>
         <input
           type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          value={newPhone}
+          onChange={(e) => setNewPhone(e.target.value)}
           className="mt-2 p-2 w-full border rounded"
         />
       </div>
@@ -22,7 +22,7 @@ function FullNameModal({ value, onSave, onClose, dialogPosition }) {
         <button className="px-4 py-2 bg-gray-200 rounded mr-2" onClick={onClose}>
           Cancel
         </button>
-        <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => onSave(fullName)}>
+        <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={() => onSave(newPhone)}>
           Save
         </button>
       </div>
@@ -30,4 +30,4 @@ function FullNameModal({ value, onSave, onClose, dialogPosition }) {
   );
 }
 
-export default FullNameModal;
+export default PhoneModal;

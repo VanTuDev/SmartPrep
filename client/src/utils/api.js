@@ -42,3 +42,52 @@ export const getUser = async (username, token) => {
    });
    return response.json();
 };
+
+
+// Định nghĩa hàm getUser để lấy dữ liệu người dùng từ server theo token
+export const getUserById = async (id, token) => {
+   try {
+     const response = await fetch(`http://localhost:8080/api/user/id/${id}`, {
+       method: "GET",
+       headers: {
+         "Authorization": `Bearer ${token}`, // Thêm token vào header để xác thực
+         "Content-Type": "application/json",
+       },
+     });
+ 
+     if (!response.ok) {
+       throw new Error(`HTTP error! status: ${response.status}`);
+     }
+ 
+     const data = await response.json();
+     return data; // Trả về dữ liệu người dùng nếu yêu cầu thành công
+   } catch (error) {
+     console.error("Error fetching user info:", error);
+     return null;
+   }
+ };
+ 
+
+ export const updateUser = async (token, updates) => {
+   try {
+     const response = await fetch(`http://localhost:8080/api/updateuser`, {
+       method: "PUT",
+       headers: {
+         "Authorization": `Bearer ${token}`,
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify(updates),
+     });
+ 
+     if (!response.ok) {
+       throw new Error(`HTTP error! status: ${response.status}`);
+     }
+ 
+     const data = await response.json();
+     return data;
+   } catch (error) {
+     console.error("Error updating user info:", error);
+     return null;
+   }
+ };
+ 

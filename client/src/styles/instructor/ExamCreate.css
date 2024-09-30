@@ -1,0 +1,161 @@
+:root {
+    --dark_slate_blue-color: #585890;
+    --blur_slate_blue-color: #E6E6FF;
+}
+
+.primary-color {
+    color: var(--dark_slate_blue-color);
+}
+
+.primary-color:hover {
+    color: var(--dark_slate_blue-color) !important;
+}
+
+.blur-color {
+    color: var(--blur_slate_blue-color);
+}
+
+.primary-color:hover {
+    color: var(--dark_slate_blue-color);
+}
+
+/* Input  */
+.input-custom {
+    border: .5px solid #ccc;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-custom:hover {
+    border-color: var(--dark_slate_blue-color);
+    box-shadow: 0 0 0 2px var(--dark_slate_blue-color);
+}
+
+.input-custom:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--dark_slate_blue-color);
+}
+
+/* Button Outlined  */
+.button-normal-custom {
+    color: #fff;
+    background-color: var(--dark_slate_blue-color);
+    font-size: 1rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-out;
+}
+
+.button-normal-custom:hover {
+    opacity: 0.7;
+}
+
+.button-outlined-custom {
+    color: var(--dark_slate_blue-color);
+    background-color: transparent;
+    border: 1px solid var(--dark_slate_blue-color);
+    padding: 10px 24px;
+    font-size: 1rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-out;
+}
+
+.button-outlined-custom:hover {
+    color: #fff;
+    background-color: var(--dark_slate_blue-color);
+    border: 1px solid transparent;
+}
+
+.button-error-custom {
+    color: red;
+    background-color: transparent;
+    border: 1px solid red;
+    padding: 10px 24px;
+    font-size: 1rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-out;
+}
+
+.button-error-custom:hover {
+    color: #fff;
+    background-color: red;
+    border: 1px solid transparent;
+}
+
+.button-outlined-custom-non-p {
+    color: var(--dark_slate_blue-color);
+    background-color: transparent;
+    border: 1px solid var(--dark_slate_blue-color);
+    font-size: 1rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-out;
+}
+
+.button-outlined-custom-non-p:hover {
+    color: #fff;
+    background-color: var(--dark_slate_blue-color);
+    border: 1px solid transparent;
+}
+
+/* Switch  */
+.custom-switch.ant-switch-checked {
+    background: var(--blur_slate_blue-color) !important;
+}
+
+.custom-switch.ant-switch-checked .ant-switch-handle::before {
+    background: var(--dark_slate_blue-color) !important;
+}
+
+/* Radio  */
+.custom-radio .ant-radio-checked .ant-radio-inner {
+    border-color: var(--dark_slate_blue-color) !important;
+    background-color: #fff !important;
+}
+
+.custom-radio .ant-radio-checked .ant-radio-inner:after {
+    background-color: var(--dark_slate_blue-color) !important;
+}
+
+.custom-radio .ant-radio:hover .ant-radio-inner {
+    border-color: var(--dark_slate_blue-color);
+}
+
+/* Card  */
+.card-custom {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+
+/* Tabs  */
+
+/* Tab item chiếm toàn bộ chiều cao của header */
+.ant-tabs-nav {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Chiều cao cho từng tab label */
+.ant-tabs-tab {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ant-tabs-tab-btn{
+    color: var(--dark_slate_blue-color) !important;
+    font-weight: bold;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.ant-tabs-ink-bar {
+    background: var(--dark_slate_blue-color) !important;
+}

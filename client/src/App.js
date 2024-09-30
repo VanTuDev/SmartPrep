@@ -14,6 +14,8 @@ import ViewExamResults from './pages/learner/ViewExamResults';
 
 // Import PrivateRoute for protecting routes
 import PrivateRoute from './components/PrivateRoute';
+import Exam from './pages/instructor/Exam';
+import LearnerProfile from 'pages/learner/LearnerProfile';
 
 function App() {
   return (
@@ -39,6 +41,13 @@ function App() {
             }
           />
           <Route
+            path="/learner/profile" element={
+              <PrivateRoute>
+                <LearnerProfile />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/learner/ViewExamResults" element={
               <PrivateRoute>
                 <ViewExamResults />
@@ -53,6 +62,16 @@ function App() {
               <PrivateRoute>
                 <InstructorDashboard />
               </PrivateRoute>
+            }
+          />
+
+          {/* Instructor Dashboard */}
+          <Route
+            path="/instructor/exam/exam-create"
+            element={
+              // <PrivateRoute>
+                <Exam />
+              // {/* </PrivateRoute> */}
             }
           />
 
