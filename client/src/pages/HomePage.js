@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '../common/Header';
 import { CircleArrowRight, CircleCheckBig } from 'lucide-react';
 import '../styles/HomePage.css';
+import CustomFooter from '../common/Footer';
 
 const features = [
   "Dễ dàng tạo hoặc upload file câu hỏi trắc nghiệm",
@@ -181,7 +182,7 @@ const HomePage = () => {
                   </div>
                   <div className="package-description">
                     <div className="description">
-                      <img src="/image/shield-task.png" alt="Tên miền tuỳ chỉnh" className='w-7'/>
+                      <img src="/image/shield-task.png" alt="Tên miền tuỳ chỉnh" className='w-7' />
                       <p>Tên miền tuỳ chỉnh</p>
                     </div>
                     <div className="description">
@@ -207,6 +208,7 @@ const HomePage = () => {
           </div>
         </div>
       </div>
+      <CustomFooter />
     </>
   );
 };

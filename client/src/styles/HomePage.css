@@ -1,7 +1,7 @@
 .homepage-container {
    position: relative;
    padding: 40px 0;
-   background-color: #f9f9f9;
+   background-color: #ffffff;
 }
 
 
@@ -42,7 +42,7 @@
 .homepage-container {
    position: relative;
    padding: 40px 0;
-   background-color: #f9f9f9;
+   background-color: #ffffff;
 }
 
 
@@ -288,9 +288,9 @@
    display: flex;
    background-color: white;
    justify-content: center;
-   gap: 20px;
+   gap: 100px;
    padding: 40px 0;
-   background-color: #f9f9f9;
+   background-color: #ffffff;
    position: relative;
    margin: 50px;
 }
@@ -311,7 +311,7 @@
 }
 
 .pricing-card.personal {
-   background-color: #f5f7fa;
+   background-color: #ffffff;
    border: 1px solid #3e4a8a;
 }
 
@@ -335,7 +335,7 @@
    }
 
    50% {
-      transform: translateY(-10px);
+      transform: translateY(-20px);
    }
 }
 
