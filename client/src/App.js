@@ -10,6 +10,7 @@ import RegisterPage from './pages/common/RegisterPage';
 import LearnerDashboard from './pages/learner/LearnerDashboard';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ViewExamResults from './pages/learner/ViewExamResults';
 
 // Import PrivateRoute for protecting routes
 import PrivateRoute from './components/PrivateRoute';
@@ -34,6 +35,13 @@ function App() {
             path="/learner/dashboard" element={
               <PrivateRoute>
                 <LearnerDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/learner/ViewExamResults" element={
+              <PrivateRoute>
+                <ViewExamResults />
               </PrivateRoute>
             }
           />

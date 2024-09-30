@@ -109,7 +109,11 @@ const RegisterPage = () => {
       <div className="flex justify-center items-center h-screen bg-gray-100">
          <div className="bg-white p-9 rounded-lg shadow-md w-full max-w-md">
             <div className="flex justify-center mb-6">
-               <img src="path_to_your_logo_image" alt="logo" className="text-xl" />
+               <img
+                        src="/image/logo.svg"
+                        alt="Logo"
+                        className="h-24"
+                     />
             </div>
             <h2 className="text-xl text-center mb-6">Đăng ký thành viên</h2>
 
