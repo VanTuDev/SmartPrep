@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import 'styles/instructor/ExamCreate.css'
 import SingleCollapse from "components/Collapse/SingleCollapse";
-import GeneralInformation from "./GeneralInformation";
+import GeneralInformation from "./GeneralInformation/GeneralInformation";
 import SectionCollapse from "components/Collapse/SectionCollapse";
-import { Input, Button, message } from "antd";
+import { Input, message } from "antd";
 import QuestionCard from 'components/Card/QuestionCard';
-import QuestionAdding from './QuestionAdding';
+import QuestionAdding from './QuestionAdding/QuestionAdding';
 
 const { TextArea } = Input;
 

@@ -1,14 +1,10 @@
 import { useState } from 'react';
 import 'styles/instructor/ExamCreate.css'
-import { Pencil, Captions, Forward, Plus } from 'lucide-react';
-import { Typography } from 'antd';
+import { Pencil, Captions } from 'lucide-react';
 import { Input } from 'antd';
-import { Switch, Button } from 'antd';
-import AccessControl from './AccessControl';
-import TimeSetUp from './TimeSetup';
+import AccessControl from './AccessControl/AccessControl';
+import TimeSetUp from './TimeSetup/TimeSetup';
 
-
-const { Title, Text, Link } = Typography;
 const { TextArea } = Input;
 
 function GeneralInformation() {

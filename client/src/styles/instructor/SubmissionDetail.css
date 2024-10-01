@@ -1,0 +1,19 @@
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: auto;
+    padding: 16px;
+    width: 100%;
+}
+
+.drawer-header .title {
+    flex: none;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.ant-drawer-body {
+    padding: 0;
+}

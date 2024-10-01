@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import 'styles/instructor/ExamCreate.css';
-import { Link, useNavigate } from 'react-router-dom';
 import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker } from 'antd';
 import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import dayjs from 'dayjs';
 
 const dateFormatList = 'DD/MM/YYYY';
-const format = 'HH:mm';
+const format = 'HH:mm'; 
 
 const schedulePost = (
     <div className='p-3'>
