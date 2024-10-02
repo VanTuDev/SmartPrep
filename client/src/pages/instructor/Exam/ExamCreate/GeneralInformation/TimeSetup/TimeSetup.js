@@ -1,15 +1,11 @@
 import { useState } from 'react';
 import 'styles/instructor/ExamCreate.css'
 import { Col, DatePicker, Row } from 'antd';
-import { Pencil, Captions, Forward, Plus } from 'lucide-react';
-import { Typography } from 'antd';
-import { Input } from 'antd';
-import { Switch, Button, InputNumber, TimePicker  } from 'antd';
+import { Switch, InputNumber, TimePicker, Typography  } from 'antd';
 import dayjs from 'dayjs';
 
 
-const { Title, Text, Link } = Typography;
-const { TextArea } = Input;
+const { Title } = Typography;
 
 function TimeSetUp() {
     const [isDurationChecked, setIsDurationChecked] = useState(true);

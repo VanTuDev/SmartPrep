@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ExamHeader from "./ExamHeader";
-import ExamCreate from "./ExamCreate";
-import Submission from "./Submission";
+import ExamHeader from "./ExamHeader/ExamHeader";
+import ExamCreate from "./ExamCreate/ExamCreate";
+import Submission from "./Submission/Submission";
 import 'styles/instructor/ExamMain.css'
 
 

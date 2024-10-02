@@ -14,7 +14,7 @@ import ViewExamResults from './pages/learner/ViewExamResults';
 
 // Import PrivateRoute for protecting routes
 import PrivateRoute from './components/PrivateRoute';
-import Exam from './pages/instructor/Exam';
+import Exam from './pages/instructor/Exam/Exam';
 import LearnerProfile from 'pages/learner/LearnerProfile';
 
 function App() {
