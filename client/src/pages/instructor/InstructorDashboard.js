@@ -1,14 +1,26 @@
 import React from 'react';
+import InstructorHeader from './common/InstructorHeader';
+import NavBar from './common/NavBar';
+import ExamDashboard from './ExamDashboard';
 
 const InstructorDashboard = () => {
   return (
-    <div className="container mx-auto my-8">
-      <h2 className="text-2xl font-bold">Bảng Điều Khiển của Giảng Viên</h2>
-      <p>Đây là nơi giảng viên có thể quản lý các bài thi và tài liệu giảng dạy.</p>
-      {/* Các chức năng quản lý bài thi và tài liệu */}
+    <div>
+      {/* Header - Thanh điều hướng chính */}
+      <InstructorHeader />
+
+      {/* NavBar - Điều hướng phụ */}
+      <NavBar />
+
+      {/* Nội dung chính của trang - ExamDashboard */}
+      <div className="flex justify-center mt-8">
+        <div className="w-10/12">
+          {/* Nội dung của ExamDashboard */}
+          <ExamDashboard />
+        </div>
+      </div>
     </div>
   );
 };
 
 export default InstructorDashboard;
-
