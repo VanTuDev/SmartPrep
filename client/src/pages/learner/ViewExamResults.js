@@ -12,7 +12,7 @@ const LearnerDashboard = () => {
 
    // Lấy dữ liệu từ file JSON trong thư mục `public`
    useEffect(() => {
-      fetch('/learner/questions.json')
+      fetch('/learner.data/questions.json')
          .then((response) => {
             if (!response.ok) {
                throw new Error(`HTTP error! status: ${response.status}`);
