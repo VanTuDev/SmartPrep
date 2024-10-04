@@ -16,6 +16,7 @@ import ViewExamResults from './pages/learner/ViewExamResults';
 import PrivateRoute from './components/PrivateRoute';
 import Exam from './pages/instructor/Exam';
 import LearnerProfile from 'pages/learner/LearnerProfile';
+import QuestionLibrary from 'pages/instructor/QuestionLibrary';
 
 function App() {
   return (
@@ -70,7 +71,16 @@ function App() {
             path="/instructor/exam/exam-create"
             element={
               // <PrivateRoute>
-                <Exam />
+              <Exam />
+              // {/* </PrivateRoute> */}
+            }
+          />
+
+          <Route
+            path="/instructor/questions/library"
+            element={
+              // <PrivateRoute>
+              <QuestionLibrary />
               // {/* </PrivateRoute> */}
             }
           />
