@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify'; // Import toast
 import { CircleUserRound, Mail, PhoneCall, Key, Eye, EyeOff, UserRoundSearch } from 'lucide-react';
 
 const RegisterPage = () => {
@@ -10,8 +11,7 @@ const RegisterPage = () => {
    const [password, setPassword] = useState('');
    const [showPassword, setShowPassword] = useState(false);
    const [agreeTerms, setAgreeTerms] = useState(false);
-
-   const [errors, setErrors] = useState({}); // State để lưu các lỗi cho từng ô input
+   const [errors, setErrors] = useState({});
 
    const navigate = useNavigate();
 
@@ -32,7 +32,6 @@ const RegisterPage = () => {
 
    const handleRegister = async (e) => {
       e.preventDefault();
-
       let validationErrors = {};
 
       // Kiểm tra nếu bất kỳ trường nào bị bỏ trống
@@ -74,7 +73,7 @@ const RegisterPage = () => {
       }
 
       try {
-         const response = await fetch('http://localhost:8080/api/register', {
+         const response = await fetch('http://localhost:5000/api/users/register', {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',
@@ -92,12 +91,13 @@ const RegisterPage = () => {
          const result = await response.json();
 
          if (response.ok) {
+            toast.success('Đăng ký thành công!'); // Hiển thị thông báo thành công
             navigate('/login');
          } else {
-            setErrors({ server: result.error || 'Đăng ký thất bại' });
+            toast.error(result.error || 'Đăng ký thất bại'); // Hiển thị thông báo lỗi
          }
       } catch (error) {
-         setErrors({ server: 'Có lỗi xảy ra, vui lòng thử lại' });
+         toast.error('Có lỗi xảy ra, vui lòng thử lại'); // Hiển thị thông báo lỗi
       }
    };
 
@@ -110,10 +110,10 @@ const RegisterPage = () => {
          <div className="bg-white p-9 rounded-lg shadow-md w-full max-w-md">
             <div className="flex justify-center mb-6">
                <img
-                        src="/image/logo.svg"
-                        alt="Logo"
-                        className="h-24"
-                     />
+                  src="/image/logo.svg"
+                  alt="Logo"
+                  className="h-24"
+               />
             </div>
             <h2 className="text-xl text-center mb-6">Đăng ký thành viên</h2>
 
@@ -152,7 +152,7 @@ const RegisterPage = () => {
                         <Mail color="#707070" strokeWidth={2} />
                      </div>
                      <input
-                        className="w-full py-2 border-b-[1px] text-sm border-gray-500 focus:outline-none"
+                        className="w-full py-2 border-b-[1.1px] text-sm border-gray-500 focus:outline-none"
                         type="email"
                         placeholder="Nhập email"
                         value={email}
@@ -166,7 +166,7 @@ const RegisterPage = () => {
                         <PhoneCall color="#707070" strokeWidth={2} />
                      </div>
                      <input
-                        className="w-full py-2 border-b-[1px] text-sm border-gray-500 focus:outline-none"
+                        className="w-full py-2 border-b-[1.1px] text-sm border-gray-500 focus:outline-none"
                         type="text"
                         placeholder="Nhập số điện thoại"
                         value={phoneNumber}
@@ -180,7 +180,7 @@ const RegisterPage = () => {
                         <Key color="#707070" strokeWidth={1.5} />
                      </div>
                      <input
-                        className="w-full py-2 border-b-[1px] text-sm border-gray-500 focus:outline-none"
+                        className="w-full py-2 border-b-[1.1px] text-sm border-gray-500 focus:outline-none"
                         type={showPassword ? "text" : "password"}
                         placeholder="Nhập mật khẩu"
                         value={password}

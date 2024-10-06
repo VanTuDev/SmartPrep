@@ -1,39 +1,71 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, X, Trash2 } from 'lucide-react';
+import { Plus, X, Trash2 } from 'lucide-react'; // Ensure these imports are present
+import { toast } from 'react-toastify'; // For toast notifications
 import * as XLSX from 'xlsx';
+import 'react-toastify/dist/ReactToastify.css'; // For toast CSS
 
-const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
+const AddQuestionForm = ({ onClose, onRefresh, existingQuestion }) => {
   const [questions, setQuestions] = useState([
     {
       category: '',
-      group: '',
+      group: null, // Default to null for group
       questionText: '',
       answers: [''], // Start with one empty answer
       correctAnswers: [], // Array to hold indices of correct answers
     },
   ]);
-  const [showForm, setShowForm] = useState(false);
-  const [editingQuestionIndex, setEditingQuestionIndex] = useState(null); // Chỉ mục của câu hỏi đang được chỉnh sửa
+  const [categories, setCategories] = useState([]); // State to hold categories
 
+  // Fetch categories from the server
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/category', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setCategories(data); // Update categories state
+      } else {
+        console.error('Unexpected data format', data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
+  useEffect(() => {
+    fetchCategories(); // Fetch categories when the form is opened
+
+    // If there's an existing question, populate the form with its data
+    if (existingQuestion) {
+      setQuestions([existingQuestion]);
+    }
+  }, [existingQuestion]);
+
+  // Handle input changes for questions
   const handleInputChange = (index, field, value) => {
     const updatedQuestions = [...questions];
     updatedQuestions[index][field] = value;
     setQuestions(updatedQuestions);
   };
 
+  // Handle answer changes
   const handleAnswerChange = (questionIndex, answerIndex, value) => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].answers[answerIndex] = value;
     setQuestions(updatedQuestions);
   };
 
+  // Add a new answer
   const addAnswer = (questionIndex) => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].answers.push(''); // Add a new answer
     setQuestions(updatedQuestions);
   };
 
+  // Remove an answer
   const removeAnswer = (questionIndex, answerIndex) => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].answers = updatedQuestions[questionIndex].answers.filter(
@@ -48,6 +80,7 @@ const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
     setQuestions(updatedQuestions);
   };
 
+  // Toggle correct answer
   const toggleCorrectAnswer = (questionIndex, answerIndex) => {
     const updatedQuestions = [...questions];
     const correctAnswers = updatedQuestions[questionIndex].correctAnswers;
@@ -62,19 +95,7 @@ const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
     setQuestions(updatedQuestions);
   };
 
-  const addQuestion = () => {
-    setQuestions([
-      ...questions,
-      {
-        category: '',
-        group: '',
-        questionText: '',
-        answers: [''], // Start with one empty answer for the new question
-        correctAnswers: [], // Reset correctAnswers for new question
-      },
-    ]);
-  };
-
+  // Handle file upload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -96,8 +117,8 @@ const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
           : [];
 
         return {
-          category: '',
-          group: '',
+          category: '', // Set to empty, will be updated later
+          group: null,
           questionText,
           answers,
           correctAnswers,
@@ -110,25 +131,20 @@ const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
     reader.readAsBinaryString(file);
   };
 
-  useEffect(() => {
-    // Nếu có question để chỉnh sửa, điền dữ liệu vào form
-    if (existingQuestion) {
-      setQuestions([existingQuestion]);
-    }
-  }, [existingQuestion]);
-
+  // Save questions to the server
   const handleSaveQuestions = async () => {
-    // Kiểm tra và xử lý như đã làm
+    // Check necessary conditions
     for (const question of questions) {
       if (!question.questionText.trim()) {
         alert('Vui lòng nhập nội dung câu hỏi.');
         return;
       }
+      if (!question.category.trim()) {
+        alert('Vui lòng chọn danh mục cho câu hỏi.');
+        return;
+      }
 
-      // Kiểm tra xem mỗi answer có phải là chuỗi không và sau đó gọi trim
-      const nonEmptyAnswers = question.answers.filter(answer =>
-        typeof answer === 'string' && answer.trim()
-      );
+      const nonEmptyAnswers = question.answers.filter(answer => answer.trim());
 
       if (nonEmptyAnswers.length < 1) {
         alert('Vui lòng nhập ít nhất một câu trả lời.');
@@ -142,31 +158,36 @@ const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
     }
 
     try {
-      // Tải câu hỏi hiện có từ server
-      const response = await fetch('http://localhost:5000/instructor/questions.json');
-      const existingQuestions = response.ok ? await response.json() : [];
+      const formattedQuestions = questions.map(question => ({
+        category: question.category, // Ensure category is ObjectId
+        group: question.group || null, // Ensure default is null
+        question_text: question.questionText,
+        question_type: 'multiple-choice', // or 'essay' depending on requirements
+        option: question.answers,
+        correct_answers: question.correctAnswers,
+        created_by: localStorage.getItem('userId'), // ID of the creator
+      }));
 
-      // Thêm câu hỏi mới vào danh sách câu hỏi hiện có
-      const updatedQuestions = [...existingQuestions, ...questions];
-
-      // Gửi dữ liệu đã cập nhật lên server
-      const saveResponse = await fetch('http://localhost:5000/instructor/questions.json', {
+      const response = await fetch('http://localhost:5000/instructor/questions.json', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedQuestions),
+        body: JSON.stringify(formattedQuestions), // Send formatted data
       });
 
-      if (saveResponse.ok) {
-        alert('Lưu câu hỏi thành công!');
-        onClose();
+      if (response.ok) {
+        toast.success('Lưu câu hỏi thành công!'); // Display success message
+        onRefresh(); // Update the question list
+        onClose(); // Close the form
       } else {
-        alert('Lưu câu hỏi thất bại. Vui lòng thử lại.');
+        const errorData = await response.json(); // Get error data from response
+        console.error('Error saving question:', errorData);
+        toast.error('Lưu câu hỏi thất bại: ' + errorData.error); // Show detailed error message
       }
     } catch (error) {
       console.error('Lỗi khi lưu câu hỏi: ', error);
-      alert('Đã xảy ra lỗi khi lưu câu hỏi.');
+      toast.error('Đã xảy ra lỗi khi lưu câu hỏi.'); // Show generic error message
     }
   };
 
@@ -186,13 +207,18 @@ const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
 
             <div className="flex space-x-4 py-4">
               <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Danh mục"
+                <select
                   value={question.category}
                   onChange={(e) => handleInputChange(questionIndex, 'category', e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-purple-300"
-                />
+                >
+                  <option value="">Chọn danh mục</option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex-1">
                 <input
@@ -266,7 +292,7 @@ const AddQuestionForm = ({ onClose, onSave, existingQuestion }) => {
           >
             {existingQuestion ? 'Lưu chỉnh sửa' : 'Lưu câu hỏi'}
           </button>
-          <button onClick={addQuestion} className="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 focus:outline-none">
+          <button onClick={AddQuestionForm} className="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-800 focus:outline-none">
             <p className="flex text-sm items-center">Thêm câu hỏi <Plus /></p>
           </button>
         </div>
