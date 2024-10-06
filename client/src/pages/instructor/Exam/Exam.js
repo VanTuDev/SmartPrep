@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ExamHeader from "./ExamHeader/ExamHeader";
 import ExamCreate from "./ExamCreate/ExamCreate";
 import Submission from "./Submission/Submission";
 import 'styles/instructor/ExamMain.css'
+
+//Import using Redux
+import { Provider } from 'react-redux';
+import { store } from '../../../store/store';
 
 
 const items = [
@@ -24,13 +28,13 @@ function Exam() {
     }
 
     return ( 
-        <div className="">
+        <Provider store={store}>
             <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab}/>
             <div className="mt-24">
                 {activeTab === '1' && <ExamCreate/>}
                 {activeTab === '2' && <Submission/>}
             </div>
-        </div>
+        </Provider>
      );
 }
 

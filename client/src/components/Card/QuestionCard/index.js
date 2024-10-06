@@ -29,12 +29,12 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
 
     // Func update correct answer
     const handleCorrectAnswerChange = (id) => {
-        setLocalQuestion({ ...localQuestion, correctAnswer: id });
+        setLocalQuestion({ ...localQuestion, correct: id });
     };
 
     // Func save question
     const handleSaveQuestion = () => {
-        if (!localQuestion.text.trim()) {
+        if (!localQuestion.question_text.trim()) {
             message.error('Question should not empty!');
             return;
         }
@@ -42,7 +42,7 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
             message.error('All choice must be filled!');
             return;
         }
-        if (localQuestion.correctAnswer === null) {
+        if (localQuestion.correct === null) {
             message.error('Choose correct answer!');
             return;
         }
@@ -54,8 +54,8 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
 
     // Func turn into edit mode
     const handleCardClick = () => {
-        if (editMode !== localQuestion.id) {
-            setEditMode(localQuestion.id); // Set edit mode for question
+        if (editMode !== localQuestion._id) {
+            setEditMode(localQuestion._id); // Set edit mode for question
         }
     };
 
@@ -66,15 +66,15 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
             bordered={false}
             onClick={handleCardClick}
         >
-            {editMode === localQuestion.id ? (
+            {editMode === localQuestion._id ? (
                 <div>
                     <div className="mb-4">
                         <Input
                             className='input-custom'
                             size='large'
                             placeholder="Enter question"
-                            value={localQuestion.text}
-                            onChange={(e) => setLocalQuestion({ ...localQuestion, text: e.target.value })}
+                            value={localQuestion.question_text}
+                            onChange={(e) => setLocalQuestion({ ...localQuestion, question_text: e.target.value })}
                             onClick={(e) => e.stopPropagation()} // Prevent click
                         />
                     </div>
@@ -86,7 +86,7 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                                         <Radio
                                             className='custom-radio'
 
-                                            checked={localQuestion.correctAnswer === answer.id}
+                                            checked={localQuestion.correct === answer.id}
                                             onChange={() => handleCorrectAnswerChange(answer.id)}
                                             onClick={(e) => e.stopPropagation()} // Prevent click
                                         />
@@ -142,11 +142,11 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                 </div>
             ) : (
                 <div>
-                    <p><strong>{localQuestion.text}</strong></p>
+                    <p><strong>{localQuestion.question_text}</strong></p>
                     <Space direction="vertical">
                         {localQuestion.answers.map((answer, index) => (
                             <div key={answer.id}>
-                                <Radio checked={localQuestion.correctAnswer === answer.id} disabled />
+                                <Radio checked={localQuestion.correct === answer.id} disabled />
                                 <span>{answer.text}</span>
                             </div>
                         ))}

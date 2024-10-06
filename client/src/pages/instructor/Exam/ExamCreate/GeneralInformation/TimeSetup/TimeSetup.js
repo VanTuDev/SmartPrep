@@ -7,10 +7,14 @@ import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
-function TimeSetUp() {
+function TimeSetUp({exam}) {
     const [isDurationChecked, setIsDurationChecked] = useState(true);
     const [isStartDayChecked, setIsStartDayChecked] = useState(true);
     const [isEndDayChecked, setIsEndDayChecked] = useState(true);
+
+    const [duration, setDuration] = useState(exam?.duration ? exam.duration : null);
+    const [startDate, setStartDate] = useState(exam?.start_date ? dayjs(exam.start_date) : null);
+    const [endDate, setEndDate] = useState(exam?.start_date ? dayjs(exam.start_date) : null);
 
     const dateFormatList = 'DD/MM/YYYY';
     const format = 'HH:mm';
@@ -25,6 +29,21 @@ function TimeSetUp() {
 
     const onEndDateChange = (checked) => {
         setIsEndDayChecked(checked)
+    };
+
+    const handleDurationChange = (value) => {
+        setDuration(value);
+        // onUpdateExam({ ...exam, start_date: value?.toISOString() });
+    };
+
+    const handleStartDateChange = (value) => {
+        setStartDate(value);
+        // onUpdateExam({ ...exam, start_date: value?.toISOString() });
+    };
+
+    const handleEndDateChange = (value) => {
+        setEndDate(value);
+        // onUpdateExam({ ...exam, start_date: value?.toISOString() });
     };
     return (
         <>
@@ -43,7 +62,7 @@ function TimeSetUp() {
                 <Col span={10}>
                     <div className='flex items-start w-full rounded-lg p-2'>
                         {isDurationChecked ? (
-                            <InputNumber className='w-2/4' size='large' addonAfter={<p>Minute</p>} defaultValue={60} />
+                            <InputNumber className='w-2/4' size='large' addonAfter={<p>Minute</p>} value={duration} onChange={handleDurationChange} />
                         ):(<></>)}
                     </div>
                 </Col>
@@ -64,8 +83,8 @@ function TimeSetUp() {
                     <div className='flex items-start w-full rounded-lg p-2'>
                         {isStartDayChecked ? 
                         (<div className='flex justify-between'>
-                            <TimePicker size='large' className='w-1/3' defaultValue={dayjs('17:00', format)} format={format} />
-                            <DatePicker size='large' defaultValue={dayjs('06/10/2024', dateFormatList)} needConfirm format={dateFormatList} />
+                            <TimePicker size='large' className='w-1/3' value={dayjs(startDate, format)} onChange={handleStartDateChange} format={format} />
+                            <DatePicker size='large' value={dayjs(startDate, dateFormatList)} onChange={handleStartDateChange} needConfirm format={dateFormatList} />
                         </div>)
                         :(<></>)
                     }
@@ -88,8 +107,8 @@ function TimeSetUp() {
                     <div className='flex items-start w-full rounded-lg p-2'>
                         {isEndDayChecked ? 
                         (<div className='flex justify-between'>
-                            <TimePicker size='large' className='w-1/3' defaultValue={dayjs('17:00', format)} format={format} />
-                            <DatePicker size='large' defaultValue={dayjs('06/10/2024', dateFormatList)} needConfirm format={dateFormatList} />
+                            <TimePicker size='large' className='w-1/3'value={dayjs(endDate, format)} onChange={handleEndDateChange} format={format} />
+                            <DatePicker size='large' value={dayjs(endDate, dateFormatList)} onChange={handleEndDateChange} needConfirm format={dateFormatList} />
                         </div>)
                         :(<></>)
                     }

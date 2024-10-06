@@ -42,8 +42,8 @@ function doDownload(url, fileName) {
     doDownload(url, 'QRCode.svg');
   };
 
-function AccessControl() {
-    const [isPublicChecked, setIsPublicChecked] = useState(true)
+function AccessControl({exam}) {
+    const [isPublicChecked, setIsPublicChecked] = useState(exam?.access_type === 'public')
     const [modalVisibility, setModalVisibility] = useState({ share: false, addMember: false });
     const [activeTab, setActiveTab] = useState('1');
     const [renderType, setRenderType] = useState('canvas');
