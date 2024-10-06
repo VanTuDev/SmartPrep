@@ -1,55 +1,64 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Import common pages
-import HomePage from './pages/common/HomePage';
-import LoginPage from './pages/common/LoginPage';
-import RegisterPage from './pages/common/RegisterPage';
+import HomePage from "./pages/common/HomePage";
+import LoginPage from "./pages/common/LoginPage";
+import RegisterPage from "./pages/common/RegisterPage";
 
 // Import dashboards for Learner, Instructor, and Admin
-import LearnerDashboard from './pages/learner/LearnerDashboard';
-import InstructorDashboard from './pages/instructor/InstructorDashboard';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ViewExamResults from './pages/learner/ViewExamResults';
+import LearnerDashboard from "./pages/learner/LearnerDashboard";
+import InstructorDashboard from "./pages/instructor/InstructorDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ViewExamResults from "./pages/learner/ViewExamResults";
 
 // Import PrivateRoute for protecting routes
-import PrivateRoute from './components/PrivateRoute';
-import Exam from './pages/instructor/Exam/Exam';
-import LearnerProfile from 'pages/learner/LearnerProfile';
-import QuestionLibrary from 'pages/instructor/QuestionLibrary';
+import PrivateRoute from "./components/PrivateRoute";
+import Exam from "./pages/instructor/Exam/Exam";
+import LearnerProfile from "pages/learner/LearnerProfile";
+import QuestionLibrary from "pages/instructor/QuestionLibrary";
+import Support from "components/SupportGuide";
 
 function App() {
   return (
     <Router>
       <div>
         <Routes>
-
-
           {/* Public Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-
-
+          {/* Support Guide */}
+          <Route
+            path="/support"
+            element={
+              // <PrivateRoute>
+              <Support/>
+              // </PrivateRoute>
+            }
+          />
 
           {/* Learner Dashboard */}
           <Route
-            path="/learner/dashboard" element={
-              <PrivateRoute>
-                <LearnerDashboard />
-              </PrivateRoute>
+            path="/learner/dashboard"
+            element={
+              // <PrivateRoute>
+              <LearnerDashboard />
+              // </PrivateRoute>
             }
           />
           <Route
-            path="/learner/profile" element={
+            path="/learner/profile"
+            element={
               <PrivateRoute>
                 <LearnerProfile />
               </PrivateRoute>
             }
           />
           <Route
-            path="/learner/ViewExamResults" element={
+            path="/learner/ViewExamResults"
+            element={
               <PrivateRoute>
                 <ViewExamResults />
               </PrivateRoute>
