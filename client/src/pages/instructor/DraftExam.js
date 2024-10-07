@@ -6,7 +6,7 @@ const DraftExam = () => {
 
    // Fetch dữ liệu từ tệp JSON
    useEffect(() => {
-      fetch('/instructor.data/draftExams.json')
+      fetch('http://localhost:5000/api/test/get_all_test')
          .then((response) => response.json())
          .then((data) => {
             setDraftExams(data);
@@ -21,7 +21,7 @@ const DraftExam = () => {
          <div className="grid grid-cols-4 gap-6">
             {draftExams.map((exam) => (
                <div
-                  key={exam.id}
+                  key={exam._id}
                   className="bg-white rounded-lg border border-gray-200 p-6 w-full"
                >
                   {/* Tiêu đề bài kiểm tra */}
@@ -35,13 +35,13 @@ const DraftExam = () => {
                         <span className="inline-flex items-center justify-center w-4 h-4 mr-2">
                            🕒
                         </span>
-                        {exam.startTime}
+                        {exam.start_date}
                      </div>
                      <div className="flex items-center">
                         <span className="inline-flex items-center justify-center w-4 h-4 mr-2">
                            ⏰
                         </span>
-                        {exam.endTime}
+                        {exam.end_date}
                      </div>
                      <div className="flex items-center">
                         <span className="inline-flex items-center justify-center w-4 h-4 mr-2">
@@ -53,7 +53,7 @@ const DraftExam = () => {
                         <span className="inline-flex items-center justify-center w-4 h-4 mr-2">
                            📋
                         </span>
-                        Số câu hỏi: {exam.questions}
+                        Số câu hỏi: {exam.questions.length}
                      </div>
                      <div className="flex items-center">
                         <span className="inline-flex items-center justify-center w-4 h-4 mr-2">
@@ -66,7 +66,8 @@ const DraftExam = () => {
                   {/* Trạng thái và biểu tượng thêm hành động */}
                   <div className="mt-6 flex justify-between items-center">
                      <span className="text-green-600 text-sm font-semibold">
-                        {exam.state}
+                        {/* {exam.state} */}
+                        None
                      </span>
                      <button>
                         <MoreVertical className="w-5 h-5 text-gray-500 hover:text-gray-700" />

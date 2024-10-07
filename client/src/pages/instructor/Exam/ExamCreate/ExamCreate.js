@@ -14,7 +14,7 @@ import { generateRandomId } from 'utils/generateRandomId';
 
 const { TextArea } = Input;
 
-function ExamCreate() {
+function ExamCreate({examId}) {
     const [editMode, setEditMode] = useState(null); 
     const { exam, loading, error } = useSelector((state) => state.exam);
 
@@ -22,9 +22,11 @@ function ExamCreate() {
 
     // Gọi API để tải bài test khi component được mount
     useEffect(() => {
-        const examId = '64b6a2f2a5e5f547bc7f8103'; // ID bài test (có thể lấy từ URL hoặc props)
-        dispatch(fetchExam(examId));
-    }, [dispatch]);
+        // const examId = "6703d8dc3f1250100f136c43"
+        if(examId){
+            dispatch(fetchExam(examId));
+        }
+    }, [dispatch, examId]);
 
     const handleUpdateExam = (updatedData) => {
         dispatch(updateExam(updatedData));
@@ -32,18 +34,17 @@ function ExamCreate() {
 
     const handleAddQuestion = () => {
         const newQuestion = {
-            _id: generateRandomId(),
-            test_id: exam._id,
+            id: generateRandomId(),
             question_text: 'New Question?',
             question_type: 'multiple-choice',
-            answers: [{id: '1', text: ''}, {id:'2', text:''}],
-            correct: null
+            options: ["abc", "cdf"],
+            correct_answers: ["abc"]
         };
         dispatch(addQuestion(newQuestion));
     };
 
     const handleUpdateQuestion = (id, updatedQuestion) => {
-        dispatch(updateQuestion(updatedQuestion));
+        dispatch(updateQuestion({ ...updatedQuestion, id: id })); // Make sure to include the ID
     };
 
     const handleRemoveQuestion = (id) => {
@@ -90,7 +91,7 @@ function ExamCreate() {
                             editMode={editMode}
                             setEditMode={setEditMode}
                             onUpdate={(updatedQuestion) => handleUpdateQuestion(question.id, updatedQuestion)}
-                            onRemove={() => handleRemoveQuestion(question._id)}
+                            onRemove={() => handleRemoveQuestion(question.id)}
                         />
                     ))}
                 </div>

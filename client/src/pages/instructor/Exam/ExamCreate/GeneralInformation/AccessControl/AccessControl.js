@@ -88,7 +88,7 @@ function AccessControl({exam}) {
                     {isPublicChecked ?
                         (
                             <div className='mt-3 w-full flex justify-between items-start'>
-                                <div className='text-lg font-normal primary-color italic underline hover:cursor-pointer'>https://app.ninequiz.com/9DRWLVCS</div>
+                                <div className='text-lg font-normal primary-color italic underline hover:cursor-pointer'>{exam?.access_link}</div>
                                 <button
                                     class="button-outlined-custom font-semibold space-x-2"
                                     onClick={() => showModal('share')}
@@ -126,7 +126,7 @@ function AccessControl({exam}) {
                 {activeTab === '1' && (
                     <>
                         <p className='font-bold mb-3'>Share this link with others to give them access to the test:</p>
-                        <Input className='input-custom' value="https://app.ninequiz.com/9DRWLVCS" readOnly onClick={handleCopy} />
+                        <Input className='input-custom' value={exam?.access_link} readOnly onClick={handleCopy} />
                     </>
                 )}
                 {activeTab === '2' && (
