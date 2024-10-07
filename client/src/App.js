@@ -9,9 +9,11 @@ import RegisterPage from './pages/common/RegisterPage';
 
 // Import dashboards for Learner, Instructor, and Admin
 import LearnerDashboard from './pages/learner/LearnerDashboard';
+import ViewExamResults from './pages/learner/ViewExamResults';
+import LearnerExamHistory from './pages/learner/ExamHistory';
+import ClassList from './pages/learner/ClassList';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import ViewExamResults from './pages/learner/ViewExamResults';
 
 // Import PrivateRoute for protecting routes
 import PrivateRoute from './components/PrivateRoute';
@@ -36,6 +38,20 @@ function App() {
             path="/learner/dashboard" element={
               <PrivateRoute>
                 <LearnerDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/learner/exam/history" element={
+              <PrivateRoute>
+                <LearnerExamHistory />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/learner/exam/class" element={
+              <PrivateRoute>
+                <ClassList />
               </PrivateRoute>
             }
           />
