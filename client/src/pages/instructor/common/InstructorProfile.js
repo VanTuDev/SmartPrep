@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import InstructorHeader from './InstructorHeader';
 
 const InstructorProfile = () => {
    const [userInfo, setUserInfo] = useState(null); // Trạng thái để lưu thông tin người dùng
@@ -97,142 +98,129 @@ const InstructorProfile = () => {
    }, []);
 
    return (
-      <div className="container mx-auto p-6">
-         {/* Thông báo lỗi và thành công */}
-         {error && <p className="text-red-500 text-center">{error}</p>}
-         {success && <p className="text-green-500 text-center">{success}</p>}
-         <div className="bg-white shadow-md rounded-lg p-6">
-            {/* Nút quay lại Dashboard */}
-            <button
-               className="bg-gray-500 text-white px-4 py-2 rounded mb-4 hover:bg-gray-600"
-               onClick={() => navigate('/instructor/dashboard')}
-            >
-               Quay lại Dashboard
-            </button>
+      <div className="">
+         <InstructorHeader></InstructorHeader>
+         <div className="container mx-auto p-6">
+            {/* Thông báo lỗi và thành công */}
+            {error && <p className="text-red-500 text-center">{error}</p>}
+            {success && <p className="text-green-500 text-center">{success}</p>}
+            <div className="bg-white shadow-md rounded-lg p-6">
 
-            {/* Hiển thị thông tin người dùng */}
-            {userInfo ? (
-               <>
-                  <h2 className="text-xl font-bold mb-4">Thông tin người dùng</h2>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                     {/* Hiển thị và cập nhật ảnh đại diện */}
-                     <div className="flex flex-col items-center">
-                        <label className="block text-sm text-gray-700">Ảnh đại diện</label>
-                        <img
-                           src={
-                              selectedImage
-                                 ? URL.createObjectURL(selectedImage)
-                                 : userInfo?.profile
-                                    ? `http://localhost:5000/uploads/${userInfo.profile}`
-                                    : "https://via.placeholder.com/150"
-                           }
-                           alt="Profile"
-                           className="rounded-full w-32 h-32 mb-4"
-                        />
-                        {editMode && (
-                           <input
-                              type="file"
-                              onChange={handleImageChange}
-                              className="text-sm text-gray-500"
-                           />
-                        )}
-                     </div>
 
-                     {/* Các trường thông tin khác */}
-                     <div>
-                        <label className="block text-sm text-gray-700">Tên đăng nhập</label>
-                        {editMode ? (
-                           <input
-                              type="text"
-                              name="username"
-                              value={editedInfo.username || ''}
-                              onChange={handleChange}
-                              className="border rounded p-2 w-full"
+               {/* Hiển thị thông tin người dùng */}
+               {userInfo ? (
+                  <>
+                     <div className="flex items-center space-x-6 mb-6">
+                        {/* Hiển thị và cập nhật ảnh đại diện */}
+                        <div className="flex flex-col items-center">
+                           <img
+                              src={
+                                 selectedImage
+                                    ? URL.createObjectURL(selectedImage)
+                                    : userInfo?.profile
+                                       ? `http://localhost:5000/uploads/${userInfo.profile}`
+                                       : "https://via.placeholder.com/150"
+                              }
+                              alt="Profile"
+                              className="rounded-full w-32 h-32 mb-4"
                            />
-                        ) : (
-                           <p className="p-2">{userInfo.username}</p>
-                        )}
-                     </div>
-                     <div>
-                        <label className="block text-sm text-gray-700">Họ và tên</label>
-                        {editMode ? (
-                           <input
-                              type="text"
-                              name="fullname"
-                              value={editedInfo.fullname || ''}
-                              onChange={handleChange}
-                              className="border rounded p-2 w-full"
-                           />
-                        ) : (
-                           <p className="p-2">{userInfo.fullname}</p>
-                        )}
-                     </div>
-                     <div>
-                        <label className="block text-sm text-gray-700">Email</label>
-                        {editMode ? (
-                           <input
-                              type="email"
-                              name="email"
-                              value={editedInfo.email || ''}
-                              onChange={handleChange}
-                              className="border rounded p-2 w-full"
-                           />
-                        ) : (
-                           <p className="p-2">{userInfo.email}</p>
-                        )}
-                     </div>
-                     <div>
-                        <label className="block text-sm text-gray-700">Số điện thoại</label>
-                        {editMode ? (
-                           <input
-                              type="text"
-                              name="phone"
-                              value={editedInfo.phone || ''}
-                              onChange={handleChange}
-                              className="border rounded p-2 w-full"
-                           />
-                        ) : (
-                           <p className="p-2">{userInfo.phone}</p>
-                        )}
-                     </div>
-                     <div>
-                        <label className="block text-sm text-gray-700">Vai trò</label>
-                        {editMode ? (
-                           <select
-                              name="role"
-                              value={editedInfo.role || ''}
-                              onChange={handleChange}
-                              className="border rounded p-2 w-full"
-                           >
-                              <option value="user">User</option>
-                              <option value="admin">Admin</option>
-                              <option value="instructor">Instructor</option>
-                           </select>
-                        ) : (
-                           <p className="p-2">{userInfo.role}</p>
-                        )}
-                     </div>
-                  </div>
+                           {editMode && (
+                              <input
+                                 type="file"
+                                 onChange={handleImageChange}
+                                 className="text-sm text-gray-500"
+                              />
+                           )}
+                           <h2 className="text-xl font-semibold mt-4">{userInfo.fullname || 'Tên người dùng'}</h2>
+                           <p className="text-gray-500">ID: {userInfo?._id || '---'}</p>
+                        </div>
 
-                  {/* Nút Lưu và Hủy */}
-                  {editMode ? (
-                     <div className="flex justify-end space-x-4">
-                        <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
-                           Lưu
-                        </button>
-                        <button onClick={() => setEditMode(false)} className="bg-gray-500 text-white px-4 py-2 rounded">
-                           Hủy
-                        </button>
+                        {/* Các trường thông tin khác */}
+                        <div className="flex-1">
+                           <h2 className="text-2xl font-bold mb-4">Thông tin</h2>
+                           <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div>
+                                 <label className="block text-sm text-gray-700">Tên đăng nhập</label>
+                                 {editMode ? (
+                                    <input
+                                       type="text"
+                                       name="username"
+                                       value={editedInfo.username || ''}
+                                       onChange={handleChange}
+                                       className="border rounded p-2 w-full"
+                                    />
+                                 ) : (
+                                    <p className="p-2">{userInfo.username}</p>
+                                 )}
+                              </div>
+                              <div>
+                                 <label className="block text-sm text-gray-700">Email</label>
+                                 {editMode ? (
+                                    <input
+                                       type="email"
+                                       name="email"
+                                       value={editedInfo.email || ''}
+                                       onChange={handleChange}
+                                       className="border rounded p-2 w-full"
+                                    />
+                                 ) : (
+                                    <p className="p-2">{userInfo.email}</p>
+                                 )}
+                              </div>
+                              <div>
+                                 <label className="block text-sm text-gray-700">Số điện thoại</label>
+                                 {editMode ? (
+                                    <input
+                                       type="text"
+                                       name="phone"
+                                       value={editedInfo.phone || ''}
+                                       onChange={handleChange}
+                                       className="border rounded p-2 w-full"
+                                    />
+                                 ) : (
+                                    <p className="p-2">{userInfo.phone}</p>
+                                 )}
+                              </div>
+                              <div>
+                                 <label className="block text-sm text-gray-700">Vai trò</label>
+                                 {editMode ? (
+                                    <select
+                                       name="role"
+                                       value={editedInfo.role || ''}
+                                       onChange={handleChange}
+                                       className="border rounded p-2 w-full"
+                                    >
+                                       <option value="user">User</option>
+                                       <option value="admin">Admin</option>
+                                       <option value="instructor">Instructor</option>
+                                    </select>
+                                 ) : (
+                                    <p className="p-2">{userInfo.role}</p>
+                                 )}
+                              </div>
+                           </div>
+                           {/* Nút Lưu và Hủy */}
+                           {editMode ? (
+                              <div className="flex justify-end space-x-4">
+                                 <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
+                                    Lưu
+                                 </button>
+                                 <button onClick={() => setEditMode(false)} className="bg-gray-500 text-white px-4 py-2 rounded">
+                                    Hủy
+                                 </button>
+                              </div>
+                           ) : (
+                              <button onClick={() => setEditMode(true)} className="bg-green-500 text-white px-4 py-2 rounded">
+                                 Chỉnh sửa
+                              </button>
+                           )}
+                        </div>
                      </div>
-                  ) : (
-                     <button onClick={() => setEditMode(true)} className="bg-green-500 text-white px-4 py-2 rounded">
-                        Chỉnh sửa
-                     </button>
-                  )}
-               </>
-            ) : (
-               <p>Đang tải dữ liệu...</p>
-            )}
+                  </>
+               ) : (
+                  <p>Đang tải dữ liệu...</p>
+               )}
+            </div>
          </div>
       </div>
    );

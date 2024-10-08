@@ -22,6 +22,8 @@ import Exam from './pages/instructor/Exam/Exam';
 import LearnerProfile from './pages/learner/LearnerProfile';
 import QuestionLibrary from './pages/instructor/QuestionLibrary';
 import InstructorProfile from './pages/instructor/common/InstructorProfile'; // Import InstructorProfile
+import QuizCard from 'pages/learner/TakeExam/QuizCard';
+import Exam1 from 'pages/learner/TakeExam/Exam';
 
 function App() {
   return (
@@ -76,6 +78,25 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/learner/TakeExam"
+            element={
+              <PrivateRoute>
+                <QuizCard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/learner/TakeExam/Exam1"
+            element={
+              <PrivateRoute>
+                <Exam1 />
+              </PrivateRoute>
+            }
+          />
+
+
+
 
           {/* Instructor Dashboard */}
           <Route
