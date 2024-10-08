@@ -23,7 +23,7 @@ const schedulePost = (
     </div>
   );
 
-function ExamHeader({ items, activeTab, onChangeTab }) {
+function ExamHeader({ items, activeTab, onChangeTab, setExamId }) {
     const navigate = useNavigate(); 
     const dispatch = useDispatch();
 
@@ -36,6 +36,11 @@ function ExamHeader({ items, activeTab, onChangeTab }) {
         dispatch(createExam(examData)); // Dispatch the action to submit the exam data
     };
 
+    const handleOnCancel = () => {
+        setExamId(null);
+        navigate('/instructor/dashboard')
+    }
+
     return (
         <header className="bg-white fixed top-0 left-0 right-0 shadow-lg h-20 z-50">
             <div className="w-full h-full px-8">
@@ -44,7 +49,7 @@ function ExamHeader({ items, activeTab, onChangeTab }) {
                     <div className="flex justify-start">
                         <Tooltip title="Cancel">
                             <button>
-                                <X onClick={() => navigate('/instructor/dashboard')} />
+                                <X onClick={handleOnCancel} />
                             </button>
                         </Tooltip>
                     </div>

@@ -76,9 +76,6 @@ export const createExam = createAsyncThunk(
         }
     }
 );
-
-
-
 const examSlice = createSlice({
     name: 'exam',
     initialState,
@@ -103,7 +100,22 @@ const examSlice = createSlice({
         removeQuestion: (state, action) => {
             const questionId = action.payload;
             state.exam.questions = state.exam.questions.filter(q => q.id !== questionId);
-        }
+        },
+        resetExam: (state) => {
+            state.exam = {
+                _id: null, // Placeholder for exam ID
+                title: '', // Placeholder for exam title
+                description: '', // Placeholder for exam description
+                questions: [], // Empty array to hold questions
+                duration: 60,
+                access_link: 'http://test',
+                access_type: 'public',
+                start_date: new Date().toISOString(),
+                end_date: new Date().toISOString(),
+            }; // Or whatever your default state should be
+            state.loading = false;
+            state.error = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -123,7 +135,7 @@ const examSlice = createSlice({
 });
 
 // Export actions
-export const { updateExam, updateQuestion, addQuestion, removeQuestion } = examSlice.actions;
+export const { updateExam, updateQuestion, addQuestion, removeQuestion, resetExam } = examSlice.actions;
 
 // Export reducer to store
 export default examSlice.reducer;
