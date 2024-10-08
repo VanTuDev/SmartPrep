@@ -14,7 +14,7 @@ function TimeSetUp({exam}) {
 
     const [duration, setDuration] = useState(exam?.duration ? exam.duration : null);
     const [startDate, setStartDate] = useState(exam?.start_date ? dayjs(exam.start_date) : null);
-    const [endDate, setEndDate] = useState(exam?.start_date ? dayjs(exam.start_date) : null);
+    const [endDate, setEndDate] = useState(exam?.end_date ? dayjs(exam.end_date) : null);
 
     const dateFormatList = 'DD/MM/YYYY';
     const format = 'HH:mm';

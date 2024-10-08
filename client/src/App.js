@@ -34,7 +34,7 @@ function App() {
             path="/support"
             element={
               // <PrivateRoute>
-              <Support/>
+              <Support />
               // </PrivateRoute>
             }
           />
@@ -71,6 +71,15 @@ function App() {
             element={
               <PrivateRoute>
                 <InstructorDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/instructor/exam/:examId"
+            element={
+              <PrivateRoute>
+                <Exam />
               </PrivateRoute>
             }
           />
