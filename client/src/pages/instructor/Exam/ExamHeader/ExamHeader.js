@@ -5,6 +5,7 @@ import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { createExam } from 'store/examSlice';
+import { useNavigate } from 'react-router-dom';
 
 const dateFormatList = 'DD/MM/YYYY';
 const format = 'HH:mm'; 
@@ -23,6 +24,7 @@ const schedulePost = (
   );
 
 function ExamHeader({ items, activeTab, onChangeTab }) {
+    const navigate = useNavigate(); 
     const dispatch = useDispatch();
 
     // Access the exam data from Redux (if needed)
@@ -42,7 +44,7 @@ function ExamHeader({ items, activeTab, onChangeTab }) {
                     <div className="flex justify-start">
                         <Tooltip title="Cancel">
                             <button>
-                                <X />
+                                <X onClick={() => navigate('/instructor/dashboard')} />
                             </button>
                         </Tooltip>
                     </div>

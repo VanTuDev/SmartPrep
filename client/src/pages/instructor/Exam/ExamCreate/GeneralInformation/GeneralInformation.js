@@ -23,7 +23,7 @@ function GeneralInformation({exam, onUpdateExam}) {
 
     const handleDescriptionChange = (e) => {
         setDescription(e.target.value);
-        // onUpdateExam({ ...exam, description: e.target.value });
+        onUpdateExam({ ...exam, description: e.target.value });
     };
 
     return (

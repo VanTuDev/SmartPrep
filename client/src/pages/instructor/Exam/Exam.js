@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
 import ExamHeader from "./ExamHeader/ExamHeader";
 import ExamCreate from "./ExamCreate/ExamCreate";
 import Submission from "./Submission/Submission";
@@ -22,6 +23,7 @@ const items = [
 
 function Exam() {
     const [activeTab, setActiveTab] = useState('1');
+    const { examId } = useParams();
 
     const onChangeTab = (key) => {
         setActiveTab(key)
@@ -31,7 +33,7 @@ function Exam() {
         <Provider store={store}>
             <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab}/>
             <div className="mt-24">
-                {activeTab === '1' && <ExamCreate/>}
+                {activeTab === '1' && <ExamCreate examId={examId}/>}
                 {activeTab === '2' && <Submission/>}
             </div>
         </Provider>

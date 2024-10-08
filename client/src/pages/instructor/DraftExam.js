@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { MoreVertical } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const DraftExam = () => {
    const [draftExams, setDraftExams] = useState([]);
+   const navigate = useNavigate();
 
    // Fetch dữ liệu từ tệp JSON
    useEffect(() => {
@@ -12,6 +14,11 @@ const DraftExam = () => {
             setDraftExams(data);
          });
    }, []);
+
+   const handleCardClick = (examId) => {
+      navigate(`/instructor/exam/${examId}`); // Navigate to /exam/examId
+   };
+
 
    return (
       <div className="mt-12">
@@ -23,6 +30,7 @@ const DraftExam = () => {
                <div
                   key={exam._id}
                   className="bg-white rounded-lg border border-gray-200 p-6 w-full"
+                  onClick={() => handleCardClick(exam._id)}
                >
                   {/* Tiêu đề bài kiểm tra */}
                   <div className="font-semibold text-gray-800 mb-4 text-lg">

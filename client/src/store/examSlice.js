@@ -8,6 +8,7 @@ const initialState = {
         description: '', // Placeholder for exam description
         questions: [], // Empty array to hold questions
         duration: 60,
+        access_link: 'http://test',
         access_type: 'public',
         start_date: new Date().toISOString(),
         end_date: new Date().toISOString(),
@@ -38,16 +39,18 @@ export const createExam = createAsyncThunk(
         console.log("Original Exam Data: ", examData);
         try {
             // Create a copy of examData to avoid directly mutating the original object
-            const modifiedExamData = { ...examData };
+            const modifiedExamData = JSON.parse(JSON.stringify(examData));
 
             // Remove the exam id
             delete modifiedExamData._id;
-
+            console.log("Questions before map:", modifiedExamData);
             // Remove id from each question
-            modifiedExamData.questions = modifiedExamData.questions.map(question => {
+            modifiedExamData.exam.questions = Array.isArray(modifiedExamData.exam.questions) 
+            ? modifiedExamData.exam.questions.map(question => {
                 const { id, ...rest } = question; // Destructure to remove id
                 return rest; // Return the question object without the id field
-            });
+            })
+            : [];
 
             console.log("Modified Exam Data: ", modifiedExamData);
             console.log("Original Exam Data: ", examData);
@@ -56,6 +59,7 @@ export const createExam = createAsyncThunk(
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
                 body: JSON.stringify(modifiedExamData),
             });
