@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 // import { addQuestion, updateQuestion, removeQuestion, setEditMode } from 'store/questionSlice';
-import { updateExam, updateQuestion, removeQuestion, addQuestion } from 'store/examSlice';
+import { updateExam, updateQuestion, removeQuestion, addQuestion, resetExam } from 'store/examSlice';
 import 'styles/instructor/ExamCreate.css'
 import { Input, message } from "antd";
 import SingleCollapse from "components/Collapse/SingleCollapse";
@@ -22,10 +22,13 @@ function ExamCreate({examId}) {
 
     // Gọi API để tải bài test khi component được mount
     useEffect(() => {
-        // const examId = "6703d8dc3f1250100f136c43"
         if(examId){
             dispatch(fetchExam(examId));
         }
+
+        return () => {
+            dispatch(resetExam()); // This will reset the exam state when the component is unmounted
+        };
     }, [dispatch, examId]);
 
     const handleUpdateExam = (updatedData) => {

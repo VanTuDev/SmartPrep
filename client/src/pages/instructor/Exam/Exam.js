@@ -23,15 +23,20 @@ const items = [
 
 function Exam() {
     const [activeTab, setActiveTab] = useState('1');
-    const { examId } = useParams();
+    const { examId: initialExamId } = useParams();
+    const [examId, setExamId] = useState(initialExamId);
 
     const onChangeTab = (key) => {
         setActiveTab(key)
     }
 
+    useEffect(() => {
+        setExamId(initialExamId); // Update local examId when params change
+    }, [initialExamId]);
+console.log(examId)
     return ( 
         <Provider store={store}>
-            <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab}/>
+            <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab} setExamId={setExamId}/>
             <div className="mt-24">
                 {activeTab === '1' && <ExamCreate examId={examId}/>}
                 {activeTab === '2' && <Submission/>}
