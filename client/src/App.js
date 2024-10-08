@@ -1,11 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css';
 // Import common pages
 import HomePage from './pages/common/HomePage';
 import LoginPage from './pages/common/LoginPage';
 import RegisterPage from './pages/common/RegisterPage';
+// import NotFound from './pages/common/NotFound'; // Import trang NotFound cho các trang không tìm thấy
 
 // Import dashboards for Learner, Instructor, and Admin
 import LearnerDashboard from './pages/learner/LearnerDashboard';
@@ -20,12 +21,13 @@ import PrivateRoute from './components/PrivateRoute';
 import Exam from './pages/instructor/Exam/Exam';
 import LearnerProfile from './pages/learner/LearnerProfile';
 import QuestionLibrary from './pages/instructor/QuestionLibrary';
+import InstructorProfile from './pages/instructor/common/InstructorProfile'; // Import InstructorProfile
 
 function App() {
   return (
     <Router>
       <div>
-        <ToastContainer /> {/* Thêm ToastContainer ở đây */}
+        <ToastContainer /> {/* Thêm ToastContainer để hiển thị thông báo */}
         <Routes>
 
           {/* Public Pages */}
@@ -35,36 +37,41 @@ function App() {
 
           {/* Learner Dashboard */}
           <Route
-            path="/learner/dashboard" element={
-              <PrivateRoute>
+            path="/learner/dashboard"
+            element={
+              <PrivateRoute role="learner">
                 <LearnerDashboard />
               </PrivateRoute>
             }
           />
           <Route
-            path="/learner/exam/history" element={
-              <PrivateRoute>
+            path="/learner/exam/history"
+            element={
+              <PrivateRoute role="learner">
                 <LearnerExamHistory />
               </PrivateRoute>
             }
           />
           <Route
-            path="/learner/exam/class" element={
-              <PrivateRoute>
+            path="/learner/exam/class"
+            element={
+              <PrivateRoute role="learner">
                 <ClassList />
               </PrivateRoute>
             }
           />
           <Route
-            path="/learner/profile" element={
-              <PrivateRoute>
+            path="/learner/profile"
+            element={
+              <PrivateRoute role="learner">
                 <LearnerProfile />
               </PrivateRoute>
             }
           />
           <Route
-            path="/learner/ViewExamResults" element={
-              <PrivateRoute>
+            path="/learner/ViewExamResults"
+            element={
+              <PrivateRoute role="learner">
                 <ViewExamResults />
               </PrivateRoute>
             }
@@ -74,24 +81,34 @@ function App() {
           <Route
             path="/instructor/dashboard"
             element={
-              <PrivateRoute>
+              <PrivateRoute role="instructor">
                 <InstructorDashboard />
               </PrivateRoute>
             }
           />
-
-          {/* Instructor Exam Creation */}
           <Route
             path="/instructor/exam/exam-create"
             element={
-              <Exam />
+              <PrivateRoute role="instructor">
+                <Exam />
+              </PrivateRoute>
             }
           />
-
           <Route
             path="/instructor/questions/library"
             element={
-              <QuestionLibrary />
+              <PrivateRoute role="instructor">
+                <QuestionLibrary />
+              </PrivateRoute>
+            }
+          />
+          {/* Profile for Instructor */}
+          <Route
+            path="/instructor/profile"
+            element={
+              <PrivateRoute role="instructor">
+                <InstructorProfile />
+              </PrivateRoute>
             }
           />
 
@@ -99,11 +116,14 @@ function App() {
           <Route
             path="/admin/dashboard"
             element={
-              <PrivateRoute>
+              <PrivateRoute role="admin">
                 <AdminDashboard />
               </PrivateRoute>
             }
           />
+
+          {/* Catch-all route for not found pages */}
+          {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </div>
     </Router>

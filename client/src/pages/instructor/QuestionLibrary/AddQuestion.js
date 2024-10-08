@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, X, Trash2 } from 'lucide-react'; // Ensure these imports are present
-import { toast } from 'react-toastify'; // For toast notifications
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import * as XLSX from 'xlsx';
-import 'react-toastify/dist/ReactToastify.css'; // For toast CSS
 
-const AddQuestionForm = ({ onClose, onRefresh, existingQuestion }) => {
-  const [questions, setQuestions] = useState([{
-    category: '',
-    group: null, // Default to null for group
+const AddQuestion = () => {
+  const [questions, setQuestions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [newQuestion, setNewQuestion] = useState({
     question_text: '',
-    option: [''], // Start with one empty answer
-    correct_answers: [], // Array to hold indices of correct answers
-  }]);
+    question_type: 'multiple-choice',
+    option: ['', '', '', ''], // Bắt đầu với 4 lựa chọn trống
+    correct_answers: [], // Lưu đáp án đúng dưới dạng nội dung
+    category: '',
+    group: ''
+  });
 
-  const [categories, setCategories] = useState([]); // State to hold categories
-  const [groups, setGroups] = useState([]); // State to hold groups
-
-  // Fetch categories from the server
+  // Hàm để lấy danh sách danh mục từ API
   const fetchCategories = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/category', {
@@ -26,7 +26,7 @@ const AddQuestionForm = ({ onClose, onRefresh, existingQuestion }) => {
       });
       const data = await response.json();
       if (Array.isArray(data)) {
-        setCategories(data); // Update categories state
+        setCategories(data);
       } else {
         console.error('Unexpected data format', data);
       }
@@ -35,7 +35,7 @@ const AddQuestionForm = ({ onClose, onRefresh, existingQuestion }) => {
     }
   };
 
-  // Fetch groups from the server
+  // Hàm để lấy danh sách nhóm từ API
   const fetchGroups = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/groups', {
@@ -45,7 +45,7 @@ const AddQuestionForm = ({ onClose, onRefresh, existingQuestion }) => {
       });
       const data = await response.json();
       if (Array.isArray(data)) {
-        setGroups(data); // Update groups state
+        setGroups(data);
       } else {
         console.error('Unexpected data format', data);
       }
@@ -55,67 +55,61 @@ const AddQuestionForm = ({ onClose, onRefresh, existingQuestion }) => {
   };
 
   useEffect(() => {
-    fetchCategories(); // Fetch categories when the form is opened
-    fetchGroups(); // Fetch groups when the form is opened
+    fetchCategories();
+    fetchGroups();
+  }, []);
 
-    // If there's an existing question, populate the form with its data
-    if (existingQuestion) {
-      setQuestions([existingQuestion]);
+  // Hàm để thêm câu hỏi mới
+  const handleAddQuestion = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/questions/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(newQuestion),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setQuestions([...questions, data.question]); // Thêm câu hỏi mới vào danh sách
+        toast.success('Câu hỏi đã được thêm thành công!');
+        // Reset form
+        setNewQuestion({
+          question_text: '',
+          question_type: 'multiple-choice',
+          option: ['', '', '', ''],
+          correct_answers: [], // Reset đáp án đúng
+          category: '',
+          group: ''
+        });
+      } else {
+        const error = await response.json();
+        toast.error(error.message);
+      }
+    } catch (error) {
+      console.error('Error adding question:', error);
+      toast.error('Đã xảy ra lỗi khi thêm câu hỏi.');
     }
-  }, [existingQuestion]);
-
-  // Handle input changes for questions
-  const handleInputChange = (index, field, value) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index][field] = value;
-    setQuestions(updatedQuestions);
   };
 
-  // Handle answer changes
-  const handleAnswerChange = (questionIndex, answerIndex, value) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].option[answerIndex] = value; // Updated to option instead of answers
-    setQuestions(updatedQuestions);
+  const handleCorrectAnswerChange = (index) => {
+    setNewQuestion((prev) => {
+      const correct_answers = [...prev.correct_answers];
+      const selectedOption = prev.option[index]; // Lấy nội dung đáp án được chọn
+
+      if (correct_answers.includes(selectedOption)) {
+        // Nếu đáp án đã tồn tại, xóa khỏi danh sách
+        return { ...prev, correct_answers: correct_answers.filter((answer) => answer !== selectedOption) };
+      } else {
+        // Nếu chưa tồn tại, thêm vào danh sách
+        return { ...prev, correct_answers: [...correct_answers, selectedOption] };
+      }
+    });
   };
 
-  // Add a new answer
-  const addAnswer = (questionIndex) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].option.push(''); // Add a new answer
-    setQuestions(updatedQuestions);
-  };
-
-  // Remove an answer
-  const removeAnswer = (questionIndex, answerIndex) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].option = updatedQuestions[questionIndex].option.filter(
-      (_, i) => i !== answerIndex
-    );
-
-    // Remove the correct answer if it is deleted
-    updatedQuestions[questionIndex].correct_answers = updatedQuestions[questionIndex].correct_answers
-      .filter((i) => i !== answerIndex)
-      .map((i) => (i > answerIndex ? i - 1 : i));
-
-    setQuestions(updatedQuestions);
-  };
-
-  // Toggle correct answer
-  const toggleCorrectAnswer = (questionIndex, answerIndex) => {
-    const updatedQuestions = [...questions];
-    const correctAnswers = updatedQuestions[questionIndex].correct_answers;
-
-    if (correctAnswers.includes(answerIndex)) {
-      // Remove the answer index if it already exists
-      updatedQuestions[questionIndex].correct_answers = correctAnswers.filter((i) => i !== answerIndex);
-    } else {
-      // Add the answer index to the correctAnswers array
-      updatedQuestions[questionIndex].correct_answers = [...correctAnswers, answerIndex];
-    }
-    setQuestions(updatedQuestions);
-  };
-
-  // Handle file upload
+  // Hàm để thêm nhiều câu hỏi từ file Excel
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -127,187 +121,156 @@ const AddQuestionForm = ({ onClose, onRefresh, existingQuestion }) => {
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      const processedQuestions = data.map((row) => {
-        const questionText = row[0];
-        const answers = row.slice(1, row.length - 1);
-        const correctAnswerLabel = row[row.length - 1];
-
-        const correct_answers = correctAnswerLabel
-          ? correctAnswerLabel.split(',').map((label) => label.trim().toUpperCase().charCodeAt(0) - 65).filter(index => index >= 0) // Convert multiple correct answers to indices
-          : [];
+      const questionsToAdd = data.slice(1).map((row) => {
+        const question_text = row[0];
+        const options = row.slice(1, -1);
+        const correct_answers = row[row.length - 1].split(',').map(answer => answer.trim());
 
         return {
-          category: '', // Set to empty, will be updated later
-          group: null,
-          question_text: questionText,
-          option: answers,
+          question_text,
+          option: options,
           correct_answers,
+          question_type: 'multiple-choice', // Hoặc điều chỉnh nếu bạn có nhiều loại câu hỏi
+          category: newQuestion.category, // Sử dụng category hiện tại
+          group: newQuestion.group, // Sử dụng group hiện tại
         };
       });
 
-      setQuestions(processedQuestions);
+      questionsToAdd.forEach(async (question) => {
+        try {
+          const response = await fetch('http://localhost:5000/api/questions/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify(question),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setQuestions((prev) => [...prev, data.question]); // Thêm câu hỏi mới vào danh sách
+          } else {
+            const error = await response.json();
+            toast.error(`Lỗi khi thêm câu hỏi: ${error.message}`);
+          }
+        } catch (error) {
+          console.error('Error adding question:', error);
+          toast.error('Đã xảy ra lỗi khi thêm câu hỏi.');
+        }
+      });
+
+      toast.success('Đã thêm tất cả câu hỏi từ file Excel!');
     };
 
     reader.readAsBinaryString(file);
   };
 
-  // Save questions to the server
-  const handleSaveQuestions = async () => {
-    // Check necessary conditions
-    for (const question of questions) {
-      if (!question.question_text.trim()) {
-        alert('Vui lòng nhập nội dung câu hỏi.');
-        return;
-      }
-      if (!question.category.trim()) {
-        alert('Vui lòng chọn danh mục cho câu hỏi.');
-        return;
-      }
-
-      const nonEmptyAnswers = question.option.filter(answer => answer.trim());
-
-      if (nonEmptyAnswers.length < 1) {
-        alert('Vui lòng nhập ít nhất một câu trả lời.');
-        return;
-      }
-
-      if (question.correct_answers.length === 0) {
-        alert('Vui lòng chọn ít nhất một câu trả lời đúng.');
-        return;
-      }
-    }
-
-    try {
-      const formattedQuestions = questions.map(question => ({
-        category: question.category, // Ensure category is ObjectId
-        group: question.group || null, // Ensure default is null
-        question_text: question.question_text, // Corrected field name
-        question_type: 'multiple-choice', // or 'essay' depending on requirements
-        option: question.option, // Corrected field name
-        correct_answers: question.correct_answers,
-        created_by: localStorage.getItem('userId'), // ID of the creator
-      }));
-
-      const response = await fetch('http://localhost:5000/instructor/questions', { // Updated endpoint
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formattedQuestions), // Send formatted data
-      });
-
-      if (response.ok) {
-        toast.success('Lưu câu hỏi thành công!'); // Display success message
-        onRefresh(); // Update the question list
-        onClose(); // Close the form
-      } else {
-        const errorData = await response.json(); // Get error data from response
-        console.error('Error saving question:', errorData);
-        toast.error('Lưu câu hỏi thất bại: ' + errorData.error); // Show detailed error message
-      }
-    } catch (error) {
-      console.error('Lỗi khi lưu câu hỏi: ', error);
-      toast.error('Đã xảy ra lỗi khi lưu câu hỏi.'); // Show generic error message
-    }
-  };
-
   return (
-    <div className="bg-white w-full max-w-4xl p-6 rounded-lg shadow-lg max-h-screen overflow-y-auto">
-      <div className="flex justify-between items-center pb-4 border-b">
-        <h2 className="text-2xl font-semibold text-purple-700">{existingQuestion ? 'Chỉnh sửa câu hỏi' : 'Thêm câu hỏi mới'}</h2>
-        <button className="text-gray-600 hover:text-purple-600" onClick={onClose}>
-          <X />
-        </button>
-      </div>
+    <div>
+      <div className="bg-white p-8 my-4 rounded-lg shadow-lg">
+        <h3 className="text-xl font-semibold mb-4">Thêm câu hỏi mới</h3>
+        <div>
+          <label className="block mb-2">Nội dung câu hỏi:</label>
+          <input
+            type="text"
+            value={newQuestion.question_text}
+            onChange={(e) => setNewQuestion({ ...newQuestion, question_text: e.target.value })}
+            className="border border-gray-300 rounded-lg p-2 w-full mb-4"
+          />
 
-      <div className="overflow-y-auto w-full max-h-[70vh]">
-        {questions.map((question, questionIndex) => (
-          <div key={questionIndex} className="mb-6 me-4">
-            <h3 className="font-semibold mb-2 text-lg">Câu {questionIndex + 1}</h3>
+          <label className="block mb-2">Loại câu hỏi:</label>
+          <select
+            value={newQuestion.question_type}
+            onChange={(e) => setNewQuestion({ ...newQuestion, question_type: e.target.value })}
+            className="border border-gray-300 rounded-lg p-2 w-full mb-4"
+          >
+            <option value="multiple-choice">Multiple Choice</option>
+            <option value="essay">Essay</option>
+          </select>
 
-            <div className="flex space-x-4 py-4">
-              {/* Sellect category */}
-              <div className="flex-1">
-                <select
-                  value={question.category}
-                  onChange={(e) => handleInputChange(questionIndex, 'category', e.target.value)}
-                  className="border rounded p-2 w-full"
-                >
-                  <option value="">Chọn danh mục</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {/* Sellect group  */}
-              <div className="flex-1">
-                <select
-                  value={question.group || ''}
-                  onChange={(e) => handleInputChange(questionIndex, 'group', e.target.value)}
-                  className="border rounded p-2 w-full"
-                >
-                  <option value="">Chọn nhóm</option>
-                  {groups.map((group) => (
-                    <option key={group._id} value={group._id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <textarea
-                value={question.question_text} // Corrected field name
-                onChange={(e) => handleInputChange(questionIndex, 'question_text', e.target.value)} // Corrected field name
-                placeholder="Nhập nội dung câu hỏi"
-                className="border rounded p-2 w-full"
-                rows={3}
-              />
-            </div>
-
-            {question.option.map((answer, answerIndex) => (
-              <div key={answerIndex} className="flex items-center mb-2">
-                <input
-                  type="text"
-                  value={answer}
-                  onChange={(e) => handleAnswerChange(questionIndex, answerIndex, e.target.value)}
-                  placeholder={`Câu trả lời ${String.fromCharCode(65 + answerIndex)}`}
-                  className="border rounded p-2 flex-1"
-                />
-                <button type="button" onClick={() => removeAnswer(questionIndex, answerIndex)} className="ml-2">
-                  <Trash2 className="text-red-500" />
-                </button>
-                <input
-                  type="checkbox"
-                  checked={question.correct_answers.includes(answerIndex)}
-                  onChange={() => toggleCorrectAnswer(questionIndex, answerIndex)}
-                  className="ml-2"
-                />
-
-              </div>
+          <label className="block mb-2">Danh mục:</label>
+          <select
+            value={newQuestion.category}
+            onChange={(e) => setNewQuestion({ ...newQuestion, category: e.target.value })}
+            className="border border-gray-300 rounded-lg p-2 w-full mb-4"
+          >
+            <option value="">Chọn danh mục</option>
+            {categories.map((category) => (
+              <option key={category._id} value={category._id}>{category.name}</option>
             ))}
+          </select>
 
-            <button
-              type="button"
-              onClick={() => addAnswer(questionIndex)}
-              className="flex items-center text-purple-600 mt-2"
-            >
-              <Plus className="mr-1" /> Thêm câu trả lời
-            </button>
-          </div>
-        ))}
-        <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} className="mt-4" />
-      </div>
-      <div className="flex justify-end mt-6">
-        <button onClick={handleSaveQuestions} className="bg-purple-600 text-white rounded px-4 py-2">
-          Lưu câu hỏi
-        </button>
+          <label className="block mb-2">Nhóm:</label>
+          <select
+            value={newQuestion.group}
+            onChange={(e) => setNewQuestion({ ...newQuestion, group: e.target.value })}
+            className="border border-gray-300 rounded-lg p-2 w-full mb-4"
+          >
+            <option value="">Chọn nhóm</option>
+            {groups.map((group) => (
+              <option key={group._id} value={group._id}>{group.name}</option>
+            ))}
+          </select>
+
+          {newQuestion.question_type === 'multiple-choice' && (
+            <>
+              <label className="block mb-2">Lựa chọn:</label>
+              {newQuestion.option.map((option, index) => (
+                <div key={index} className="flex items-center mb-2">
+                  <input
+                    type="text"
+                    value={option}
+                    onChange={(e) => {
+                      const updatedOptions = [...newQuestion.option];
+                      updatedOptions[index] = e.target.value;
+                      setNewQuestion({ ...newQuestion, option: updatedOptions });
+                    }}
+                    className="border border-gray-300 rounded-lg p-2 flex-1"
+                    placeholder={`Lựa chọn ${String.fromCharCode(65 + index)}`} // A, B, C, D cho lựa chọn
+                  />
+                  <input
+                    type="checkbox"
+                    checked={newQuestion.correct_answers.includes(option)} // Kiểm tra nội dung đáp án
+                    onChange={() => handleCorrectAnswerChange(index)}
+                    className="ml-2"
+                  />
+                  <label className="ml-2">Đáp án đúng</label>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setNewQuestion({ ...newQuestion, option: [...newQuestion.option, ''] })}
+                className="text-blue-500 mb-4"
+              >
+                Thêm lựa chọn
+              </button>
+            </>
+          )}
+
+          {newQuestion.question_type === 'essay' && (
+            <>
+              <label className="block mb-2">Ghi chú:</label>
+              <input
+                type="text"
+                value={newQuestion.correct_answers.join(', ')}
+                onChange={(e) => setNewQuestion({ ...newQuestion, correct_answers: e.target.value.split(', ').map(ans => ans.trim()) })}
+                className="border border-gray-300 rounded-lg p-2 w-full mb-4"
+                placeholder="Nhập ghi chú cho câu hỏi"
+              />
+            </>
+          )}
+
+          <button onClick={handleAddQuestion} className="bg-purple-600 text-white rounded-lg px-4 py-2">
+            Lưu câu hỏi
+          </button>
+
+          <label className="block mb-2 mt-4">Tải lên file Excel:</label>
+          <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} className="mb-4" />
+        </div>
       </div>
     </div>
   );
 };
 
-export default AddQuestionForm;
+export default AddQuestion;
