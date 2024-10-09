@@ -1,8 +1,11 @@
 import React from 'react';
 import 'styles/instructor/ExamCreate.css';
-import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker } from 'antd';
+import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker, message } from 'antd';
 import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import dayjs from 'dayjs';
+import { useDispatch, useSelector } from 'react-redux';
+import { createExam } from 'store/examSlice';
+import { useNavigate } from 'react-router-dom';
 
 const dateFormatList = 'DD/MM/YYYY';
 const format = 'HH:mm'; 
@@ -20,8 +23,23 @@ const schedulePost = (
     </div>
   );
 
-function ExamHeader({ items, activeTab, onChangeTab }) {
-    
+function ExamHeader({ items, activeTab, onChangeTab, setExamId }) {
+    const navigate = useNavigate(); 
+    const dispatch = useDispatch();
+
+    // Access the exam data from Redux (if needed)
+    const examData = useSelector((state) => state.exam);
+
+    const handleSubmit = () => {
+        // You can dispatch the Redux action here when the button is clicked
+        message.warning("Submit?")
+        dispatch(createExam(examData)); // Dispatch the action to submit the exam data
+    };
+
+    const handleOnCancel = () => {
+        setExamId(null);
+        navigate('/instructor/dashboard')
+    }
 
     return (
         <header className="bg-white fixed top-0 left-0 right-0 shadow-lg h-20 z-50">
@@ -31,7 +49,7 @@ function ExamHeader({ items, activeTab, onChangeTab }) {
                     <div className="flex justify-start">
                         <Tooltip title="Cancel">
                             <button>
-                                <X />
+                                <X onClick={handleOnCancel} />
                             </button>
                         </Tooltip>
                     </div>
@@ -56,7 +74,9 @@ function ExamHeader({ items, activeTab, onChangeTab }) {
                                     </Button>
                                 </Tooltip>
                                 <div className="flex justify-center items-center space-x-2">
-                                    <button className='button-outlined-custom-non-p px-2 py-2'>
+                                    <button 
+                                         onClick={handleSubmit}
+                                    className='button-outlined-custom-non-p px-2 py-2'>
                                         Save draft
                                     </button>
                                     <button className='button-normal-custom px-2 py-2'>

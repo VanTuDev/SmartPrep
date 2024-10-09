@@ -18,13 +18,12 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Import PrivateRoute for protecting routes
 import PrivateRoute from './components/PrivateRoute';
-import Exam from './pages/instructor/Exam/Exam';
 import LearnerProfile from './pages/learner/LearnerProfile';
 import QuestionLibrary from './pages/instructor/QuestionLibrary';
 import InstructorProfile from './pages/instructor/common/InstructorProfile'; // Import InstructorProfile
 import QuizCard from 'pages/learner/TakeExam/QuizCard';
 import Exam1 from 'pages/learner/TakeExam/Exam';
-
+import Exam from "./pages/instructor/Exam/Exam";
 function App() {
   return (
     <Router>
@@ -32,48 +31,33 @@ function App() {
         <ToastContainer /> {/* Thêm ToastContainer để hiển thị thông báo */}
         <Routes>
 
+
           {/* Public Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
+
+
+
           {/* Learner Dashboard */}
           <Route
-            path="/learner/dashboard"
-            element={
-              <PrivateRoute role="learner">
+            path="/learner/dashboard" element={
+              <PrivateRoute>
                 <LearnerDashboard />
               </PrivateRoute>
             }
           />
           <Route
-            path="/learner/exam/history"
-            element={
-              <PrivateRoute role="learner">
-                <LearnerExamHistory />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/learner/exam/class"
-            element={
-              <PrivateRoute role="learner">
-                <ClassList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/learner/profile"
-            element={
-              <PrivateRoute role="learner">
+            path="/learner/profile" element={
+              <PrivateRoute>
                 <LearnerProfile />
               </PrivateRoute>
             }
           />
           <Route
-            path="/learner/ViewExamResults"
-            element={
-              <PrivateRoute role="learner">
+            path="/learner/ViewExamResults" element={
+              <PrivateRoute>
                 <ViewExamResults />
               </PrivateRoute>
             }
@@ -95,6 +79,16 @@ function App() {
             }
           />
 
+          <Route
+            path="/instructor/exam/:examId"
+            element={
+              <PrivateRoute>
+                <Exam />
+              </PrivateRoute>
+            }
+          />
+
+
 
 
 
@@ -107,6 +101,8 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          {/* Instructor Dashboard */}
           <Route
             path="/instructor/exam/exam-create"
             element={

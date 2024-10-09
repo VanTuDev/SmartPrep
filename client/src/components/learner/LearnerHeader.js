@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, HelpCircle, Bell, User } from 'lucide-react';
-// import jwtDecode from 'jwt-decode'; // Sửa lại import statement
 import { jwtDecode } from 'jwt-decode'; // Sửa lại import statement
-
+import { Dropdown, Menu as AntdMenu } from 'antd';
 const LearnerHeader = () => {
    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
    const [username, setUsername] = useState('');
@@ -12,7 +11,21 @@ const LearnerHeader = () => {
    const toggleMobileMenu = () => {
       setIsMobileMenuOpen(!isMobileMenuOpen);
    };
-
+   const handleLogout = () => {
+      localStorage.removeItem('token'); // Xóa token khỏi localStorage
+      navigate('/login'); // Điều hướng về trang đăng nhập
+   };
+   // Dropdown menu cho biểu tượng User
+   const userMenu = (
+      <AntdMenu>
+         <AntdMenu.Item key="profile" onClick={() => navigate('/instructor/profile')}>
+            Hồ sơ cá nhân
+         </AntdMenu.Item>
+         <AntdMenu.Item key="logout" onClick={handleLogout}>
+            Đăng xuất
+         </AntdMenu.Item>
+      </AntdMenu>
+   );
    // Load user's username from the token when the component mounts
    useEffect(() => {
       const token = localStorage.getItem('token');
@@ -55,27 +68,36 @@ const LearnerHeader = () => {
 
          {/* User icons and information */}
          <div className="flex items-center space-x-4">
-            <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/menu')}>
-               <Menu className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
-               <span className="text-sm text-gray-600">Menu</span>
+            <div className="flex items-center space-x-4">
+               <div className="flex flex-col items-center">
+                  <NavLink to="/menu">
+                     <Menu className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
+                  </NavLink>
+                  <span className="text-sm text-gray-600">Menu</span>
+               </div>
+
+               <div className="flex flex-col items-center">
+                  <NavLink to="/support">
+                     <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
+                  </NavLink>
+                  <span className="text-sm text-gray-600">Hỗ trợ</span>
+               </div>
+
+               <div className="flex flex-col items-center">
+                  <NavLink to="/notifications">
+                     <Bell className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
+                  </NavLink>
+                  <span className="text-sm text-gray-600">Thông báo</span>
+               </div>
+
+               {/* User Dropdown Menu */}
+               <Dropdown overlay={userMenu} trigger={['click']}>
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                     <User className="rounded-full h-10 w-10 bg-gray-200 text-gray-500 hover:text-gray-700 transition duration-200" />
+                     <span className="text-gray-700 font-medium">{username || 'Người dùng'}</span>
+                  </div>
+               </Dropdown>
             </div>
-
-            <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/support')}>
-               <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
-               <span className="text-sm text-gray-600">Hỗ trợ</span>
-            </div>
-
-            <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/notifications')}>
-               <Bell className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
-               <span className="text-sm text-gray-600">Thông báo</span>
-            </div>
-
-            {/* Điều hướng đến trang LearnerProfile khi nhấn vào biểu tượng User */}
-            <NavLink to="/learner/profile" className="flex items-center space-x-2 cursor-pointer">
-               <User className="rounded-full h-10 w-10 bg-gray-200 text-gray-500 hover:text-gray-700 transition duration-200" />
-               <span className="text-gray-700 font-medium">{username || 'Người dùng'}</span>
-            </NavLink>
-
          </div>
       </header>
    );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import 'styles/instructor/ExamCreate.css'
 import { Pencil, Captions } from 'lucide-react';
 import { Input } from 'antd';
@@ -7,8 +7,24 @@ import TimeSetUp from './TimeSetup/TimeSetup';
 
 const { TextArea } = Input;
 
-function GeneralInformation() {
-    const [value, setValue] = useState('');
+function GeneralInformation({exam, onUpdateExam}) {
+    const [title, setTitle] = useState(exam?.title || '');
+    const [description, setDescription] = useState(exam?.description || '');
+
+    useEffect(() => {
+        setTitle(exam?.title || '');
+        setDescription(exam?.description || '');
+    }, [exam]);
+
+    const handleTitleChange = (e) => {
+        setTitle(e.target.value);
+        onUpdateExam({ ...exam, title: e.target.value });
+    };
+
+    const handleDescriptionChange = (e) => {
+        setDescription(e.target.value);
+        onUpdateExam({ ...exam, description: e.target.value });
+    };
 
     return (
         <div>
@@ -20,6 +36,8 @@ function GeneralInformation() {
                         className='mx-4 input-custom'
                         size='large'
                         placeholder="Test title"
+                        value={title}
+                        onChange={handleTitleChange}
                     />
                 </div>
 
@@ -27,8 +45,8 @@ function GeneralInformation() {
                     <Pencil className='primary-color' />
                     <TextArea
                         className='mx-4 input-custom'
-                        value={value}
-                        onChange={(e) => setValue(e.target.value)}
+                        value={description}
+                        onChange={handleDescriptionChange}
                         placeholder="Brief description"
                         autoSize={{ minRows: 3, maxRows: 5 }}
                     />
@@ -37,12 +55,12 @@ function GeneralInformation() {
 
             {/* Setup State  */}
             <div className='mt-6'>
-                <AccessControl />
+                <AccessControl exam={exam} />
             </div>
 
             {/* Setup Time  */}
             <div className='mt-6'>
-                <TimeSetUp />
+                <TimeSetUp exam={exam} />
             </div>
         </div>
     );
