@@ -33,16 +33,16 @@ function Exam() {
     useEffect(() => {
         setExamId(initialExamId); // Update local examId when params change
     }, [initialExamId]);
-console.log(examId)
-    return ( 
+    console.log(examId)
+    return (
         <Provider store={store}>
-            <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab} setExamId={setExamId}/>
+            <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab} setExamId={setExamId} examId={examId} />
             <div className="mt-24">
-                {activeTab === '1' && <ExamCreate examId={examId}/>}
-                {activeTab === '2' && <Submission/>}
+                {activeTab === '1' && <ExamCreate examId={examId} />}
+                {activeTab === '2' && <Submission />}
             </div>
         </Provider>
-     );
+    );
 }
 
 export default Exam;
