@@ -76,6 +76,54 @@ export const createExam = createAsyncThunk(
         }
     }
 );
+
+export const updateExamAPI = createAsyncThunk(
+    'exam/updateExam',
+    async ({examId, examData}, thunkAPI) => {
+        console.log("Fetching started...");
+        console.log("Original Exam Data: ", examData);
+
+        try {
+            // Create a copy of examData to avoid directly mutating the original object
+            const modifiedExamData = JSON.parse(JSON.stringify(examData));
+
+            // Handle questions: we assume that questions with an _id are already in the DB, so we don't need to remove their ids
+            modifiedExamData.exam.questions = Array.isArray(modifiedExamData.exam.questions)
+                ? modifiedExamData.exam.questions.map(question => {
+                    // Separate out new questions without _id (i.e., they need to be created)
+                    if (!question._id) {
+                        const { id, ...rest } = question; // Remove any temporary 'id' field you used
+                        return rest; // Return the question without 'id'
+                    }
+                    return question; // For existing questions, return them as-is
+                })
+                : [];
+
+            console.log("Modified Exam Data for Update: ", modifiedExamData);
+
+            const response = await fetch(`http://localhost:5000/api/test/${examId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(modifiedExamData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error("Error updating exam:", error);
+            return thunkAPI.rejectWithValue(error.message);
+        }
+    }
+);
+
+
 const examSlice = createSlice({
     name: 'exam',
     initialState,
@@ -86,8 +134,8 @@ const examSlice = createSlice({
         },
         // Update a specific question
         updateQuestion: (state, action) => {
-            const { questionId, updatedQuestion } = action.payload;
-            const index = state.exam.questions.findIndex(q => q.id === questionId);
+            const { id, ...updatedQuestion } = action.payload;
+            const index = state.exam.questions.findIndex(q => q.id === id);
             if (index !== -1) {
                 state.exam.questions[index] = updatedQuestion;
             }

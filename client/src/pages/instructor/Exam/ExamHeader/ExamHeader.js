@@ -4,7 +4,7 @@ import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker, message } from 
 import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
-import { createExam } from 'store/examSlice';
+import { createExam, updateExamAPI } from 'store/examSlice';
 import { useNavigate } from 'react-router-dom';
 
 const dateFormatList = 'DD/MM/YYYY';
@@ -23,7 +23,7 @@ const schedulePost = (
     </div>
   );
 
-function ExamHeader({ items, activeTab, onChangeTab, setExamId }) {
+function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
     const navigate = useNavigate(); 
     const dispatch = useDispatch();
 
@@ -32,8 +32,13 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId }) {
 
     const handleSubmit = () => {
         // You can dispatch the Redux action here when the button is clicked
-        message.warning("Submit?")
-        dispatch(createExam(examData)); // Dispatch the action to submit the exam data
+        if(examId){
+            dispatch(updateExamAPI({ examId, examData }))
+            message.warning("Update?")
+        }else{
+            dispatch(createExam(examData));
+            message.warning("Create?");
+        }
     };
 
     const handleOnCancel = () => {
