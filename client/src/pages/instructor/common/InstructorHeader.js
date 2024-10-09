@@ -1,38 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, HelpCircle, Bell, User } from 'lucide-react';
-import { Button, Dropdown } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { Dropdown, Menu as AntdMenu } from 'antd';
+import { jwtDecode } from 'jwt-decode';
 
 const InstructorHeader = () => {
-   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+   const [username, setUsername] = useState('');
    const navigate = useNavigate();
 
-   const toggleMobileMenu = () => {
-      setIsMobileMenuOpen(!isMobileMenuOpen);
+   // Load user's username from the token when the component mounts
+   useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+         try {
+            const decodedToken = jwtDecode(token);
+            setUsername(decodedToken.username || 'Người dùng');
+         } catch (error) {
+            console.error("Error decoding token: ", error);
+            setUsername('Người dùng');
+         }
+      }
+   }, []);
+
+   // Xử lý khi nhấn "Đăng xuất"
+   const handleLogout = () => {
+      localStorage.removeItem('token'); // Xóa token khỏi localStorage
+      navigate('/login'); // Điều hướng về trang đăng nhập
    };
 
-   // Dropdown menu cho mục "Chính sách"
-   const policyMenu = (
-      <div className="bg-white shadow-lg rounded-md border border-gray-200">
-         <NavLink
-            to="/policy/termprivacy"
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-500 transition"
-         >
-            Điều khoản bảo mật
-         </NavLink>
-         <NavLink
-            to="/policy/termofuse"
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-500 transition"
-         >
-            Điều khoản sử dụng
-         </NavLink>
-      </div>
+   // Dropdown menu cho biểu tượng User
+   const userMenu = (
+      <AntdMenu>
+         <AntdMenu.Item key="profile" onClick={() => navigate('/instructor/profile')}>
+            Hồ sơ cá nhân
+         </AntdMenu.Item>
+         <AntdMenu.Item key="logout" onClick={handleLogout}>
+            Đăng xuất
+         </AntdMenu.Item>
+      </AntdMenu>
    );
 
    return (
       <header className="bg-white shadow-md px-6 py-2 flex items-center justify-between">
-         {/* Logo và tên hệ thống */}
+         {/* Logo and system name */}
          <div className="flex items-center space-x-2">
             <NavLink to="/" className="flex items-center text-xl font-bold text-purple-700">
                <img src="/image/logo.svg" alt="Logo" className="h-20 mr-2" />
@@ -40,11 +50,11 @@ const InstructorHeader = () => {
             <span className="text-lg font-semibold text-gray-800">Smart Dev</span>
          </div>
 
-         {/* Menu điều hướng */}
+         {/* Navigation Menu */}
          <nav className="flex space-x-8">
             <div className="py-4 relative">
                <NavLink
-                  to="/exam"
+                  to="/instructor/dashboard"
                   className={({ isActive }) =>
                      isActive ? 'text-purple-700 font-medium' : 'text-gray-600 hover:text-purple-700 transition-all duration-200'
                   }
@@ -78,7 +88,7 @@ const InstructorHeader = () => {
             </div>
             <div className="py-4 relative">
                <NavLink
-                  to="/question-library"
+                  to="/instructor/questions/library"
                   className={({ isActive }) =>
                      isActive ? 'text-purple-700 font-medium' : 'text-gray-600 hover:text-purple-700 transition-all duration-200'
                   }
@@ -112,9 +122,8 @@ const InstructorHeader = () => {
             </div>
          </nav>
 
-         {/* Biểu tượng và thông tin người dùng */}
+         {/* User icons and information */}
          <div className="flex items-center space-x-4">
-            {/* Icon menu với nhãn văn bản và đường dẫn */}
             <div className="flex flex-col items-center">
                <NavLink to="/menu">
                   <Menu className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
@@ -122,7 +131,6 @@ const InstructorHeader = () => {
                <span className="text-sm text-gray-600">Menu</span>
             </div>
 
-            {/* Hỗ trợ với nhãn văn bản và đường dẫn */}
             <div className="flex flex-col items-center">
                <NavLink to="/support">
                   <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
@@ -130,7 +138,6 @@ const InstructorHeader = () => {
                <span className="text-sm text-gray-600">Hỗ trợ</span>
             </div>
 
-            {/* Thông báo với nhãn văn bản và đường dẫn */}
             <div className="flex flex-col items-center">
                <NavLink to="/notifications">
                   <Bell className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
@@ -138,13 +145,13 @@ const InstructorHeader = () => {
                <span className="text-sm text-gray-600">Thông báo</span>
             </div>
 
-            {/* Thông tin người dùng với đường dẫn */}
-            <div className="flex items-center space-x-2">
-               <NavLink to="/profile">
+            {/* User Dropdown Menu */}
+            <Dropdown overlay={userMenu} trigger={['click']}>
+               <div className="flex items-center space-x-2 cursor-pointer">
                   <User className="rounded-full h-10 w-10 bg-gray-200 text-gray-500 hover:text-gray-700 transition duration-200" />
-               </NavLink>
-               <span className="text-gray-700 font-medium">Nguyen Van Tu</span>
-            </div>
+                  <span className="text-gray-700 font-medium">{username || 'Người dùng'}</span>
+               </div>
+            </Dropdown>
          </div>
       </header>
    );

@@ -1,193 +1,200 @@
-import React, { useState, useEffect } from "react";
-import {jwtDecode} from "jwt-decode";
-import PhoneModal from "../../components/LearnerProfileModal/PhoneModal";
-import PasswordModal from "../../components/LearnerProfileModal/PasswordModal";
-import FullNameModal from "../../components/LearnerProfileModal/FullNameModal";
-import BirthdayModal from "../../components/LearnerProfileModal/BirthdayModal";
-import LanguageModal from "../../components/LearnerProfileModal/LanguageModal";
-import AddressModal from "../../components/LearnerProfileModal/AddressModal";
-import { getUserById, updateUser } from "utils/api";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function LearnerProfile() {
-  const [userInfo, setUserInfo] = useState({
-    email: "",
-    fullname: "",
-    is_locked: false,
-    phone: "",
-    password: "",
-    birthday: "",
-    language: "",
-    address: "",
-    username: "",
-    _v: "",
-  });
+  const [userInfo, setUserInfo] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editedInfo, setEditedInfo] = useState({});
+  const [selectedImage, setSelectedImage] = useState(null);
+  const navigate = useNavigate();
 
-  const [activeModal, setActiveModal] = useState(null);
-  const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
+  // Hàm lấy thông tin người dùng từ API
+  const fetchUserInfo = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
-  const openModal = (e, modalName) => {
-    setDialogPosition({ top: e.clientY, left: e.clientX + 80 });
-    setActiveModal(modalName);
-  };
-
-  const closeModal = () => setActiveModal(null);
-
-  const handleSave = async (field, value) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      setUserInfo((prev) => ({ ...prev, [field]: value }));
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      const updates = { [field]: value };
-      const userData = await updateUser( token, updates);
-
-      if (userData) {
-        setUserInfo(userData);
-        console.log("User information updated successfully:", userData);
-      } else {
-        console.log("Failed to update user information");
+      if (!response.ok) {
+        navigate('/login');
+        return;
       }
-      closeModal();
+
+      const data = await response.json();
+      setUserInfo(data);
+      setEditedInfo(data);
     } catch (error) {
-      console.error("Error updating user information:", error);
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
     }
   };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      try {
-        const decoded = jwtDecode(token);
-        const id = decoded.userId;
-
-        if (id) {
-          const userData = await getUserById(id, token);
-          if (userData) {
-            setUserInfo(userData);
-          }
-        }
-      } catch (error) {
-        console.error("Invalid token or error decoding token:", error);
-      }
-    };
-
-    fetchUserData();
+    fetchUserInfo();
   }, []);
 
+  const handleChange = (e) => {
+    setEditedInfo({
+      ...editedInfo,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedImage(e.target.files[0]);
+    }
+  };
+
+  // Hàm xử lý cập nhật thông tin người dùng
+  const handleSave = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error("Không có token. Không thể cập nhật thông tin.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      Object.keys(editedInfo).forEach((key) => {
+        formData.append(key, editedInfo[key]);
+      });
+
+      if (selectedImage) formData.append('profile', selectedImage); // Thêm ảnh vào form data nếu có
+
+      // Kiểm tra lại dữ liệu đang được gửi đi
+      for (let pair of formData.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
+      }
+
+      const response = await fetch('http://localhost:5000/api/users/updateuser', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        console.error("Lỗi khi cập nhật thông tin:", response.statusText);
+        return;
+      }
+
+      const updatedData = await response.json();
+      setUserInfo(updatedData);
+      setEditMode(false);
+      console.log("Cập nhật thành công:", updatedData);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin:", error);
+    }
+  };
+
+  const toggleEditMode = () => {
+    setEditMode(!editMode);
+  };
+
+  if (!userInfo) {
+    return <div>Đang tải thông tin người dùng...</div>;
+  }
+
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto p-10 px-40">
-        {/* Profile Header */}
-        <div className="flex items-center mb-8">
-          <div className="w-28 h-28 bg-blue-500 text-white flex items-center justify-center text-5xl rounded-xl">
-            {userInfo.username ? userInfo.username.charAt(0).toUpperCase() : ""}
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">Thông tin người dùng</h1>
+      <div className="bg-white shadow-md rounded-lg p-6">
+        <div className="flex items-center mb-6">
+          <div className="w-32 h-32">
+            <img
+              src={
+                selectedImage
+                  ? URL.createObjectURL(selectedImage)
+                  : userInfo.profile
+                    ? `http://localhost:5000/uploads/${userInfo.profile}`
+                    : "https://via.placeholder.com/150"
+              }
+              alt="Profile"
+              className="w-full h-full object-cover rounded-full shadow-md"
+            />
           </div>
-          <div className="ml-4">
-            <h2 className="text-2xl font-bold">{userInfo.username || "User Name"}</h2>
-            <p className="text-sm text-gray-500">ID: {userInfo._id || "No ID"}</p>
-          </div>
+          {editMode && (
+            <div className="ml-4">
+              <input type="file" onChange={handleImageChange} className="text-sm text-gray-500" />
+            </div>
+          )}
         </div>
 
-        {/* Account Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6 grid grid-cols-3">
-          <h3 className="text-lg font-semibold mb-4">Account</h3>
-          <div className="col-span-2 grid grid-cols-6 gap-5">
-            <label className="text-sm text-gray-500">Email</label>
-            <input
-              type="text"
-              value={userInfo.email}
-              readOnly
-              className="border-0 cursor-not-allowed focus:ring-0 focus:outline-none underline col-span-5"
-            />
-
-            <label className="text-sm text-gray-500">Telephone</label>
-            <input
-              type="text"
-              value={userInfo.phone || "-----------"}
-              readOnly
-              onClick={(e) => openModal(e, "phone")}
-              className="bg-transparent border-0 cursor-pointer focus:ring-0 focus:outline-none col-span-5"
-            />
-
-            <label className="text-sm text-gray-500">Password</label>
-            <input
-              type="password"
-              value={userInfo.password}
-              readOnly
-              onClick={(e) => openModal(e, "password")}
-              className="bg-transparent border-0 cursor-pointer focus:ring-0 focus:outline-none col-span-5"
-            />
-          </div>
-        </div>
-
-        {/* Contact Information Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6 grid grid-cols-3">
-          <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
-          <div className="col-span-2 grid grid-cols-6 gap-5">
-            <label className="text-sm text-gray-500">Full Name</label>
-            <input
-              type="text"
-              value={userInfo.fullname}
-              readOnly
-              onClick={(e) => openModal(e, "fullname")}
-              className="bg-transparent border-0 cursor-pointer focus:ring-0 focus:outline-none col-span-5"
-            />
-
-            <label className="text-sm text-gray-500">Birthday</label>
-            <input
-              type="text"
-              value={userInfo.birthday}
-              readOnly
-              onClick={(e) => openModal(e, "birthday")}
-              className="bg-transparent border-0 cursor-pointer focus:ring-0 focus:outline-none col-span-5"
-            />
-
-            <label className="text-sm text-gray-500">Address</label>
-            <input
-              type="text"
-              value={userInfo.address}
-              readOnly
-              onClick={(e) => openModal(e, "address")}
-              className="border-0 cursor-pointer focus:ring-0 focus:outline-none col-span-5"
-            />
-          </div>
-        </div>
-
-        {/* Setting Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md grid grid-cols-3">
-          <h3 className="text-lg font-semibold col-span-3 mb-4">Settings</h3>
-          <div className="col-span-2 items-center gap-5 grid grid-cols-6">
-            <label className="text-sm text-gray-500">Language</label>
-            <input
-              type="text"
-              value={userInfo.language}
-              readOnly
-              onClick={(e) => openModal(e, "language")}
-              className="bg-transparent border-0 cursor-pointer focus:ring-0 focus:outline-none flex-grow"
-            />
-          </div>
-        </div>
-
-        {/* Render Modal Tương Ứng */}
-        {activeModal === "phone" && (
-          <PhoneModal value={userInfo.phone} onSave={(value) => handleSave("phone", value)} onClose={closeModal} dialogPosition={dialogPosition} />
-        )}
-        {activeModal === "password" && (
-          <PasswordModal onSave={(value) => handleSave("password", value)} onClose={closeModal} dialogPosition={dialogPosition} />
-        )}
-        {activeModal === "fullname" && (
-          <FullNameModal value={userInfo.fullname} onSave={(value) => handleSave("fullname", value)} onClose={closeModal} dialogPosition={dialogPosition} />
-        )}
-        {activeModal === "birthday" && (
-          <BirthdayModal value={userInfo.birthday} onSave={(value) => handleSave("birthday", value)} onClose={closeModal} dialogPosition={dialogPosition} />
-        )}
-        {activeModal === "address" && (
-          <AddressModal value={userInfo.address} onSave={(value) => handleSave("address", value)} onClose={closeModal} dialogPosition={dialogPosition} />
-        )}
-        {activeModal === "language" && (
-          <LanguageModal value={userInfo.language} onSave={(value) => handleSave("language", value)} onClose={closeModal} dialogPosition={dialogPosition} />
+        {editMode ? (
+          <>
+            <div className="grid gap-4 grid-cols-2">
+              <div>
+                <label className="font-bold">Full Name:</label>
+                <input
+                  type="text"
+                  name="fullname"
+                  value={editedInfo.fullname}
+                  onChange={handleChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+              <div>
+                <label className="font-bold">Phone:</label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={editedInfo.phone}
+                  onChange={handleChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+              <div>
+                <label className="font-bold">Birthday:</label>
+                <input
+                  type="date"
+                  name="birthday"
+                  value={editedInfo.birthday}
+                  onChange={handleChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+              <div>
+                <label className="font-bold">Address:</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={editedInfo.address}
+                  onChange={handleChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-4 mt-4">
+              <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
+                Lưu
+              </button>
+              <button onClick={toggleEditMode} className="bg-gray-500 text-white px-4 py-2 rounded">
+                Hủy
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p><strong>Username:</strong> {userInfo.username}</p>
+            <p><strong>Email:</strong> {userInfo.email}</p>
+            <p><strong>Full Name:</strong> {userInfo.fullname}</p>
+            <p><strong>Phone:</strong> {userInfo.phone || 'Chưa cập nhật'}</p>
+            <p><strong>Birthday:</strong> {userInfo.birthday || 'Chưa cập nhật'}</p>
+            <p><strong>Address:</strong> {userInfo.address || 'Chưa cập nhật'}</p>
+            <button onClick={toggleEditMode} className="bg-green-500 text-white px-4 py-2 rounded mt-4">
+              Chỉnh sửa
+            </button>
+          </>
         )}
       </div>
     </div>
