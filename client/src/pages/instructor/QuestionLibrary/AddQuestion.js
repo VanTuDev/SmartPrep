@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import * as XLSX from 'xlsx';
+import axios from 'axios';
 
 const AddQuestion = () => {
   const [questions, setQuestions] = useState([]);
@@ -110,60 +111,30 @@ const AddQuestion = () => {
   };
 
   // Hàm để thêm nhiều câu hỏi từ file Excel
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    const reader = new FileReader();
+    const formData = new FormData();
+    formData.append('file', file);
 
-    reader.onload = (event) => {
-      const binaryStr = event.target.result;
-      const workbook = XLSX.read(binaryStr, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-      const questionsToAdd = data.slice(1).map((row) => {
-        const question_text = row[0];
-        const options = row.slice(1, -1);
-        const correct_answers = row[row.length - 1].split(',').map(answer => answer.trim());
-
-        return {
-          question_text,
-          option: options,
-          correct_answers,
-          question_type: 'multiple-choice', // Hoặc điều chỉnh nếu bạn có nhiều loại câu hỏi
-          category: newQuestion.category, // Sử dụng category hiện tại
-          group: newQuestion.group, // Sử dụng group hiện tại
-        };
-      });
-
-      questionsToAdd.forEach(async (question) => {
-        try {
-          const response = await fetch('http://localhost:5000/api/questions/create', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify(question),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setQuestions((prev) => [...prev, data.question]); // Thêm câu hỏi mới vào danh sách
-          } else {
-            const error = await response.json();
-            toast.error(`Lỗi khi thêm câu hỏi: ${error.message}`);
-          }
-        } catch (error) {
-          console.error('Error adding question:', error);
-          toast.error('Đã xảy ra lỗi khi thêm câu hỏi.');
+    try {
+      // Gửi file lên server thông qua API
+      const response = await axios.post('http://localhost:5000/api/questions/upload-excel', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      toast.success('Đã thêm tất cả câu hỏi từ file Excel!');
-    };
-
-    reader.readAsBinaryString(file);
+      if (response.status === 201) {
+        toast.success('Đã thêm tất cả câu hỏi từ file Excel!');
+        setQuestions((prev) => [...prev, ...response.data.questions]);
+      } else {
+        toast.error(`Có lỗi xảy ra: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error(`Lỗi khi tải file lên: ${error.message}`);
+    }
   };
 
   return (
@@ -248,25 +219,15 @@ const AddQuestion = () => {
             </>
           )}
 
-          {newQuestion.question_type === 'essay' && (
-            <>
-              <label className="block mb-2">Ghi chú:</label>
-              <input
-                type="text"
-                value={newQuestion.correct_answers.join(', ')}
-                onChange={(e) => setNewQuestion({ ...newQuestion, correct_answers: e.target.value.split(', ').map(ans => ans.trim()) })}
-                className="border border-gray-300 rounded-lg p-2 w-full mb-4"
-                placeholder="Nhập ghi chú cho câu hỏi"
-              />
-            </>
-          )}
-
-          <button onClick={handleAddQuestion} className="bg-purple-600 text-white rounded-lg px-4 py-2">
-            Lưu câu hỏi
-          </button>
-
           <label className="block mb-2 mt-4">Tải lên file Excel:</label>
           <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} className="mb-4" />
+
+          <button
+            onClick={handleAddQuestion}
+            className="bg-green-500 text-white rounded-lg px-4 py-2 mt-4"
+          >
+            Lưu câu hỏi mới
+          </button>
         </div>
       </div>
     </div>

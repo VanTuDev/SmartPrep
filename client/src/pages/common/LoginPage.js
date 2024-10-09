@@ -46,8 +46,8 @@ const LoginPage = () => {
         // Điều hướng dựa trên vai trò
         if (result.user.role === 'instructor') {
           navigate('/instructor/dashboard');
-        } else if (result.user.role === 'user') {
-          navigate('/learner/dashboard'); // Đường dẫn cho user
+        } else if (result.user.role === 'learner') {
+          navigate('/learner/dashboard'); // Đường dẫn cho learner
         } else {
           setError('Vai trò không xác định.');
           toast.error('Vai trò không xác định.');
