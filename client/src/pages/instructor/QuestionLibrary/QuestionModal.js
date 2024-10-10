@@ -12,6 +12,6 @@ const AddQuestionModal = ({ onClose, onSave, existingQuestion }) => {
       />
     </div>
   );
-}; 
+};
 
 export default AddQuestionModal;
