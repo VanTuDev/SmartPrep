@@ -61,7 +61,12 @@ const LearnerHeader = () => {
             <NavLink to="/learner/exam/history" className="text-gray-600 hover:text-purple-700">
                Lịch sử làm bài
             </NavLink>
-            <NavLink to="/learner/exam/class" className="text-gray-600 hover:text-purple-700">
+            <NavLink
+               to="/learner/dashboard/class"
+               className={({ isActive }) =>
+                  isActive ? 'text-purple-700 font-medium' : 'text-gray-600 hover:text-purple-700 transition-all duration-200'
+               }
+            >
                Lớp
             </NavLink>
          </nav>

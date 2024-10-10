@@ -3,11 +3,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, HelpCircle, Bell, User } from 'lucide-react';
 import { Dropdown, Menu as AntdMenu } from 'antd';
 import { jwtDecode } from 'jwt-decode';
+import VideoModal from '../../components/SupportGuide/SupportGuideModal';
 
 const InstructorHeader = () => {
    const [username, setUsername] = useState('');
    const navigate = useNavigate();
-
+   const [modalIsOpen, setModalIsOpen] = useState(false);
    // Load user's username from the token when the component mounts
    useEffect(() => {
       const token = localStorage.getItem('token');
@@ -105,7 +106,7 @@ const InstructorHeader = () => {
             </div>
             <div className="py-4 relative">
                <NavLink
-                  to="/class"
+                  to="/instructor/dashboard/class"
                   className={({ isActive }) =>
                      isActive ? 'text-purple-700 font-medium' : 'text-gray-600 hover:text-purple-700 transition-all duration-200'
                   }
@@ -131,11 +132,15 @@ const InstructorHeader = () => {
                <span className="text-sm text-gray-600">Menu</span>
             </div>
 
-            <div className="flex flex-col items-center">
-               <NavLink to="/support">
-                  <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
-               </NavLink>
+            <div onClick={() => setModalIsOpen(true)} className="flex flex-col items-center">
+
+               <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
+
                <span className="text-sm text-gray-600">Hỗ trợ</span>
+               <VideoModal
+                  isOpen={modalIsOpen}
+                  onRequestClose={() => setModalIsOpen(false)}
+               />
             </div>
 
             <div className="flex flex-col items-center">
