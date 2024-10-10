@@ -54,6 +54,14 @@ function ExamCreate({examId}) {
         dispatch(removeQuestion(id));
     };
 
+    const handleAddQuestionsFromExcel = (questions) => {
+        // Thêm từng câu hỏi vào store
+        questions.forEach((question) => {
+            dispatch(addQuestion({ ...question, id: generateRandomId() }));
+        });
+        message.success("Thêm câu hỏi từ Excel thành công!");
+    };
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
     return (
@@ -99,7 +107,7 @@ function ExamCreate({examId}) {
                     ))}
                 </div>
 
-                <QuestionAdding handleAddQuestion={handleAddQuestion}/>
+                <QuestionAdding handleAddQuestionsFromExcel={handleAddQuestionsFromExcel} handleAddQuestion={handleAddQuestion} />
             </div>
         </>
     );
