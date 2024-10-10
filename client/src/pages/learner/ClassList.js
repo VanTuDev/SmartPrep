@@ -8,14 +8,14 @@ const ClassList = () => {
    const classes = [
       {
          code: 'C3056ZN5',
-         title: 'Test lớp',
+         name: 'Test lớp',
          members: 2,
-         joined: true,
+         joined: false,
          image: 'https://via.placeholder.com/150/0000FF/808080?text=Class+Image+1', // Đường dẫn ảnh giả lập
       },
       {
          code: 'D4034XD9',
-         title: 'Lớp Hóa học',
+         name: 'Lớp Hóa học',
          members: 3,
          joined: false,
          image: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Class+Image+2', // Đường dẫn ảnh giả lập
@@ -70,7 +70,7 @@ const ClassList = () => {
                   <ClassCard
                      key={index}
                      code={classItem.code}
-                     title={classItem.title}
+                     name={classItem.name}
                      members={classItem.members}
                      joined={classItem.joined}
                   />

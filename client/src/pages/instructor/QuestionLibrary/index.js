@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import QuestionLibraryTabs from './LibraryTabs';
 import QuestionList from './QuestionList';
-import Header from '../common/InstructorHeader';
-import CategoryList from './CategoryList'; 
-import GroupList from './GroupList'; 
+import Header from '../../../components/instructor/InstructorHeader';
+import CategoryList from './CategoryList';
+import GroupList from './GroupList';
 
 const QuestionLibrary = () => {
   const [activeTab, setActiveTab] = useState('1');
@@ -11,11 +11,11 @@ const QuestionLibrary = () => {
   const renderContent = () => {
     switch (activeTab) {
       case '1':
-        return <QuestionList/>;
+        return <QuestionList />;
       case '2':
-        return <CategoryList/>; 
+        return <CategoryList />;
       case '3':
-        return <GroupList/>;
+        return <GroupList />;
       default:
         return null;
     }

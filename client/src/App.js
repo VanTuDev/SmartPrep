@@ -20,26 +20,23 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import PrivateRoute from './components/PrivateRoute';
 import LearnerProfile from './pages/learner/LearnerProfile';
 import QuestionLibrary from './pages/instructor/QuestionLibrary';
-import InstructorProfile from './pages/instructor/common/InstructorProfile'; // Import InstructorProfile
+import InstructorProfile from './components/instructor/InstructorProfile'; // Import InstructorProfile
 import QuizCard from 'pages/learner/TakeExam/QuizCard';
 import Exam1 from 'pages/learner/TakeExam/Exam';
 import Exam from "./pages/instructor/Exam/Exam";
+import ExamHistory from './pages/learner/ExamHistory';
+import ClassRoom from "./pages/instructor/ClassRoom/ViewClassList";
+
 function App() {
   return (
     <Router>
       <div>
         <ToastContainer /> {/* Thêm ToastContainer để hiển thị thông báo */}
         <Routes>
-
-
           {/* Public Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-
-
-
-
           {/* Learner Dashboard */}
           <Route
             path="/learner/dashboard" element={
@@ -87,11 +84,22 @@ function App() {
               </PrivateRoute>
             }
           />
-
-
-
-
-
+          <Route
+            path="/learner/exam/history"
+            element={
+              <PrivateRoute role="learner">
+                <ExamHistory />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/learner/dashboard/class"
+            element={
+              <PrivateRoute role="learner">
+                <ClassList />
+              </PrivateRoute>
+            }
+          />
           {/* Instructor Dashboard */}
           <Route
             path="/instructor/dashboard"
@@ -119,6 +127,16 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          <Route
+            path="/instructor/dashboard/class"
+            element={
+              <PrivateRoute role="instructor">
+                <ClassRoom />
+              </PrivateRoute>
+            }
+          />
+
           {/* Profile for Instructor */}
           <Route
             path="/instructor/profile"
@@ -139,8 +157,6 @@ function App() {
             }
           />
 
-          {/* Catch-all route for not found pages */}
-          {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </div>
     </Router>
