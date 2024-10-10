@@ -1,11 +1,12 @@
-import React from 'react';
+import { useState } from 'react';
 import 'styles/instructor/ExamCreate.css';
-import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker, message } from 'antd';
-import { X, Eye, Download, CalendarDays } from 'lucide-react';
-import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { createExam, updateExamAPI, updateExam } from 'store/examSlice';
 import { useNavigate } from 'react-router-dom';
+import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker, message } from 'antd';
+import { X, Eye, Download, CalendarDays } from 'lucide-react';
+import dayjs from 'dayjs';
+import PreviewExam from '../ExamCreate/Preview/PreviewExam';
 
 const dateFormatList = 'DD/MM/YYYY';
 const format = 'HH:mm';
@@ -27,16 +28,23 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    // Access the exam data from Redux (if needed)
+    const [isDrawerVisible, setIsDrawerVisible] = useState(false);
+
+    const handleOpenDrawer = () => {
+        setIsDrawerVisible(true);
+    };
+
+    const handleCloseDrawer = () => {
+        setIsDrawerVisible(false);
+    };
+
     const { exam, loading, error } = useSelector((state) => state.exam);
-    // const examData = useSelector((state) => state.exam);
 
     const handleSubmit = (isPost) => {
-        // Update the exam status based on whether it's a post (published) or save as draft
-    const updatedExam = { ...exam, status: isPost ? 'published' : 'draft' };
+        const updatedExam = { ...exam, status: isPost ? 'published' : 'draft' };
 
-    // Dispatch the updateExam action to update Redux state
-    dispatch(updateExam(updatedExam)); // This updates the local state
+        // Dispatch the updateExam action to update Redux state
+        dispatch(updateExam(updatedExam)); // This updates the local state
 
 
         // Dispatch the appropriate Redux action
@@ -77,7 +85,7 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
                         {activeTab === '1' && (
                             <>
                                 <Tooltip placement="bottom" title="Preview">
-                                    <Button color="default" variant="text">
+                                    <Button onClick={handleOpenDrawer} color="default" variant="text">
                                         <Eye />
                                     </Button>
                                 </Tooltip>
@@ -104,6 +112,11 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
                     </div>
                 </nav>
             </div>
+            <PreviewExam
+                visible={isDrawerVisible}
+                onClose={handleCloseDrawer}
+                exam={exam}
+            />
         </header>
     );
 }
