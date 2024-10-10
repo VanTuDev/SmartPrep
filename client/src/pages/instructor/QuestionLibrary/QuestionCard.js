@@ -7,34 +7,38 @@ const QuestionCard = ({ question, categories = [], groups = [], onClose, onUpdat
    const [editedQuestion, setEditedQuestion] = useState({ ...question });
 
    useEffect(() => {
-      setEditedQuestion({ ...question });
+      setEditedQuestion({
+         ...question,
+         options: question.options || [], // Đảm bảo `options` là một mảng
+         correct_answers: question.correct_answers || [], // Đảm bảo `correct_answers` là một mảng
+      });
    }, [question]);
 
-   // Xử lý thay đổi dữ liệu
+   // Xử lý thay đổi dữ liệu nhập vào
    const handleInputChange = (field, value) => {
       setEditedQuestion({ ...editedQuestion, [field]: value });
    };
 
-   // Xử lý cập nhật danh mục
+   // Xử lý thay đổi danh mục
    const handleCategoryChange = (e) => {
       setEditedQuestion({ ...editedQuestion, category: e.target.value });
    };
 
-   // Xử lý cập nhật nhóm
+   // Xử lý thay đổi nhóm
    const handleGroupChange = (e) => {
       setEditedQuestion({ ...editedQuestion, group: e.target.value });
    };
 
    // Xử lý thêm lựa chọn mới
    const handleAddOption = () => {
-      setEditedQuestion({ ...editedQuestion, option: [...editedQuestion.option, ''] });
+      setEditedQuestion({ ...editedQuestion, options: [...editedQuestion.options, ''] });
    };
 
    // Xử lý khi thay đổi các lựa chọn
    const handleOptionChange = (index, value) => {
-      const newOptions = [...editedQuestion.option];
+      const newOptions = [...editedQuestion.options];
       newOptions[index] = value;
-      setEditedQuestion({ ...editedQuestion, option: newOptions });
+      setEditedQuestion({ ...editedQuestion, options: newOptions });
    };
 
    // Xử lý thay đổi đáp án đúng
@@ -49,11 +53,11 @@ const QuestionCard = ({ question, categories = [], groups = [], onClose, onUpdat
       }
    };
 
-   // Xóa lựa chọn
+   // Xóa một lựa chọn
    const handleRemoveOption = (index) => {
-      const newOptions = editedQuestion.option.filter((_, i) => i !== index);
-      const newCorrectAnswers = editedQuestion.correct_answers.filter((ans) => ans !== editedQuestion.option[index]);
-      setEditedQuestion({ ...editedQuestion, option: newOptions, correct_answers: newCorrectAnswers });
+      const newOptions = editedQuestion.options.filter((_, i) => i !== index);
+      const newCorrectAnswers = editedQuestion.correct_answers.filter((ans) => ans !== editedQuestion.options[index]);
+      setEditedQuestion({ ...editedQuestion, options: newOptions, correct_answers: newCorrectAnswers });
    };
 
    // Lấy tên danh mục và nhóm hiện tại
@@ -62,7 +66,7 @@ const QuestionCard = ({ question, categories = [], groups = [], onClose, onUpdat
 
    return (
       <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-         <div className="bg-white rounded-lg p-6 shadow-lg max-w-md w-full">
+         <div className="bg-white rounded-lg p-6 shadow-lg max-w-lg w-full">
             <div className="flex justify-between items-center">
                <h3 className="text-lg font-semibold mb-4">Chi tiết câu hỏi</h3>
                <button onClick={onClose} className="text-red-500 hover:text-red-700">
@@ -144,11 +148,11 @@ const QuestionCard = ({ question, categories = [], groups = [], onClose, onUpdat
             </div>
 
             {/* Các lựa chọn cho câu hỏi dạng multiple-choice */}
-            {editedQuestion.question_type === 'multiple-choice' && editedQuestion.option && (
+            {editedQuestion.question_type === 'multiple-choice' && editedQuestion.options && (
                <div className="mb-4">
                   <p className="font-semibold">Các lựa chọn:</p>
                   <ul className="list-none">
-                     {editedQuestion.option.map((opt, index) => (
+                     {editedQuestion.options.map((opt, index) => (
                         <li key={index} className="mb-2 flex items-center">
                            {isEditing ? (
                               <>
@@ -183,10 +187,7 @@ const QuestionCard = ({ question, categories = [], groups = [], onClose, onUpdat
                      ))}
                   </ul>
                   {isEditing && (
-                     <button
-                        onClick={handleAddOption}
-                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
-                     >
+                     <button onClick={handleAddOption} className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2">
                         + Thêm lựa chọn
                      </button>
                   )}
@@ -208,10 +209,7 @@ const QuestionCard = ({ question, categories = [], groups = [], onClose, onUpdat
                      Lưu
                   </button>
                ) : (
-                  <button
-                     onClick={() => setIsEditing(true)}
-                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                  >
+                  <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
                      <Edit className="inline mr-2" />
                      Chỉnh sửa
                   </button>
