@@ -23,7 +23,7 @@ export const fetchExam = createAsyncThunk(
     'exam/fetchExam',
     async (examId, thunkAPI) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/test/${examId}`, {
+            const response = await fetch(`http://localhost:5000/api/test/${examId}`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,12 +52,12 @@ export const createExam = createAsyncThunk(
             delete modifiedExamData._id;
             console.log("Questions before map:", modifiedExamData);
             // Remove id from each question
-            modifiedExamData.questions = Array.isArray(modifiedExamData.questions)
-                ? modifiedExamData.questions.map(question => {
-                    const { id, ...rest } = question; // Destructure to remove id
-                    return rest; // Return the question object without the id field
-                })
-                : [];
+            modifiedExamData.questions = Array.isArray(modifiedExamData.questions) 
+            ? modifiedExamData.questions.map(question => {
+                const { id, ...rest } = question; // Destructure to remove id
+                return rest; // Return the question object without the id field
+            })
+            : [];
 
             console.log("Modified Exam Data: ", modifiedExamData);
             console.log("Original Exam Data: ", examData);
@@ -86,7 +86,7 @@ export const createExam = createAsyncThunk(
 
 export const updateExamAPI = createAsyncThunk(
     'exam/updateExam',
-    async ({ examId, examData }, thunkAPI) => {
+    async ({examId, examData}, thunkAPI) => {
         console.log("Fetching started...");
         console.log("Original Exam Data: ", examData);
 

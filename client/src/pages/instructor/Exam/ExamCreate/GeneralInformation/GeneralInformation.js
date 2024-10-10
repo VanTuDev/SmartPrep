@@ -60,7 +60,7 @@ function GeneralInformation({exam, onUpdateExam}) {
 
             {/* Setup Time  */}
             <div className='mt-6'>
-                <TimeSetUp exam={exam} />
+                <TimeSetUp exam={exam} onUpdateExam={onUpdateExam}/>
             </div>
         </div>
     );

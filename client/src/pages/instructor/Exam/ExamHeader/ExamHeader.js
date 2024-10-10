@@ -1,43 +1,59 @@
-import React from 'react';
+import { useState } from 'react';
 import 'styles/instructor/ExamCreate.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { createExam, updateExamAPI, updateExam } from 'store/examSlice';
+import { useNavigate } from 'react-router-dom';
 import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker, message } from 'antd';
 import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import dayjs from 'dayjs';
-import { useDispatch, useSelector } from 'react-redux';
-import { createExam, updateExamAPI } from 'store/examSlice';
-import { useNavigate } from 'react-router-dom';
+import PreviewExam from '../ExamCreate/Preview/PreviewExam';
 
 const dateFormatList = 'DD/MM/YYYY';
-const format = 'HH:mm'; 
+const format = 'HH:mm';
 
 const schedulePost = (
     <div className='p-3'>
-      <div className='flex justify-center text-base font-bold'>Schedule and post content</div>
-      <div className='flex justify-between mt-3'>
-        <TimePicker size='large' className='w-1/3' defaultValue={dayjs('17:00', format)} format={format} />
-        <DatePicker size='large' defaultValue={dayjs('06/10/2024', dateFormatList)} needConfirm format={dateFormatList} />
+        <div className='flex justify-center text-base font-bold'>Schedule and post content</div>
+        <div className='flex justify-between mt-3'>
+            <TimePicker size='large' className='w-1/3' defaultValue={dayjs('17:00', format)} format={format} />
+            <DatePicker size='large' defaultValue={dayjs('06/10/2024', dateFormatList)} needConfirm format={dateFormatList} />
+        </div>
+        <div className='flex justify-end mt-2'>
+            <button className='button-normal-custom px-2 py-2' >Save</button>
+        </div>
     </div>
-    <div className='flex justify-end mt-2'>
-        <button className='button-normal-custom px-2 py-2' >Save</button>
-    </div>
-    </div>
-  );
+);
 
 function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    // Access the exam data from Redux (if needed)
-    const examData = useSelector((state) => state.exam);
+    const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
-    const handleSubmit = () => {
-        // You can dispatch the Redux action here when the button is clicked
-        if(examId){
-            dispatch(updateExamAPI({ examId, examData }))
-            message.warning("Update?")
-        }else{
-            dispatch(createExam(examData));
-            message.warning("Create?");
+    const handleOpenDrawer = () => {
+        setIsDrawerVisible(true);
+    };
+
+    const handleCloseDrawer = () => {
+        setIsDrawerVisible(false);
+    };
+
+    const { exam, loading, error } = useSelector((state) => state.exam);
+
+    const handleSubmit = (isPost) => {
+        const updatedExam = { ...exam, status: isPost ? 'published' : 'draft' };
+
+        // Dispatch the updateExam action to update Redux state
+        dispatch(updateExam(updatedExam)); // This updates the local state
+
+
+        // Dispatch the appropriate Redux action
+        if (examId) {
+            dispatch(updateExamAPI({ examId, examData: updatedExam }));
+            message.warning("Exam updated!");
+        } else {
+            dispatch(createExam(updatedExam));
+            message.warning("Exam created!");
         }
     };
 
@@ -69,7 +85,7 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
                         {activeTab === '1' && (
                             <>
                                 <Tooltip placement="bottom" title="Preview">
-                                    <Button color="default" variant="text">
+                                    <Button onClick={handleOpenDrawer} color="default" variant="text">
                                         <Eye />
                                     </Button>
                                 </Tooltip>
@@ -79,12 +95,12 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
                                     </Button>
                                 </Tooltip>
                                 <div className="flex justify-center items-center space-x-2">
-                                    <button 
-                                         onClick={handleSubmit}
-                                    className='button-outlined-custom-non-p px-2 py-2'>
+                                    <button
+                                        onClick={() => handleSubmit(false)}
+                                        className='button-outlined-custom-non-p px-2 py-2'>
                                         Save draft
                                     </button>
-                                    <button className='button-normal-custom px-2 py-2'>
+                                    <button onClick={() => handleSubmit(true)} className='button-normal-custom px-2 py-2'>
                                         Post
                                     </button>
                                     <Popover content={schedulePost} placement="bottomRight" trigger="click">
@@ -96,6 +112,11 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
                     </div>
                 </nav>
             </div>
+            <PreviewExam
+                visible={isDrawerVisible}
+                onClose={handleCloseDrawer}
+                exam={exam}
+            />
         </header>
     );
 }
