@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'styles/instructor/ExamCreate.css'
 import { Col, DatePicker, Row } from 'antd';
 import { Switch, InputNumber, TimePicker, Typography  } from 'antd';
 import dayjs from 'dayjs';
+import { updateExam } from 'store/examSlice';
 
 
 const { Title } = Typography;
 
-function TimeSetUp({exam}) {
+function TimeSetUp({exam, onUpdateExam}) {
     const [isDurationChecked, setIsDurationChecked] = useState(true);
     const [isStartDayChecked, setIsStartDayChecked] = useState(true);
     const [isEndDayChecked, setIsEndDayChecked] = useState(true);
@@ -33,17 +34,17 @@ function TimeSetUp({exam}) {
 
     const handleDurationChange = (value) => {
         setDuration(value);
-        // onUpdateExam({ ...exam, start_date: value?.toISOString() });
+        onUpdateExam({ ...exam, duration: value });
     };
 
     const handleStartDateChange = (value) => {
         setStartDate(value);
-        // onUpdateExam({ ...exam, start_date: value?.toISOString() });
+        onUpdateExam({ ...exam, start_date: value?.toISOString() });
     };
 
     const handleEndDateChange = (value) => {
         setEndDate(value);
-        // onUpdateExam({ ...exam, start_date: value?.toISOString() });
+        onUpdateExam({ ...exam, endDate: value?.toISOString() });
     };
     return (
         <>
@@ -83,8 +84,8 @@ function TimeSetUp({exam}) {
                     <div className='flex items-start w-full rounded-lg p-2'>
                         {isStartDayChecked ? 
                         (<div className='flex justify-between'>
-                            <TimePicker size='large' className='w-1/3' value={dayjs(startDate, format)} onChange={handleStartDateChange} format={format} />
-                            <DatePicker size='large' value={dayjs(startDate, dateFormatList)} onChange={handleStartDateChange} needConfirm format={dateFormatList} />
+                            <TimePicker size='large' className='w-1/3' value={startDate} onChange={handleStartDateChange} format={format} />
+                            <DatePicker size='large' value={startDate} onChange={handleStartDateChange} needConfirm format={dateFormatList} />
                         </div>)
                         :(<></>)
                     }
@@ -107,8 +108,8 @@ function TimeSetUp({exam}) {
                     <div className='flex items-start w-full rounded-lg p-2'>
                         {isEndDayChecked ? 
                         (<div className='flex justify-between'>
-                            <TimePicker size='large' className='w-1/3'value={dayjs(endDate, format)} onChange={handleEndDateChange} format={format} />
-                            <DatePicker size='large' value={dayjs(endDate, dateFormatList)} onChange={handleEndDateChange} needConfirm format={dateFormatList} />
+                            <TimePicker size='large' className='w-1/3'value={endDate} onChange={handleEndDateChange} format={format} />
+                            <DatePicker size='large' value={endDate} onChange={handleEndDateChange} needConfirm format={dateFormatList} />
                         </div>)
                         :(<></>)
                     }

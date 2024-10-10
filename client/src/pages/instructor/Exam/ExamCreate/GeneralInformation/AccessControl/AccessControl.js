@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'styles/instructor/ExamCreate.css'
+import { useSelector, useDispatch } from 'react-redux';
 import { Forward, Plus } from 'lucide-react';
 import { Switch, Input, Typography, Modal, message, QRCode, Tabs, Segmented, Empty } from 'antd';
-
+import { generateUniqueTestLink } from 'utils/generateUniqueExamLink';
+import { updateExam } from 'store/examSlice';
 
 const { Title } = Typography;
 
@@ -44,9 +46,18 @@ function doDownload(url, fileName) {
 
 function AccessControl({exam}) {
     const [isPublicChecked, setIsPublicChecked] = useState(exam?.access_type === 'public')
+    const [accessType, setAccessType] = useState(exam?.access_type === 'public'? "public":"private")
     const [modalVisibility, setModalVisibility] = useState({ share: false, addMember: false });
+    const [accessLink, setAccessLink] = useState(exam?.access_link || generateUniqueTestLink());
     const [activeTab, setActiveTab] = useState('1');
     const [renderType, setRenderType] = useState('canvas');
+
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const updatedExam = {...exam, access_type: accessType, access_link: accessLink}
+        dispatch(updateExam(updatedExam))
+    }, [accessLink, isPublicChecked]);
 
     const onChangeTab = (key) => {
         setActiveTab(key)
@@ -67,11 +78,12 @@ function AccessControl({exam}) {
 
     const onChange = (checked) => {
         setIsPublicChecked(checked)
+        setAccessType(checked?"public":"private")
     };
 
     // Function to handle copying the link
     const handleCopy = () => {
-        navigator.clipboard.writeText("https://app.ninequiz.com/9DRWLVCS"); // Copy the link to clipboard
+        navigator.clipboard.writeText(accessLink); // Copy the link to clipboard
         message.success("Copied!")
     };
 
@@ -88,7 +100,7 @@ function AccessControl({exam}) {
                     {isPublicChecked ?
                         (
                             <div className='mt-3 w-full flex justify-between items-start'>
-                                <div className='text-lg font-normal primary-color italic underline hover:cursor-pointer'>{exam?.access_link}</div>
+                                <div className='text-lg font-normal primary-color italic underline hover:cursor-pointer'>{accessLink}</div>
                                 <button
                                     class="button-outlined-custom font-semibold space-x-2"
                                     onClick={() => showModal('share')}
@@ -126,7 +138,7 @@ function AccessControl({exam}) {
                 {activeTab === '1' && (
                     <>
                         <p className='font-bold mb-3'>Share this link with others to give them access to the test:</p>
-                        <Input className='input-custom' value={exam?.access_link} readOnly onClick={handleCopy} />
+                        <Input className='input-custom' value={accessLink} readOnly onClick={handleCopy} />
                     </>
                 )}
                 {activeTab === '2' && (
@@ -134,7 +146,7 @@ function AccessControl({exam}) {
                         <div className='flex justify-center flex-col items-center space-y-3'>
                             <QRCode
                                 type={renderType}
-                                value="https://app.ninequiz.com/9DRWLVCS"
+                                value={accessLink}
                                 icon="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"
                             />
                             <Segmented options={['canvas', 'svg']} onChange={(val) => setRenderType(val)} />
