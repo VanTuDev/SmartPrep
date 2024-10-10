@@ -8,10 +8,11 @@ const initialState = {
         description: '', // Placeholder for exam description
         questions: [], // Empty array to hold questions
         duration: 60,
-        access_link: 'http://test',
+        access_link: '',
         access_type: 'public',
         start_date: new Date().toISOString(),
         end_date: new Date().toISOString(),
+        status: 'draft',
     },
     loading: false,
     error: null
@@ -22,7 +23,13 @@ export const fetchExam = createAsyncThunk(
     'exam/fetchExam',
     async (examId, thunkAPI) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/test/${examId}`);
+            const response = await fetch(`http://localhost:5000/api/test/${examId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add the token here
+                },
+            });
             const data = await response.json();
             console.log(data)
             return data;
@@ -45,12 +52,12 @@ export const createExam = createAsyncThunk(
             delete modifiedExamData._id;
             console.log("Questions before map:", modifiedExamData);
             // Remove id from each question
-            modifiedExamData.exam.questions = Array.isArray(modifiedExamData.exam.questions) 
-            ? modifiedExamData.exam.questions.map(question => {
-                const { id, ...rest } = question; // Destructure to remove id
-                return rest; // Return the question object without the id field
-            })
-            : [];
+            modifiedExamData.questions = Array.isArray(modifiedExamData.questions)
+                ? modifiedExamData.questions.map(question => {
+                    const { id, ...rest } = question; // Destructure to remove id
+                    return rest; // Return the question object without the id field
+                })
+                : [];
 
             console.log("Modified Exam Data: ", modifiedExamData);
             console.log("Original Exam Data: ", examData);
@@ -79,7 +86,7 @@ export const createExam = createAsyncThunk(
 
 export const updateExamAPI = createAsyncThunk(
     'exam/updateExam',
-    async ({examId, examData}, thunkAPI) => {
+    async ({ examId, examData }, thunkAPI) => {
         console.log("Fetching started...");
         console.log("Original Exam Data: ", examData);
 
@@ -88,8 +95,19 @@ export const updateExamAPI = createAsyncThunk(
             const modifiedExamData = JSON.parse(JSON.stringify(examData));
 
             // Handle questions: we assume that questions with an _id are already in the DB, so we don't need to remove their ids
-            modifiedExamData.exam.questions = Array.isArray(modifiedExamData.exam.questions)
-                ? modifiedExamData.exam.questions.map(question => {
+            // modifiedExamData.exam.questions = Array.isArray(modifiedExamData.exam.questions)
+            //     ? modifiedExamData.exam.questions.map(question => {
+            //         // Separate out new questions without _id (i.e., they need to be created)
+            //         if (!question._id) {
+            //             const { id, ...rest } = question; // Remove any temporary 'id' field you used
+            //             return rest; // Return the question without 'id'
+            //         }
+            //         return question; // For existing questions, return them as-is
+            //     })
+            //     : [];
+
+            modifiedExamData.questions = Array.isArray(modifiedExamData.questions)
+                ? modifiedExamData.questions.map(question => {
                     // Separate out new questions without _id (i.e., they need to be created)
                     if (!question._id) {
                         const { id, ...rest } = question; // Remove any temporary 'id' field you used
@@ -156,10 +174,11 @@ const examSlice = createSlice({
                 description: '', // Placeholder for exam description
                 questions: [], // Empty array to hold questions
                 duration: 60,
-                access_link: 'http://test',
+                access_link: '',
                 access_type: 'public',
                 start_date: new Date().toISOString(),
                 end_date: new Date().toISOString(),
+                status: 'draft',
             }; // Or whatever your default state should be
             state.loading = false;
             state.error = null;

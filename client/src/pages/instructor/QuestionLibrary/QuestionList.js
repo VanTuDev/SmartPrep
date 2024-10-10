@@ -2,26 +2,34 @@ import React, { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { List, Atom, EllipsisVertical, FileText } from 'lucide-react';
+import { List, Atom, FileText } from 'lucide-react';
 import AddQuestionForm from './AddQuestion';
-import QuestionCard from './QuestionCard'; // Import QuestionCard
+import QuestionCard from './QuestionCard';
 
 const QuestionList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [questions, setQuestions] = useState([]);
   const [categories, setCategories] = useState([]); // Lưu danh sách danh mục
   const [groups, setGroups] = useState([]); // Lưu danh sách nhóm
-
   const [isAddingQuestion, setIsAddingQuestion] = useState(false); // State để điều khiển việc thêm câu hỏi mới
   const [selectedQuestion, setSelectedQuestion] = useState(null); // Thêm state để quản lý câu hỏi đã chọn
 
+  // Các state để lưu trữ lựa chọn lọc
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('');
 
   // Lấy danh sách câu hỏi
   const fetchQuestions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/questions', {
+      const queryParams = new URLSearchParams();
+      if (selectedCategory) queryParams.append('category', selectedCategory);
+      if (selectedGroup) queryParams.append('group', selectedGroup);
+
+      console.log("Query Params:", queryParams.toString()); // Debug URL Params
+
+      const response = await fetch(`http://localhost:5000/api/questions?${queryParams.toString()}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
@@ -30,13 +38,13 @@ const QuestionList = () => {
       }
 
       const data = await response.json();
+      console.log("Filtered Questions:", data); // Debug dữ liệu trả về từ API
       setQuestions(data);
     } catch (error) {
       console.error('Lỗi khi gửi yêu cầu:', error);
       toast.error(`Lỗi khi gửi yêu cầu: ${error.message}`);
     }
   };
-
 
   // Lấy danh sách danh mục
   const fetchCategories = async () => {
@@ -69,10 +77,13 @@ const QuestionList = () => {
   };
 
   useEffect(() => {
-    fetchQuestions();
     fetchCategories();
     fetchGroups();
   }, []);
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [selectedCategory, selectedGroup]); // Tự động lấy dữ liệu khi bộ lọc thay đổi
 
   // Tìm tên danh mục dựa trên ID
   const getCategoryName = (categoryId) => {
@@ -130,15 +141,16 @@ const QuestionList = () => {
       toast.error('Lỗi khi cập nhật câu hỏi.');
     }
   };
+
   const filteredQuestions = questions.filter((question) =>
     question.question_text.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div>
-      {/* Thanh tìm kiếm */}
+      {/* Thanh tìm kiếm và bộ lọc */}
       <div className="bg-white p-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-4">
           <div className="relative w-full max-w-lg">
             <input
               type="text"
@@ -158,6 +170,9 @@ const QuestionList = () => {
             Tạo câu hỏi +
           </button>
         </div>
+
+
+
       </div>
 
       {/* Danh sách câu hỏi */}
@@ -171,7 +186,7 @@ const QuestionList = () => {
             <div
               key={question._id}
               className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md border border-gray-200 cursor-pointer"
-              onClick={() => setSelectedQuestion(question)} // Khi nhấp vào câu hỏi, hiển thị chi tiết
+              onClick={() => setSelectedQuestion(question)}
             >
               <div className="flex justify-between">
                 <div className='w-8/12 flex items-center'>

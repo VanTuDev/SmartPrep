@@ -81,6 +81,27 @@ const AddQuestion = ({ onClose, onRefresh }) => {
     setQuestionsList(updatedQuestions);
   };
 
+  // Thêm lựa chọn mới vào danh sách các lựa chọn của một câu hỏi
+  const handleAddOption = (qIndex) => {
+    const updatedQuestions = [...questionsList];
+    updatedQuestions[qIndex].option.push(''); // Thêm một lựa chọn rỗng
+    setQuestionsList(updatedQuestions);
+  };
+
+  // Xóa một lựa chọn khỏi danh sách
+  const handleRemoveOption = (qIndex, oIndex) => {
+    const updatedQuestions = [...questionsList];
+    const removedOption = updatedQuestions[qIndex].option[oIndex];
+    updatedQuestions[qIndex].option.splice(oIndex, 1); // Xóa lựa chọn tại chỉ mục được chỉ định
+
+    // Cập nhật danh sách đáp án đúng nếu lựa chọn bị xóa là một đáp án đúng
+    updatedQuestions[qIndex].correct_answers = updatedQuestions[qIndex].correct_answers.filter(
+      (answer) => answer !== removedOption
+    );
+
+    setQuestionsList(updatedQuestions);
+  };
+
   // Cập nhật đáp án đúng của từng câu hỏi
   const handleCorrectAnswerChange = (qIndex, option) => {
     const updatedQuestions = [...questionsList];
@@ -236,8 +257,12 @@ const AddQuestion = ({ onClose, onRefresh }) => {
                         className="ml-2"
                       />
                       <label className="ml-2">Đáp án đúng</label>
+                      <button onClick={() => handleRemoveOption(index, oIndex)} className="ml-2 text-red-500 hover:text-red-700">Xóa</button>
                     </div>
                   ))}
+                  <button onClick={() => handleAddOption(index)} className="mt-2 bg-blue-500 text-white rounded-lg px-2 py-1">
+                    + Thêm lựa chọn
+                  </button>
                 </>
               )}
             </div>

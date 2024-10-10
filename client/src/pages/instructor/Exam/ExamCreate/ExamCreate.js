@@ -14,15 +14,15 @@ import { generateRandomId } from 'utils/generateRandomId';
 
 const { TextArea } = Input;
 
-function ExamCreate({examId}) {
-    const [editMode, setEditMode] = useState(null); 
+function ExamCreate({ examId }) {
+    const [editMode, setEditMode] = useState(null);
     const { exam, loading, error } = useSelector((state) => state.exam);
 
     const dispatch = useDispatch();
 
     // Gọi API để tải bài test khi component được mount
     useEffect(() => {
-        if(examId){
+        if (examId) {
             dispatch(fetchExam(examId));
         }
 
@@ -99,7 +99,7 @@ function ExamCreate({examId}) {
                     ))}
                 </div>
 
-                <QuestionAdding handleAddQuestion={handleAddQuestion}/>
+                <QuestionAdding handleAddQuestion={handleAddQuestion} />
             </div>
         </>
     );
