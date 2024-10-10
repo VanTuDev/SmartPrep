@@ -7,6 +7,7 @@ import { Button, Tooltip, Tabs, Popover, TimePicker, DatePicker, message } from 
 import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import dayjs from 'dayjs';
 import PreviewExam from '../ExamCreate/Preview/PreviewExam';
+import ExportPdfPage from '../ExamCreate/ExportPDF/ExportPdfPage';
 
 const dateFormatList = 'DD/MM/YYYY';
 const format = 'HH:mm';
@@ -28,14 +29,23 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const [isDrawerVisible, setIsDrawerVisible] = useState(false);
+    const [openPreview, setOpenPreview] = useState(false);
+    const [openExportPage, setOpenExportPage] = useState(false);
 
-    const handleOpenDrawer = () => {
-        setIsDrawerVisible(true);
+    const handleOpenPreview = () => {
+        setOpenPreview(true);
     };
 
-    const handleCloseDrawer = () => {
-        setIsDrawerVisible(false);
+    const handleClosePreview = () => {
+        setOpenPreview(false);
+    };
+
+    const handleOpenExportPage = () => {
+        setOpenExportPage(true);
+    };
+
+    const handleCloseExportPage = () => {
+        setOpenExportPage(false);
     };
 
     const { exam, loading, error } = useSelector((state) => state.exam);
@@ -85,12 +95,12 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
                         {activeTab === '1' && (
                             <>
                                 <Tooltip placement="bottom" title="Preview">
-                                    <Button onClick={handleOpenDrawer} color="default" variant="text">
+                                    <Button onClick={handleOpenPreview} color="default" variant="text">
                                         <Eye />
                                     </Button>
                                 </Tooltip>
                                 <Tooltip placement="bottom" title="Export">
-                                    <Button color="default" variant="text">
+                                    <Button onClick={handleOpenExportPage} color="default" variant="text">
                                         <Download />
                                     </Button>
                                 </Tooltip>
@@ -113,8 +123,13 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
                 </nav>
             </div>
             <PreviewExam
-                visible={isDrawerVisible}
-                onClose={handleCloseDrawer}
+                visible={openPreview}
+                onClose={handleClosePreview}
+                exam={exam}
+            />
+            <ExportPdfPage
+                visible={openExportPage}
+                onClose={handleCloseExportPage}
                 exam={exam}
             />
         </header>
