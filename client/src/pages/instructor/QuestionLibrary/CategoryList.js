@@ -19,7 +19,6 @@ const CategoryList = () => {
       fetchGroups();
    }, []);
 
-   // Lấy danh sách danh mục
    const fetchCategories = async () => {
       try {
          const response = await fetch('http://localhost:5000/api/category', {
@@ -35,7 +34,6 @@ const CategoryList = () => {
       }
    };
 
-   // Lấy danh sách nhóm
    const fetchGroups = async () => {
       try {
          const response = await fetch('http://localhost:5000/api/groups', {
@@ -51,28 +49,32 @@ const CategoryList = () => {
       }
    };
 
-   // Hàm để lấy tên nhóm từ ID nhóm
    const getGroupNameById = (groupId) => {
       const group = groups.find((g) => g._id === groupId);
       return group ? group.name : 'N/A';
    };
 
-   // Lấy danh sách câu hỏi theo ID danh mục
+   // Cập nhật hàm để bật/tắt hiển thị câu hỏi
    const fetchQuestionsByCategoryId = async (categoryId) => {
-      try {
-         const response = await fetch(`http://localhost:5000/api/questions/category/${categoryId}`, {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-         });
-         if (!response.ok) throw new Error('Lỗi khi lấy danh sách câu hỏi.');
-
-         const data = await response.json();
-         setQuestions(data || []);
-         setSelectedCategoryId(categoryId);
-      } catch (error) {
-         toast.error('Không thể lấy danh sách câu hỏi.');
+      if (selectedCategoryId === categoryId) {
+         setSelectedCategoryId(null); // Ẩn danh sách câu hỏi nếu danh mục hiện đang được chọn
          setQuestions([]);
+      } else {
+         try {
+            const response = await fetch(`http://localhost:5000/api/questions/category/${categoryId}`, {
+               headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+               },
+            });
+            if (!response.ok) throw new Error('Lỗi khi lấy danh sách câu hỏi.');
+
+            const data = await response.json();
+            setQuestions(data || []);
+            setSelectedCategoryId(categoryId);
+         } catch (error) {
+            toast.error('Không thể lấy danh sách câu hỏi.');
+            setQuestions([]);
+         }
       }
    };
 
@@ -251,7 +253,20 @@ const CategoryList = () => {
                                     {questions.map((question, index) => (
                                        <tr key={index}>
                                           <td className="px-4 py-2 border">{question.question_text}</td>
-                                          <td className="px-4 py-2 border">{question.options ? question.options.join(', ') : 'N/A'}</td>
+                                          <td className="px-4 py-2 border">
+                                             <div className="flex flex-col space-y-1">
+                                                {question.options ? (
+                                                   question.options.map((option, idx) => (
+                                                      <div key={idx} className="flex items-start">
+                                                         <span className="font-bold mr-1">{String.fromCharCode(65 + idx)}.</span> {/* Hiển thị A, B, C, D */}
+                                                         <span>{option}</span>
+                                                      </div>
+                                                   ))
+                                                ) : (
+                                                   'N/A'
+                                                )}
+                                             </div>
+                                          </td>
                                           <td className="px-4 py-2 border">{Array.isArray(question.correct_answers) ? question.correct_answers.join(', ') : 'N/A'}</td>
                                           <td className="px-4 py-2 border">{getGroupNameById(question.group)}</td>
                                        </tr>

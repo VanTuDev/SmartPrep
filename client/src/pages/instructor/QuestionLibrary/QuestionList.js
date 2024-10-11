@@ -21,13 +21,7 @@ const QuestionList = () => {
   // Lấy danh sách câu hỏi
   const fetchQuestions = async () => {
     try {
-      const queryParams = new URLSearchParams();
-      if (selectedCategory) queryParams.append('category', selectedCategory);
-      if (selectedGroup) queryParams.append('group', selectedGroup);
-
-      console.log("Query Params:", queryParams.toString()); // Debug URL Params
-
-      const response = await fetch(`http://localhost:5000/api/questions?${queryParams.toString()}`, {
+      const response = await fetch('http://localhost:5000/api/questions', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -38,7 +32,6 @@ const QuestionList = () => {
       }
 
       const data = await response.json();
-      console.log("Filtered Questions:", data); // Debug dữ liệu trả về từ API
       setQuestions(data);
     } catch (error) {
       console.error('Lỗi khi gửi yêu cầu:', error);
@@ -79,11 +72,8 @@ const QuestionList = () => {
   useEffect(() => {
     fetchCategories();
     fetchGroups();
+    fetchQuestions(); // Lấy dữ liệu câu hỏi ban đầu
   }, []);
-
-  useEffect(() => {
-    fetchQuestions();
-  }, [selectedCategory, selectedGroup]); // Tự động lấy dữ liệu khi bộ lọc thay đổi
 
   // Tìm tên danh mục dựa trên ID
   const getCategoryName = (categoryId) => {
@@ -142,9 +132,18 @@ const QuestionList = () => {
     }
   };
 
-  const filteredQuestions = questions.filter((question) =>
-    question.question_text.toLowerCase().includes(searchTerm.toLowerCase())
+  // Lọc danh sách câu hỏi
+  // Lọc danh sách câu hỏi
+  const filteredQuestions = questions.filter(
+    (question) =>
+      question.question_text.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      // Điều kiện lọc theo category và group
+      (selectedCategory ? question.category === selectedCategory : true) &&
+      (selectedGroup ? question.group === selectedGroup : true) &&
+      // Điều kiện để chỉ hiển thị những câu hỏi có ít nhất một trong hai trường `category` hoặc `group`
+      (question.category || question.group)
   );
+
 
   return (
     <div>
@@ -171,8 +170,34 @@ const QuestionList = () => {
           </button>
         </div>
 
+        {/* Bộ lọc danh mục và nhóm */}
+        <div className="flex space-x-4 mb-6">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="p-2 border border-gray-300 rounded-lg"
+          >
+            <option value="">-- Tất cả danh mục --</option>
+            {categories.map((category) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
 
-
+          <select
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            className="p-2 border border-gray-300 rounded-lg"
+          >
+            <option value="">-- Tất cả nhóm --</option>
+            {groups.map((group) => (
+              <option key={group._id} value={group._id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Danh sách câu hỏi */}

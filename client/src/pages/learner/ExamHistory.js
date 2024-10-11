@@ -1,34 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CardComponent from '../../components/learner/ExamCard';
 import HeaderComponent from '../../components/learner/LearnerHeader';
-import { Search, Filter, EllipsisVertical, ChevronDown } from 'lucide-react';
+import { Search, Filter, ChevronDown } from 'lucide-react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { toast } from 'react-toastify';
+import dayjs from 'dayjs';
 
-const ExamHistory = ({ onCancel, onFilter }) => {
+const ExamHistory = () => {
    const [selectedClass, setSelectedClass] = useState('Lớp');
-   // Dữ liệu giả lập cho các thẻ bài kiểm tra
-   const tests = [
-      {
-         title: 'Bài mở đầu',
-         startTime: '21:42 - 05/10/24',
-         endTime: '21:42 - 05/10/24',
-         duration: '0 phút',
-         questionCount: 2,
-         organization: 'FPT school',
-      },
-      {
-         title: 'Bài mở đầu',
-         startTime: '21:41 - 05/10/24',
-         endTime: '21:41 - 05/10/24',
-         duration: '0 phút',
-         questionCount: 2,
-         organization: 'FPT school',
-      },
-   ];
+   const [tests, setTests] = useState([]); // State lưu danh sách bài kiểm tra
+   const userId = localStorage.getItem('userId'); // Lấy userId từ localStorage
+   const token = localStorage.getItem('token'); // Lấy token từ localStorage
+
+   // URL của API để lấy lịch sử bài kiểm tra theo ID người dùng
+   const API_URL = `http://localhost:5000/api/submissions/user/${userId}`;
+
+   // Gọi API để lấy danh sách bài kiểm tra theo `userId`
+   useEffect(() => {
+      const fetchTestHistory = async () => {
+         try {
+            if (!userId || !token) {
+               toast.error('Bạn chưa đăng nhập, vui lòng đăng nhập để xem lịch sử bài kiểm tra!');
+               return;
+            }
+
+            const response = await fetch(API_URL, {
+               method: 'GET',
+               headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+               },
+            });
+
+            if (response.ok) {
+               const data = await response.json();
+               console.log("Fetched Test History: ", data);
+               setTests(data || []); // Cập nhật danh sách bài kiểm tra từ API
+            } else {
+               toast.error("Lỗi khi tải lịch sử bài kiểm tra");
+            }
+         } catch (error) {
+            console.error("Error fetching test history:", error);
+            toast.error("Lỗi khi tải dữ liệu");
+         }
+      };
+
+      if (userId) {
+         fetchTestHistory(); // Gọi API khi có userId
+      }
+   }, [API_URL, userId, token]);
 
    return (
-      <div className=" bg-white-50">
+      <div className="bg-white-50">
          {/* Header */}
          <HeaderComponent />
          <div className="min-h-screen bg-gray px-16 py-12">
@@ -43,76 +66,29 @@ const ExamHistory = ({ onCancel, onFilter }) => {
                   />
                   <Search className="w-5 h-5 mx-3 text-gray-500" />
                </div>
-
-               {/* Nút lọc */}
-
-               <Menu as="div" className="w-1/24 relative inline-block text-left">
-                  <div>
-                     <MenuButton className="inline-flex w-1/7 justify-center gap-x-1.5 rounded-md bg-white text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                        <button className="flex items-center px-4 py-2 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200">
-                           <Filter className="w-5 h-5 mr-2 text-gray-500" />
-                           Lọc
-                        </button>
-                     </MenuButton>
-                  </div>
-
-                  <MenuItems
-                     transition
-                     className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
-                  >
-                     <div className="">
-                        <MenuItem>
-                           <div className="p-6 w-64 bg-white rounded-lg shadow-lg">
-                              {/* Dropdown chọn lớp */}
-                              <div className="mb-4">
-                                 <div className="flex items-center space-x-2">
-                                    <Filter className="w-5 h-5 text-indigo-600" />
-                                    <span className="text-gray-700 font-semibold">Lớp</span>
-                                 </div>
-                                 <Menu as="div" className="relative mt-2">
-                                    <Menu.Button className="flex justify-between items-center w-full px-3 py-2 border-b-2 border-indigo-600 focus:outline-none">
-                                       <span>{selectedClass}</span>
-                                       <ChevronDown className="h-5 w-5 text-gray-600" />
-                                    </Menu.Button>
-
-                                    {/* Menu Items */}
-                                    <Menu.Items className="absolute mt-1 w-full bg-white rounded-md border border-gray-300">
-                                       {['Lớp A', 'Lớp B', 'Lớp C'].map((item) => (
-                                          <Menu.Item key={item}>
-                                             {({ active }) => (
-                                                <button
-                                                   className={`${active ? 'bg-indigo-100' : ''
-                                                      } w-full text-left px-4 py-2 text-sm text-gray-700`}
-                                                   onClick={() => setSelectedClass(item)}
-                                                >
-                                                   {item}
-                                                </button>
-                                             )}
-                                          </Menu.Item>
-                                       ))}
-                                    </Menu.Items>
-                                 </Menu>
-                              </div>
-                           </div>
-                        </MenuItem>
-                     </div>
-                  </MenuItems>
-               </Menu>
             </div>
 
             {/* Danh sách các bài kiểm tra */}
             <div className="flex flex-wrap gap-8">
-               {tests.map((test, index) => (
-                  <CardComponent
-                     key={index}
-                     title={test.title}
-                     startTime={test.startTime}
-                     endTime={test.endTime}
-                     duration={test.duration}
-                     questionCount={test.questionCount}
-                     organization={test.organization}
-                  />
-               ))}
+               {tests.length > 0 ? (
+                  tests.map((test, index) => (
+                     <CardComponent
+                        key={index}
+                        id={test._id} // ID của submission (chính là ID của bài làm)
+                        title={test._id_test.title} // Tên bài kiểm tra
+                        startTime={dayjs(test.started_at).format('HH:mm - DD/MM/YYYY')} // Thời gian bắt đầu
+                        endTime={dayjs(test.finished_at).format('HH:mm - DD/MM/YYYY')} // Thời gian kết thúc
+                        duration={`${dayjs(test.finished_at).diff(dayjs(test.started_at), 'minute')} phút`} // Thời gian làm bài (phút)
+                        questionCount={test.questions.length} // Số câu hỏi
+                        score={test.score} // Điểm số
+                        organization={test._id} // Sử dụng ID của `submission` để hiển thị
+                     />
+                  ))
+               ) : (
+                  <div className="text-center w-full text-gray-500 text-lg">
+                     Không có bài kiểm tra nào trong lịch sử
+                  </div>
+               )}
             </div>
          </div>
       </div>

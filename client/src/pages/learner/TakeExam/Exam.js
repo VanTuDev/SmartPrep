@@ -1,162 +1,71 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, Card, Radio, Drawer, message, Modal } from "antd";
 import { ClockCircleOutlined, CloseOutlined, MenuOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "tailwindcss/tailwind.css";
 import SubmitModal from "components/TakeExam/SubmitModal";
 import CloseModal from "components/TakeExam/CloseModal";
 
 const Exam1 = () => {
-   const mockData = {
-      examTitle: "Bài kiểm tra Toán lớp 10",
-      examId: "XYZ1234",
-      questionCount: 10,
-      duration: 30, // Thời gian làm bài (phút)
-      user: {
-         name: "Tuấn Kiệt",
-         email: "tuankiet4hbt@gmail.com",
-         avatar: "",
-         attemptTime: "15:49 - 06/10/2024",
-         action: "Làm bài",
-      },
-      questions: [
-         {
-            id: 1,
-            text: "Tính giá trị của biểu thức: 5 + 3 x 2 - 8 ÷ 4?",
-            options: [
-               { value: "A", text: "8" },
-               { value: "B", text: "10" },
-               { value: "C", text: "7" },
-               { value: "D", text: "6" },
-            ],
-            correct_answers: ["B"],
-            points: 1,
-         },
-         {
-            id: 2,
-            text: "Kết quả của 2^3 là gì?",
-            options: [
-               { value: "A", text: "8" },
-               { value: "B", text: "6" },
-               { value: "C", text: "10" },
-               { value: "D", text: "4" },
-            ],
-            correct_answers: ["A"],
-            points: 1,
-         },
-         {
-            id: 3,
-            text: "Giá trị nhỏ nhất của hàm số y = x^2 - 4x + 4 là bao nhiêu?",
-            options: [
-               { value: "A", text: "4" },
-               { value: "B", text: "2" },
-               { value: "C", text: "0" },
-               { value: "D", text: "1" },
-            ],
-            correct_answers: ["C"],
-            points: 1,
-         },
-         {
-            id: 4,
-            text: "Đạo hàm của hàm số y = 3x^2 + 2x - 1 là gì?",
-            options: [
-               { value: "A", text: "6x + 2" },
-               { value: "B", text: "6x" },
-               { value: "C", text: "2" },
-               { value: "D", text: "3x^2" },
-            ],
-            correct_answers: ["A"],
-            points: 1,
-         },
-         {
-            id: 5,
-            text: "Phương trình nào sau đây là phương trình bậc hai?",
-            options: [
-               { value: "A", text: "x + 2 = 0" },
-               { value: "B", text: "x^2 - 3x + 2 = 0" },
-               { value: "C", text: "3x - 5 = 0" },
-               { value: "D", text: "2x^3 + 3x^2 - x = 0" },
-            ],
-            correct_answers: ["B"],
-            points: 1,
-         },
-         {
-            id: 6,
-            text: "Cho hàm số y = x^2 + 3x + 2, đạo hàm của nó là gì?",
-            options: [
-               { value: "A", text: "2x + 3" },
-               { value: "B", text: "2x" },
-               { value: "C", text: "3" },
-               { value: "D", text: "x + 2" },
-            ],
-            correct_answers: ["A"],
-            points: 1,
-         },
-         {
-            id: 7,
-            text: "Tìm nghiệm của phương trình x^2 - 4x + 4 = 0?",
-            options: [
-               { value: "A", text: "x = 2" },
-               { value: "B", text: "x = 4" },
-               { value: "C", text: "x = 0" },
-               { value: "D", text: "x = 1" },
-            ],
-            correct_answers: ["A"],
-            points: 1,
-         },
-         {
-            id: 8,
-            text: "Giá trị của biểu thức sin^2(30) + cos^2(30) là gì?",
-            options: [
-               { value: "A", text: "0" },
-               { value: "B", text: "1" },
-               { value: "C", text: "2" },
-               { value: "D", text: "0.5" },
-            ],
-            correct_answers: ["B"],
-            points: 1,
-         },
-         {
-            id: 9,
-            text: "Kết quả của phép nhân ma trận sau [1 2] x [3 4] là gì?",
-            options: [
-               { value: "A", text: "7" },
-               { value: "B", text: "10" },
-               { value: "C", text: "5" },
-               { value: "D", text: "4" },
-            ],
-            correct_answers: ["B"],
-            points: 1,
-         },
-         {
-            id: 10,
-            text: "Tổng của chuỗi số học 1 + 2 + 3 + ... + 100 là bao nhiêu?",
-            options: [
-               { value: "A", text: "5050" },
-               { value: "B", text: "100" },
-               { value: "C", text: "500" },
-               { value: "D", text: "2500" },
-            ],
-            correct_answers: ["A"],
-            points: 1,
-         },
-      ],
-   };
-
-
-   // Khởi tạo thời gian từ mockData (đơn vị giây)
-   const [timeLeft, setTimeLeft] = useState(mockData.duration * 60);
+   const { examId, submissionId } = useParams();
+   const [examData, setExamData] = useState(null);
+   const [timeLeft, setTimeLeft] = useState(0);
    const [selectedAnswers, setSelectedAnswers] = useState({});
    const [drawerVisible, setDrawerVisible] = useState(false);
    const [isModalVisible, setIsModalVisible] = useState(false);
-   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
    const [isCloseModalVisible, setIsCloseModalVisible] = useState(false);
    const [outsideClickCount, setOutsideClickCount] = useState(0);
    const [modalVisible, setModalVisible] = useState(false);
+   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
    const navigate = useNavigate();
-
-
    const questionRefs = useRef([]);
+   const answeredQuestions = Object.keys(selectedAnswers).length;
+
+   // URLs cho API
+   const SUBMISSION_URL = `http://localhost:5000/api/submissions/${submissionId}`;
+   const ANSWER_URL = `http://localhost:5000/api/submissions/${submissionId}/answer`;
+   const FINISH_URL = `http://localhost:5000/api/submissions/${submissionId}/finish`;
+
+   // Fetch dữ liệu bài thi từ API
+   useEffect(() => {
+      const fetchExamData = async () => {
+         try {
+            const response = await fetch(SUBMISSION_URL, {
+               method: "GET",
+               headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+               },
+            });
+
+            if (response.ok) {
+               const data = await response.json();
+               console.log("Exam data loaded:", data);
+
+               // Kiểm tra kỹ các trường dữ liệu trước khi gán vào `setExamData`
+               if (!data.questions || !Array.isArray(data.questions)) {
+                  throw new Error("Invalid or missing 'questions' field in exam data");
+               }
+
+               setExamData(data);
+               setTimeLeft(data.duration ? data.duration * 60 : 0); // Đảm bảo `duration` được đọc đúng
+            } else {
+               const error = await response.json();
+               message.error(error.message || "Lỗi khi lấy dữ liệu bài thi!");
+            }
+         } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu bài thi:", error);
+            message.error("Đã xảy ra lỗi trong quá trình lấy dữ liệu bài thi!");
+         }
+      };
+
+      if (submissionId) {
+         fetchExamData();
+      } else {
+         message.error("Không tìm thấy submissionId trong URL!");
+         navigate("/learner/TakeExam");
+      }
+   }, [SUBMISSION_URL, submissionId, navigate]);
 
    useEffect(() => {
       const handleKeyDown = (event) => {
@@ -199,35 +108,112 @@ const Exam1 = () => {
       };
    }, []);
 
-   const handleEndExam = () => {
-      setModalVisible(false);
-      message.error("Bài thi của bạn đã bị kết thúc vì nhấp ra ngoài quá nhiều lần!");
-   };
-
-   // Cập nhật thời gian đếm ngược
-   useEffect(() => {
-      if (timeLeft === 0) return; // Dừng đếm ngược khi hết thời gian
-
-      const timer = setInterval(() => {
-         setTimeLeft((prevTime) => {
-            const newTime = prevTime > 0 ? prevTime - 1 : 0;
-            return newTime;
-         });
-      }, 1000);
-
-      return () => clearInterval(timer); // Xóa bộ đếm khi component bị hủy
-   }, [timeLeft]);
-
-   // Định dạng thời gian thành phút:giây
+   // Định dạng thời gian
    const formatTime = (seconds) => {
       const minutes = Math.floor(seconds / 60);
       const secs = seconds % 60;
       return `${minutes < 10 ? "0" : ""}${minutes}:${secs < 10 ? "0" : ""}${secs}`;
    };
 
-   // Hàm xử lý lựa chọn câu trả lời
-   const handleAnswerChange = (questionId, value) => {
+   // Xử lý lựa chọn câu trả lời
+   const handleAnswerChange = async (questionId, value) => {
+      // Kiểm tra questionId trước khi thực hiện hành động
+      console.log("Selected questionId:", questionId); // Log ID của câu hỏi để kiểm tra
+
+      // Xác minh rằng `questionId` không phải là `undefined`
+      if (!questionId) {
+         console.error("Question ID is undefined");
+         return;
+      }
+
+      const question = examData.questions.find((q) => q._id === questionId); // Sửa lại để sử dụng `_id`
+      if (!question) {
+         console.error("Question not found in examData:", questionId);
+         return;
+      }
+
       setSelectedAnswers({ ...selectedAnswers, [questionId]: value });
+
+      try {
+         const payload = {
+            question_id: question._id, // Sử dụng đúng trường `_id`
+            selected_answer: value,
+         };
+         console.log("Payload gửi đi:", payload); // In ra payload để kiểm tra
+
+         const response = await fetch(ANSWER_URL, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+               Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(payload),
+         });
+
+         if (!response.ok) {
+            const error = await response.json();
+            message.error(error.message || "Không thể nộp câu trả lời!");
+         }
+      } catch (error) {
+         console.error("Lỗi khi nộp câu trả lời:", error);
+         message.error("Đã xảy ra lỗi trong quá trình nộp câu trả lời!");
+      }
+   };
+
+
+
+   // Kết thúc bài thi
+   // Ví dụ: xử lý khi kết thúc bài thi
+   const handleFinish = async () => {
+      try {
+         const response = await fetch(FINISH_URL, {
+            method: "PUT",
+            headers: {
+               "Content-Type": "application/json",
+               Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+         });
+
+         if (response.ok) {
+            const data = await response.json();
+            message.success(`Nộp bài thành công! Điểm của bạn: ${data.submission.score || '0'}/10`);
+            setTimeout(() => {
+               navigate(`/learner/ViewExamResults/${submissionId}`);
+            }, 500);
+         } else {
+            const error = await response.json();
+            message.error(error.message || "Không thể nộp bài thi!");
+         }
+      } catch (error) {
+         console.error("Lỗi khi nộp bài thi:", error);
+         message.error("Đã xảy ra lỗi trong quá trình nộp bài thi!");
+      }
+   };
+
+   if (!examData || !Array.isArray(examData.questions)) {
+      return (
+         <div className="flex justify-center items-center min-h-screen">
+            <div className="text-lg font-medium text-gray-600">Dữ liệu bài thi không hợp lệ hoặc đang tải...</div>
+         </div>
+      );
+   }
+
+
+
+
+   // Kiểm tra và render UI
+   if (!examData || !Array.isArray(examData.questions)) {
+      console.error("Invalid examData or questions is not an array:", examData);
+      return (
+         <div className="flex justify-center items-center min-h-screen">
+            <div className="text-lg font-medium text-gray-600">Dữ liệu bài thi không hợp lệ hoặc đang tải...</div>
+         </div>
+      );
+   }
+
+   const handleEndExam = () => {
+      setModalVisible(false);
+      message.error("Bài thi của bạn đã bị kết thúc vì nhấp ra ngoài quá nhiều lần!");
    };
 
    // Hàm mở Drawer
@@ -245,12 +231,6 @@ const Exam1 = () => {
       setIsModalVisible(true);
    };
 
-   // Xác nhận nộp bài và đóng modal
-   const handleOk = () => {
-      setIsModalVisible(false);
-      message.success("Bạn đã nộp bài thành công!");
-   };
-
    // Đóng modal mà không nộp bài
    const handleCancel = () => {
       setIsModalVisible(false);
@@ -259,10 +239,10 @@ const Exam1 = () => {
    // Hiển thị modal xác nhận thoát bài thi
    const showCloseModal = () => setIsCloseModalVisible(true);
 
-   // Xác nhận thoát khỏi bài thi và điều hướng về trang QuizCard
+   // Xác nhận thoát khỏi bài thi và điều hướng về trang DashBoard
    const handleConfirmClose = () => {
       setIsCloseModalVisible(false);
-      navigate("/learner/TakeExam");
+      navigate("/learner/DashBoard");
    };
 
    // Đóng modal xác nhận thoát
@@ -276,39 +256,94 @@ const Exam1 = () => {
 
    return (
       <div className="min-h-screen bg-gray-100">
-         {/* Header */}
          <div className="w-full bg-white shadow-md py-3 px-4 md:px-8 flex items-center justify-between relative">
             <div className="flex items-center">
-               <CloseOutlined className="text-2xl cursor-pointer hover:text-red-500 transition duration-200" onClick={showCloseModal} />
+               <CloseOutlined
+                  className="text-2xl cursor-pointer hover:text-red-500 transition duration-200"
+                  onClick={() => setIsCloseModalVisible(true)}
+               />
             </div>
+            {/* Thay đổi thời gian thành thời gian làm bài đã được định dạng */}
             <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-2">
                <ClockCircleOutlined className="text-2xl text-green-500" />
-               <span className="text-2xl text-green-500 font-semibold">{formatTime(timeLeft)}</span>
+               {/* Hiển thị thời gian đếm ngược (timeLeft) */}
+               <span className="text-2xl text-green-500 font-semibold">
+                  {formatTime(timeLeft)}
+                  
+               </span>
             </div>
             <div className="flex items-center space-x-4">
                <Button
                   shape="circle"
                   icon={<MenuOutlined />}
                   className="hidden md:flex hover:bg-gray-200 transition duration-200"
-                  onClick={openDrawer} // Mở Drawer khi nhấn vào
+                  onClick={() => setDrawerVisible(true)}
                />
-
-               {/* Số câu hỏi và Submit Button */}
-               <div className="text-lg hidden md:block flex items-center">
-                  <span className="text-yellow-500 text-2xl font-bold">{Object.keys(selectedAnswers).length}</span>
-                  <span className="mx-1 text-lg">/</span>
-                  <span>{mockData.questionCount}</span>
-               </div>
-               <Button type="primary" className="bg-blue-500 hover:bg-blue-600 focus:bg-blue-700" onClick={showModal}>
+               <Button
+                  type="primary"
+                  className="bg-blue-500 hover:bg-blue-600 focus:bg-blue-700"
+                  onClick={handleFinish}
+               >
                   Nộp bài
                </Button>
             </div>
          </div>
 
-         {/* Drawer chứa danh sách câu hỏi */}
+
+         <div className="flex justify-center my-10">
+            <Card className="w-full max-w-[900px] rounded-lg shadow-lg">
+               {/* Exam Info Section */}
+               <div className="p-6 bg-gray-200 border-b border-gray-200">
+                  <div className="flex justify-between items-center mb-4">
+                     <h2 className="text-2xl font-bold text-gray-700">{examData?.title}</h2>
+                     <div className="text-sm text-gray-500">
+                        ID: <span className="font-semibold">{examId}</span>
+                     </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                     <div className="flex items-center space-x-2">
+                        <span className="text-gray-500">SmartPrep</span>
+                     </div>
+                     <div className="flex flex-col items-end space-y-2">
+                        <span className="text-sm text-gray-500">Thời gian: {timeLeft / 60} phút</span>
+                        <p className="text-sm text-gray-500">Câu hỏi: {examData?.questions.length} câu</p>
+                        {/* Thêm số câu đã chọn */}
+                        <p className="text-sm text-gray-500">Câu đã chọn: {answeredQuestions}/{examData?.questions.length}</p>
+                     </div>
+                  </div>
+                  -
+               </div>
+
+               {/* Questions Section */}
+               <div className="p-6">
+                  {examData?.questions.map((question, index) => (
+                     <div key={index} ref={(el) => (questionRefs.current[index] = el)} className="mb-6">
+                        <div className="font-semibold text-lg mb-2">
+                           {index + 1}: {question.question_text}
+                        </div>
+                        <Radio.Group
+                           className="flex flex-col space-y-2"
+                           onChange={(e) => handleAnswerChange(question._id, e.target.value)} // Sử dụng đúng trường `_id`
+                        >
+                           {question.options?.map((option, idx) => (
+                              <Radio key={idx} value={option}>
+                                 <span className="font-medium">{String.fromCharCode(65 + idx)}. </span>
+                                 {option}
+                              </Radio>
+                           ))}
+                        </Radio.Group>
+                        <span className="text-red-500 ml-2">{!selectedAnswers[question._id] ? 'Chưa chọn đáp án' : ''}</span>
+
+                     </div>
+                  ))}
+               </div>
+            </Card>
+         </div>
+
          <Drawer title="Danh sách câu hỏi" placement="right" onClose={closeDrawer} visible={drawerVisible} width={300}>
             <div className="grid grid-cols-5 gap-2">
-               {mockData.questions.map((question, index) => (
+               {examData.questions.map((question, index) => (
                   <Button
                      key={index}
                      className={`border-2 rounded-md ${selectedAnswers[question.id] ? "bg-blue-500" : "bg-white"}`}
@@ -322,14 +357,17 @@ const Exam1 = () => {
 
          <SubmitModal
             visible={isModalVisible}
-            onConfirm={handleOk}
+            onConfirm={handleFinish}
             onCancel={handleCancel}
-            examTitle={mockData.examTitle}
-            totalQuestions={mockData.questionCount}
+            examTitle={examData.title}
+            totalQuestions={examData.questions.length}
             answeredQuestions={Object.keys(selectedAnswers).length}
          />
-
-         <CloseModal visible={isCloseModalVisible} onConfirm={handleConfirmClose} onCancel={handleCancelClose} />
+         <CloseModal
+            visible={isCloseModalVisible}
+            onConfirm={() => navigate("/learner/TakeExam")}
+            onCancel={() => setIsCloseModalVisible(false)}
+         />
 
          <Modal
             title="Bài thi đã bị kết thúc"
@@ -341,66 +379,6 @@ const Exam1 = () => {
          >
             <p>Bạn đã nhấp ra ngoài quá nhiều lần. Bài thi sẽ bị kết thúc.</p>
          </Modal>
-
-         {/* Exam Card */}
-         <div className="flex justify-center my-10">
-            <Card className="w-full max-w-[900px] rounded-lg shadow-lg">
-               {/* Exam Info Section */}
-               <div className="p-6 bg-gray-200 border-b border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                     <h2 className="text-2xl font-bold text-gray-700">{mockData.examTitle}</h2>
-                     <div className="text-sm text-gray-500">
-                        ID: <span className="font-semibold">{mockData.examId}</span>
-                     </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                     <div className="flex items-center space-x-2">
-                        <span className="text-gray-500">SmartPrep</span>
-                     </div>
-                     <div className="flex flex-col items-end space-y-2">
-                        <span className="text-sm text-gray-500">Thời gian: {mockData.duration} phút</span>
-                        <p className="text-sm text-gray-500">Câu hỏi: {mockData.questionCount} câu</p>
-                     </div>
-                  </div>
-
-                  {/* User Info Section */}
-                  <div className="flex items-center space-x-4 mt-4">
-                     <img src={mockData.user.avatar} alt="User" className="w-12 h-12 rounded-full" />
-                     <div>
-                        <span className="font-semibold">{mockData.user.name}</span>
-                        <div className="text-sm text-gray-500">{mockData.user.email}</div>
-                     </div>
-                     <div className="ml-auto text-right text-sm text-gray-500 flex justify-end w-full">
-                        {mockData.user.attemptTime}
-                        <span className="ml-2 text-blue-600 font-medium">{mockData.user.action}</span>
-                     </div>
-                  </div>
-               </div>
-
-               {/* Questions Section */}
-               <div className="p-6">
-                  {mockData.questions.map((question, index) => (
-                     <div
-                        key={index}
-                        ref={(el) => (questionRefs.current[index] = el)}
-                        className="mb-6">
-                        <div className="font-semibold text-lg mb-2">
-                           {index + 1}: {question.text}
-                        </div>
-                        <Radio.Group className="flex flex-col space-y-2" onChange={(e) => handleAnswerChange(question.id, e.target.value)}>
-                           {question.options.map((option, idx) => (
-                              <Radio key={idx} value={option.value}>
-                                 <span className="font-medium">{option.value}. </span>
-                                 {option.text}
-                              </Radio>
-                           ))}
-                        </Radio.Group>
-                     </div>
-                  ))}
-               </div>
-            </Card>
-         </div>
       </div>
    );
 };

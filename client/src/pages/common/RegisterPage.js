@@ -12,7 +12,7 @@ const RegisterPage = () => {
    const [showPassword, setShowPassword] = useState(false);
    const [agreeTerms, setAgreeTerms] = useState(false);
    const [errors, setErrors] = useState({});
-
+   const [role, setRole] = useState('learner'); // State cho vai trò, mặc định là "learner"
    const navigate = useNavigate();
 
    const validateEmail = (email) => {
@@ -30,6 +30,7 @@ const RegisterPage = () => {
       return usernameRegex.test(username);
    };
 
+
    const handleRegister = async (e) => {
       e.preventDefault();
       let validationErrors = {};
@@ -40,6 +41,7 @@ const RegisterPage = () => {
       if (!email) validationErrors.email = 'Email không được để trống';
       if (!phoneNumber) validationErrors.phoneNumber = 'Số điện thoại không được để trống';
       if (!password) validationErrors.password = 'Mật khẩu không được để trống';
+      if (!role) validationErrors.password = 'Mật khẩu không được để trống';
 
       // Kiểm tra định dạng email
       if (email && !validateEmail(email)) {
@@ -84,7 +86,8 @@ const RegisterPage = () => {
                email,
                phone: phoneNumber,
                password,
-               profile: ''
+               profile: '',
+               role, // Thêm role vào body request
             }),
          });
 
@@ -191,7 +194,17 @@ const RegisterPage = () => {
                      </div>
                   </div>
                   {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-
+                  <div className="flex items-center my-2 w-full">
+                     <label className="mr-2 text-gray-700">Chọn vai trò:</label>
+                     <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="p-2 border border-gray-300 rounded-lg shadow-sm"
+                     >
+                        <option value="learner">Learner</option>
+                        <option value="instructor">Instructor</option>
+                     </select>
+                  </div>
                   <div className="flex items-center my-4">
                      <input
                         type="checkbox"
