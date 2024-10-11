@@ -7,20 +7,32 @@ const DraftExam = () => {
    const navigate = useNavigate();
 
    // Fetch data from the API
-   useEffect(() => {
-      fetch('http://localhost:5000/api/test/get_all_test', {
-         method: 'GET',
-         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-         },
-      })
-         .then((response) => response.json())
-         .then((data) => {
-            const draftExams = data?.filter(exam => exam.status === 'draft');
+  useEffect(() => {
+   fetch('http://localhost:5000/api/test/get_all_test', {
+      method: 'GET',
+      headers: {
+         'Content-Type': 'application/json',
+         'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+   })
+      .then((response) => response.json())
+      .then((data) => {
+         console.log("Data fetched from API:", data); // Thêm dòng này để kiểm tra cấu trúc dữ liệu trả về
+         if (Array.isArray(data)) {
+            const draftExams = data.filter(exam => exam.status === 'draft');
             setDraftExams(draftExams);
-         });
-   }, []);
+         } else if (data && Array.isArray(data.data)) {
+            // Kiểm tra nếu API trả về đối tượng với thuộc tính `data` chứa mảng
+            const draftExams = data.data.filter(exam => exam.status === 'draft');
+            setDraftExams(draftExams);
+         } else {
+            console.error("API không trả về một mảng hợp lệ:", data);
+         }
+      })
+      .catch((error) => {
+         console.error("Lỗi khi lấy dữ liệu:", error);
+      });
+}, []);
 
    const handleUpdate = (examId) => {
       navigate(`/instructor/exam/${examId}`);

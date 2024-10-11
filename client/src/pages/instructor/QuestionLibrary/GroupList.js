@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Search } from 'lucide-react';
+import { Edit, Trash2, Search, List } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const GroupList = () => {
    const [groups, setGroups] = useState([]);
+   const [questions, setQuestions] = useState([]);
    const [newGroupName, setNewGroupName] = useState('');
    const [newGroupDescription, setNewGroupDescription] = useState('');
    const [showModal, setShowModal] = useState(false);
    const [editingGroupIndex, setEditingGroupIndex] = useState(null);
    const [searchTerm, setSearchTerm] = useState('');
+   const [selectedGroupId, setSelectedGroupId] = useState(null);
 
    useEffect(() => {
       fetchGroups();
@@ -23,7 +25,6 @@ const GroupList = () => {
             },
          });
          const data = await response.json();
-         console.log('Fetched groups:', data);
          if (Array.isArray(data)) {
             setGroups(data);
          } else {
@@ -32,6 +33,29 @@ const GroupList = () => {
       } catch (error) {
          console.error('Error fetching groups:', error);
          toast.error('Có lỗi khi lấy danh sách nhóm.');
+      }
+   };
+
+   const fetchQuestionsByGroupId = async (groupId) => {
+      if (selectedGroupId === groupId) {
+         setSelectedGroupId(null);
+         setQuestions([]);
+      } else {
+         try {
+
+            const response = await fetch(`http://localhost:5000/api/groups/${groupId}/questions`, {
+               headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
+               },
+            });
+            const data = await response.json();
+            setQuestions(data || []);
+            setSelectedGroupId(groupId);
+         } catch (error) {
+            console.error('Error fetching questions:', error);
+            toast.error('Không thể lấy danh sách câu hỏi.');
+            setQuestions([]);
+         }
       }
    };
 
@@ -197,6 +221,50 @@ const GroupList = () => {
                            </button>
                         </div>
                      </div>
+                     <button className="text-gray-400 flex items-center mt-2" onClick={() => fetchQuestionsByGroupId(group._id)}>
+                        <List className="mr-1" />
+                        <span>Hiển thị chi tiết câu hỏi</span>
+                     </button>
+                     {selectedGroupId === group._id && (
+                        <div className="mt-4">
+                           <h4 className="font-semibold">Danh sách câu hỏi chi tiết:</h4>
+                           {questions.length > 0 ? (
+                              <table className="min-w-full bg-white border">
+                                 <thead>
+                                    <tr className="w-full bg-gray-200">
+                                       <th className="px-4 py-2 border">Câu hỏi</th>
+                                       <th className="px-4 py-2 border">Các tùy chọn</th>
+                                       <th className="px-4 py-2 border">Đáp án đúng</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                    {questions.map((question, index) => (
+                                       <tr key={index}>
+                                          <td className="px-4 py-2 border">{question.question_text}</td>
+                                          <td className="px-4 py-2 border">
+                                             <div className="flex flex-col space-y-1">
+                                                {question.options ? (
+                                                   question.options.map((option, idx) => (
+                                                      <div key={idx} className="flex items-start">
+                                                         <span className="font-bold mr-1">{String.fromCharCode(65 + idx)}.</span>
+                                                         <span>{option}</span>
+                                                      </div>
+                                                   ))
+                                                ) : (
+                                                   'N/A'
+                                                )}
+                                             </div>
+                                          </td>
+                                          <td className="px-4 py-2 border">{Array.isArray(question.correct_answers) ? question.correct_answers.join(', ') : 'N/A'}</td>
+                                       </tr>
+                                    ))}
+                                 </tbody>
+                              </table>
+                           ) : (
+                              <p>Không có câu hỏi nào trong nhóm này.</p>
+                           )}
+                        </div>
+                     )}
                   </div>
                ))
             )}

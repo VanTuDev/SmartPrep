@@ -35,11 +35,19 @@ const LoginPage = () => {
       const result = await response.json();
 
       if (response.ok) {
+        if (!result.user || !result.user._id) {
+          console.error("User ID is missing in response!");
+          return;
+        }
+
+        // Lưu thông tin vào localStorage sau khi đăng nhập thành công
         localStorage.setItem('token', result.token);
-        // Lưu thông tin người dùng vào localStorage
+        localStorage.setItem('userId', result.user._id); // Đảm bảo userId được lưu đúng cách
         localStorage.setItem('userRole', result.user.role);
         localStorage.setItem('userEmail', result.user.email);
         localStorage.setItem('userPhone', result.user.phone);
+
+        console.log("LocalStorage User ID:", localStorage.getItem('userId')); // Kiểm tra lại localStorage
 
         toast.success('Đăng nhập thành công!');
 
@@ -47,7 +55,7 @@ const LoginPage = () => {
         if (result.user.role === 'instructor') {
           navigate('/instructor/dashboard');
         } else if (result.user.role === 'learner') {
-          navigate('/learner/dashboard'); // Đường dẫn cho learner
+          navigate('/learner/dashboard'); // Đường dẫn cho user
         } else {
           setError('Vai trò không xác định.');
           toast.error('Vai trò không xác định.');
@@ -61,6 +69,8 @@ const LoginPage = () => {
       toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
     }
   };
+
+
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">

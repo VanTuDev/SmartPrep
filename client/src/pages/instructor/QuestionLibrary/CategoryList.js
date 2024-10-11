@@ -1,152 +1,157 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Search } from 'lucide-react';
+import { Search, List, Edit, Trash2 } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const CategoryList = () => {
    const [categories, setCategories] = useState([]);
+   const [questions, setQuestions] = useState([]);
    const [newCategory, setNewCategory] = useState('');
    const [newDescription, setNewDescription] = useState('');
    const [showModal, setShowModal] = useState(false);
-   const [editingCategoryIndex, setEditingCategoryIndex] = useState(null);
    const [searchTerm, setSearchTerm] = useState('');
+   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+   const [editingCategory, setEditingCategory] = useState(null);
+   const [groups, setGroups] = useState([]);
 
    useEffect(() => {
-      const fetchCategories = async () => {
-         try {
-            const response = await fetch('http://localhost:5000/api/category', {
-               headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
-               },
-            });
-            const data = await response.json();
-            console.log('Fetched categories:', data);
-            if (Array.isArray(data)) {
-               setCategories(data);
-            } else {
-               console.error('Unexpected data format', data);
-            }
-         } catch (error) {
-            console.error('Lỗi khi lấy danh mục:', error);
-         }
-      };
-
       fetchCategories();
+      fetchGroups();
    }, []);
 
-   const handleAddCategory = async () => {
-      const newCat = {
-         name: newCategory,
-         description: newDescription,
-      };
-
+   const fetchCategories = async () => {
       try {
-         const token = localStorage.getItem('token');
-
-         const response = await fetch('http://localhost:5000/api/category/create', {
-            method: 'POST',
+         const response = await fetch('http://localhost:5000/api/category', {
             headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${token}`,
+               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-            body: JSON.stringify(newCat),
          });
-
-         if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || 'Error creating category');
-         }
-
-         const createdCategory = await response.json();
-         setCategories([...categories, createdCategory.category]);
-         toast.success('Danh mục đã được tạo thành công!');
-         resetForm();
+         const data = await response.json();
+         setCategories(Array.isArray(data) ? data : []);
       } catch (error) {
-         console.error('Lỗi khi thêm danh mục:', error);
-         toast.error(error.message);
+         toast.error('Lỗi khi lấy danh mục!');
+         setCategories([]);
       }
    };
 
-   const handleEditCategory = (index) => {
-      const categoryToEdit = categories[index];
-      setEditingCategoryIndex(index);
-      setNewCategory(categoryToEdit.name);
-      setNewDescription(categoryToEdit.description);
-      setShowModal(true);
-   };
-
-   const handleUpdateCategory = async () => {
-      if (editingCategoryIndex === null) return;
-
-      const updatedCategory = {
-         name: newCategory,
-         description: newDescription,
-      };
-
+   const fetchGroups = async () => {
       try {
-         const token = localStorage.getItem('token');
-         const categoryId = categories[editingCategoryIndex]._id; // Lấy ID của danh mục đang chỉnh sửa
-         const response = await fetch(`http://localhost:5000/api/category/${categoryId}`, {
-            method: 'PUT',
+         const response = await fetch('http://localhost:5000/api/groups', {
             headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${token}`,
+               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-            body: JSON.stringify(updatedCategory), // Gửi thông tin cập nhật
          });
-
-         if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || 'Lỗi khi cập nhật danh mục');
-         }
-
-         const updatedData = await response.json();
-         const updatedCategories = [...categories];
-         updatedCategories[editingCategoryIndex] = updatedData.category; // Cập nhật danh mục trong danh sách
-         setCategories(updatedCategories); // Cập nhật lại danh sách
-         toast.success('Danh mục đã được cập nhật thành công!'); // Hiển thị thông báo thành công
-         resetForm(); // Đặt lại các trường
+         const data = await response.json();
+         setGroups(Array.isArray(data) ? data : []);
       } catch (error) {
-         console.error('Lỗi khi cập nhật danh mục:', error);
-         toast.error(error.message); // Hiển thị thông báo lỗi
+         toast.error('Lỗi khi lấy danh sách nhóm!');
+         setGroups([]);
       }
    };
 
-   const handleDeleteCategory = async (index) => {
-      const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa danh mục này?");
-      if (confirmDelete) {
+   const getGroupNameById = (groupId) => {
+      const group = groups.find((g) => g._id === groupId);
+      return group ? group.name : 'N/A';
+   };
+
+   // Cập nhật hàm để bật/tắt hiển thị câu hỏi
+   const fetchQuestionsByCategoryId = async (categoryId) => {
+      if (selectedCategoryId === categoryId) {
+         setSelectedCategoryId(null); // Ẩn danh sách câu hỏi nếu danh mục hiện đang được chọn
+         setQuestions([]);
+      } else {
          try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/category/${categories[index]._id}`, {
-               method: 'DELETE',
+            const response = await fetch(`http://localhost:5000/api/questions/category/${categoryId}`, {
                headers: {
-                  'Authorization': `Bearer ${token}`,
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
                },
             });
+            if (!response.ok) throw new Error('Lỗi khi lấy danh sách câu hỏi.');
 
-            if (!response.ok) {
-               const errorResponse = await response.json();
-               throw new Error(errorResponse.error || 'Lỗi khi xóa danh mục');
-            }
-
-            const updatedCategories = categories.filter((_, i) => i !== index);
-            setCategories(updatedCategories);
-            toast.success('Danh mục đã được xóa thành công!');
+            const data = await response.json();
+            setQuestions(data || []);
+            setSelectedCategoryId(categoryId);
          } catch (error) {
-            console.error('Lỗi khi xóa danh mục:', error);
-            toast.error(error.message);
+            toast.error('Không thể lấy danh sách câu hỏi.');
+            setQuestions([]);
          }
+      }
+   };
+
+   const handleAddOrEditCategory = async () => {
+      if (!newCategory.trim()) {
+         toast.error('Tên danh mục không được để trống.');
+         return;
+      }
+
+      const newCat = { name: newCategory.trim(), description: newDescription.trim() };
+      try {
+         const token = localStorage.getItem('token');
+         let response;
+
+         if (editingCategory) {
+            response = await fetch(`http://localhost:5000/api/category/${editingCategory._id}`, {
+               method: 'PUT',
+               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+               body: JSON.stringify(newCat),
+            });
+         } else {
+            response = await fetch('http://localhost:5000/api/category/create', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+               body: JSON.stringify(newCat),
+            });
+         }
+
+         if (!response.ok) {
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.error || 'Lỗi khi tạo hoặc chỉnh sửa danh mục.');
+         }
+
+         fetchCategories();
+         toast.success(editingCategory ? 'Danh mục đã được chỉnh sửa thành công!' : 'Danh mục đã được tạo thành công!');
+         resetForm();
+      } catch (error) {
+         toast.error(`Lỗi khi tạo hoặc chỉnh sửa danh mục: ${error.message}. Vui lòng thử lại.`);
+      }
+   };
+
+   const handleDeleteCategory = async (categoryId) => {
+      try {
+         const token = localStorage.getItem('token');
+         const response = await fetch(`http://localhost:5000/api/category/${categoryId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+         });
+
+         if (!response.ok) {
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.error || 'Lỗi khi xóa danh mục.');
+         }
+
+         setCategories(categories.filter((cat) => cat._id !== categoryId));
+         setSelectedCategoryId(null);
+         toast.success('Danh mục đã được xóa thành công!');
+      } catch (error) {
+         toast.error(`Không thể xóa danh mục: ${error.message}. Vui lòng thử lại.`);
       }
    };
 
    const resetForm = () => {
       setNewCategory('');
       setNewDescription('');
-      setEditingCategoryIndex(null);
       setShowModal(false);
+      setEditingCategory(null);
    };
 
-   const filteredCategories = categories.filter(category =>
+   const handleEditClick = (category) => {
+      setEditingCategory(category);
+      setNewCategory(category.name);
+      setNewDescription(category.description);
+      setShowModal(true);
+   };
+
+   const filteredCategories = categories.filter((category) =>
       category.name.toLowerCase().includes(searchTerm.toLowerCase())
    );
 
@@ -166,14 +171,42 @@ const CategoryList = () => {
                   <Search />
                </button>
             </div>
-            <button
-               onClick={() => setShowModal(true)}
-               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800"
-            >
-               Tạo danh mục +
+            <button onClick={() => setShowModal(true)} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800">
+               {editingCategory ? 'Chỉnh sửa danh mục' : 'Tạo danh mục +'}
             </button>
          </div>
 
+         {/* Modal thêm hoặc chỉnh sửa danh mục */}
+         {showModal && (
+            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+               <div className="bg-white p-6 rounded-lg shadow-lg">
+                  <h3 className="text-lg font-semibold mb-4">{editingCategory ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}</h3>
+                  <input
+                     type="text"
+                     value={newCategory}
+                     onChange={(e) => setNewCategory(e.target.value)}
+                     placeholder="Tên danh mục"
+                     className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                  />
+                  <textarea
+                     value={newDescription}
+                     onChange={(e) => setNewDescription(e.target.value)}
+                     placeholder="Mô tả danh mục"
+                     className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                  ></textarea>
+                  <div className="flex justify-end">
+                     <button onClick={resetForm} className="bg-gray-400 text-white px-4 py-2 rounded-md mr-2">
+                        Hủy
+                     </button>
+                     <button onClick={handleAddOrEditCategory} className="bg-purple-600 text-white px-4 py-2 rounded-md">
+                        {editingCategory ? 'Lưu' : 'Thêm'}
+                     </button>
+                  </div>
+               </div>
+            </div>
+         )}
+
+         {/* Danh sách danh mục */}
          <div className="space-y-4">
             {filteredCategories.length === 0 ? (
                <div className="flex flex-col items-center justify-center text-center mt-20">
@@ -182,69 +215,73 @@ const CategoryList = () => {
                </div>
             ) : (
                filteredCategories.map((category, index) => (
-                  <div key={index} className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                  <div key={index} className={`p-4 bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer`}>
                      <div className="flex justify-between items-center">
                         <div className="flex flex-col">
                            <h3 className="font-semibold">{category.name}</h3>
                            <span className="text-gray-500">Mô tả: {category.description}</span>
-                           <span className="text-gray-400">Câu hỏi: {category.questionCount}</span>
                         </div>
-                        <div className="flex space-x-2">
-                           <button onClick={() => handleEditCategory(index)} className="text-blue-500 hover:text-blue-700 flex items-center space-x-1">
-                              <Edit />
-                              <span>Chỉnh sửa</span>
+                        <div className="flex items-center">
+                           <button className="text-blue-600 mr-2 flex items-center" onClick={() => handleEditClick(category)}>
+                              <Edit className="mr-1" />
+                              Chỉnh sửa
                            </button>
-                           <button onClick={() => handleDeleteCategory(index)} className="text-red-500 hover:text-red-700 flex items-center space-x-1">
-                              <Trash2 />
-                              <span>Xóa</span>
+                           <button className="text-red-600 flex items-center" onClick={() => handleDeleteCategory(category._id)}>
+                              <Trash2 className="mr-1" />
+                              Xóa
                            </button>
                         </div>
                      </div>
+                     <button className="text-gray-400 flex items-center mt-2" onClick={() => fetchQuestionsByCategoryId(category._id)}>
+                        <List className="mr-1" />
+                        <span>Hiển thị chi tiết câu hỏi</span>
+                     </button>
+                     {selectedCategoryId === category._id && (
+                        <div className="mt-4">
+                           <h4 className="font-semibold">Danh sách câu hỏi chi tiết:</h4>
+                           {questions.length > 0 ? (
+                              <table className="min-w-full bg-white border">
+                                 <thead>
+                                    <tr className="w-full bg-gray-200">
+                                       <th className="px-4 py-2 border">Câu hỏi</th>
+                                       <th className="px-4 py-2 border">Các tùy chọn</th>
+                                       <th className="px-4 py-2 border">Đáp án đúng</th>
+                                       <th className="px-4 py-2 border">Nhóm</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                    {questions.map((question, index) => (
+                                       <tr key={index}>
+                                          <td className="px-4 py-2 border">{question.question_text}</td>
+                                          <td className="px-4 py-2 border">
+                                             <div className="flex flex-col space-y-1">
+                                                {question.options ? (
+                                                   question.options.map((option, idx) => (
+                                                      <div key={idx} className="flex items-start">
+                                                         <span className="font-bold mr-1">{String.fromCharCode(65 + idx)}.</span> {/* Hiển thị A, B, C, D */}
+                                                         <span>{option}</span>
+                                                      </div>
+                                                   ))
+                                                ) : (
+                                                   'N/A'
+                                                )}
+                                             </div>
+                                          </td>
+                                          <td className="px-4 py-2 border">{Array.isArray(question.correct_answers) ? question.correct_answers.join(', ') : 'N/A'}</td>
+                                          <td className="px-4 py-2 border">{getGroupNameById(question.group)}</td>
+                                       </tr>
+                                    ))}
+                                 </tbody>
+                              </table>
+                           ) : (
+                              <p>Không có câu hỏi nào trong danh mục này.</p>
+                           )}
+                        </div>
+                     )}
                   </div>
                ))
             )}
          </div>
-
-         {/* Modal cho thêm hoặc chỉnh sửa danh mục */}
-         {showModal && (
-            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-               <div className="bg-white rounded-lg p-6 shadow-lg">
-                  <h3 className="text-lg font-semibold mb-4">{editingCategoryIndex !== null ? 'Chỉnh sửa danh mục' : 'Thêm danh mục'}</h3>
-                  <div className="flex mb-4">
-                     <input
-                        type="text"
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        placeholder="Tên danh mục"
-                        className="p-2 border border-gray-300 rounded-md flex-1"
-                     />
-                  </div>
-                  <div className="flex mb-4">
-                     <input
-                        type="text"
-                        value={newDescription}
-                        onChange={(e) => setNewDescription(e.target.value)}
-                        placeholder="Mô tả danh mục"
-                        className="p-2 border border-gray-300 rounded-md flex-1"
-                     />
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                     <button
-                        onClick={resetForm} // Đóng modal
-                        className="mr-2 bg-gray-300 text-black px-4 py-2 rounded-md"
-                     >
-                        Đóng
-                     </button>
-                     <button
-                        onClick={editingCategoryIndex !== null ? handleUpdateCategory : handleAddCategory}
-                        className="bg-purple-600 text-white px-4 py-2 rounded-md"
-                     >
-                        {editingCategoryIndex !== null ? 'Cập nhật' : 'Thêm'}
-                     </button>
-                  </div>
-               </div>
-            </div>
-         )}
       </div>
    );
 };

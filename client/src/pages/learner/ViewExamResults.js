@@ -1,194 +1,183 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const LearnerDashboard = () => {
-   const [userInfo, setUserInfo] = useState({});
-   const [questions, setQuestions] = useState([]);
-   const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
-   const questionsPerPage = 5; // Số lượng câu hỏi hiển thị trên mỗi trang
-   const questionContainerRef = useRef(null); // Tham chiếu đến div chứa danh sách câu hỏi
-
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, List, Tag, Button, Row, Col, Divider, message } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { ArrowLeft } from 'lucide-react';
+import "tailwindcss/tailwind.css";
+import HeaderComponent from '../../components/learner/LearnerHeader';
+const ViewExamResults = () => {
+   const { submissionId } = useParams();  // Lấy submissionId từ URL
+   const [submissionData, setSubmissionData] = useState(null);  // Trạng thái để lưu dữ liệu bài làm
    const navigate = useNavigate();
 
-   // Lấy dữ liệu từ file JSON trong thư mục `public`
-   useEffect(() => {
-      fetch('/learner.data/questions.json')
-         .then((response) => {
-            if (!response.ok) {
-               throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-         })
-         .then((data) => {
-            // Tính toán số câu đã được chọn (không bao gồm những câu có `selected` là "null")
-            const selectedQuestions = data.questions.filter((q) => q.selected !== "null").length;
+   // Đường dẫn API để lấy dữ liệu kết quả
+   const SUBMISSION_URL = `http://localhost:5000/api/submissions/${submissionId}`;
 
-            // Cập nhật thông tin người dùng và số câu đã chọn
-            setUserInfo({
-               id: data.user.id,
-               name: data.user.name,
-               email: data.user.email,
-               totalQuestions: data.questions.length, // Tổng số câu hỏi từ file JSON
-               duration: data.duration,
-               startTime: data.startTime,
-               endTime: data.endTime,
-               answeredQuestions: selectedQuestions, // Số câu đã chọn
-               score: data.score,
+   // Lấy dữ liệu từ API
+   useEffect(() => {
+      const fetchSubmissionData = async () => {
+         try {
+            const response = await fetch(SUBMISSION_URL, {
+               method: 'GET',
+               headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+               },
             });
-            setQuestions(data.questions); // Lưu trữ danh sách câu hỏi
-         })
-         .catch((error) => {
-            console.error("Lỗi khi tải tệp JSON:", error);
-         });
-   }, []);
 
-   // Tự động cuộn lên đầu khi `currentPage` thay đổi
-   useEffect(() => {
-      if (questionContainerRef.current) {
-         questionContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (response.ok) {
+               const data = await response.json();
+               setSubmissionData(data);
+            } else {
+               const error = await response.json();
+               message.error(error.message || 'Lỗi khi lấy dữ liệu kết quả bài thi!');
+            }
+         } catch (error) {
+            console.error('Lỗi khi lấy dữ liệu bài thi:', error);
+            message.error('Đã xảy ra lỗi trong quá trình lấy dữ liệu bài thi!');
+         }
+      };
+
+      if (submissionId) {
+         fetchSubmissionData();
       }
-   }, [currentPage]);
+   }, [submissionId]);
 
-   // Xử lý điều hướng quay về trang chủ
-   const handleGoHome = () => {
-      navigate('/'); // Chuyển hướng về trang chủ
-   };
+   // Nếu dữ liệu chưa tải, hiển thị màn hình tải
+   if (!submissionData) {
+      return (
+         <div className="flex justify-center items-center min-h-screen">
+            <div className="text-lg font-medium text-gray-600">Đang tải dữ liệu bài thi...</div>
+         </div>
+      );
+   }
 
-   // Xử lý chuyển đến trang kế tiếp
-   const handleNextPage = () => {
-      if (currentPage < Math.ceil(questions.length / questionsPerPage) - 1) {
-         setCurrentPage(currentPage + 1);
-      }
-   };
+   // Tính điểm dựa trên số câu trả lời đúng
+   const totalQuestions = submissionData.questions.length;
+   const correctAnswers = submissionData.questions.filter(
+      (q) => q.answer === q.correct_answers[0]
+   ).length;
 
-   // Xử lý quay lại trang trước đó
-   const handlePreviousPage = () => {
-      if (currentPage > 0) {
-         setCurrentPage(currentPage - 1);
-      }
-   };
-
-   // Tính toán chỉ số của câu hỏi hiển thị trong trang hiện tại
-   const startIndex = currentPage * questionsPerPage;
-   const currentQuestions = questions.slice(startIndex, startIndex + questionsPerPage);
-
+   const score = ((correctAnswers / totalQuestions) * 10).toFixed(2);
    return (
-      <div className="bg-gray-100 min-h-screen p-6">
-         <header className="relative bg-white shadow-md rounded-lg p-4 mb-6 flex justify-center items-center">
-            <div className="text-2xl font-bold text-gray-800">Kết quả bài kiểm tra</div>
-            <button
-               onClick={handleGoHome}
-               className="absolute right-4 text-2xl text-gray-600 hover:text-red-600 transition duration-200"
-            >
-               &#x2715;
-            </button>
-         </header>
+      <div>
+         <HeaderComponent></HeaderComponent>
+         <div className=' flex justify-around py-6 shadow-sm bg-slate-200'>
+            <div>
 
-         {/* Main Content */}
-         <div className="flex flex-col justify-start items-center max-w-4xl mx-auto space-y-6">
-            {/* Thông tin người dùng và bài kiểm tra */}
-            <div className="w-full bg-white shadow-lg rounded-lg p-6">
-               <div className="text-lg font-bold text-gray-700 mb-4">TOÁN</div>
-               <div className="grid grid-cols-3 gap-4 text-sm text-gray-600 mb-4">
-                  <div>ID: {userInfo.id}</div>
-                  <div className="text-center">Smart Dev</div>
-                  <div className="text-right">Thời gian: {userInfo.duration}</div>
-               </div>
-               <div className="flex items-center mb-4">
-                  <img src="https://via.placeholder.com/50" alt="User Avatar" className="rounded-full w-12 h-12 mr-3" />
-                  <div>
-                     <div className="font-semibold">{userInfo.name}</div>
-                     <div className="text-gray-500">{userInfo.email}</div>
-                  </div>
-               </div>
-               <div className="grid grid-cols-3 text-center mb-4">
-                  <div className="text-gray-700 font-medium">
-                     {userInfo.answeredQuestions}
-                     <br />
-                     <span className="text-sm">Câu đã chọn</span>
-                  </div>
-                  <div className="text-gray-700 font-medium">
-                     {userInfo.totalQuestions}
-                     <br />
-                     <span className="text-sm">Tổng số câu hỏi</span>
-                  </div>
-                  <div className="text-gray-700 font-medium">
-                     {userInfo.score !== null ? userInfo.score : 'Đang chờ chấm điểm'}
-                     <br />
-                     <span className="text-sm">Điểm</span>
-                  </div>
-               </div>
-               <div className="text-right mt-6 text-sm text-gray-500 italic">
-                  {userInfo.score !== null ? 'Bài kiểm tra đã được chấm điểm' : 'Đang chờ chấm điểm'}
-               </div>
+               X
+
             </div>
+            <div className="text-2xl">
+               <p>
+                  Kết quả bài kiểm tra -------
+               </p>
+            </div>
+            <div>
 
-            {/* Danh sách câu hỏi theo trang */}
-            <div className="w-full bg-white shadow-lg rounded-lg p-6" ref={questionContainerRef}>
-               {currentQuestions.length > 0 ? (
-                  currentQuestions.map((question, index) => (
-                     <div key={index} className="mb-4">
-                        <div className="text-md font-medium mb-2">Câu {startIndex + index + 1}: {question.question}</div>
-                        <div className="flex flex-col space-y-2">
-                           {question.answers.map((answer, i) => {
-                              let answerClass = "p-2 border rounded-md flex items-center space-x-2";
+               <Button
+                  type="primary"
+                  onClick={() => navigate(-1)}
+                  icon={<ArrowLeft size={16} />}
+                  className="bg-blue-500 hover:bg-blue-600 focus:bg-blue-700"
+               >
+                  Quay lại
+               </Button>
+            </div>
+         </div>
 
-                              // Xác định màu sắc hiển thị cho từng câu trả lời
-                              if (question.selected === answer && question.selected !== question.correct) {
-                                 answerClass += " bg-red-100 text-red-700"; // Màu đỏ cho lựa chọn sai
-                              } else if (question.correct === answer) {
-                                 answerClass += " bg-green-100 text-green-700"; // Màu xanh cho câu trả lời đúng
-                              } else if (question.selected === answer && question.selected === question.correct) {
-                                 answerClass += " bg-green-100 text-green-700"; // Màu xanh cho lựa chọn đúng
-                              }
 
-                              return (
-                                 <div key={i} className={answerClass}>
-                                    <input
-                                       type="radio"
-                                       id={`question-${index}-answer-${i}`}
-                                       name={`question-${index}`}
-                                       value={answer}
-                                       checked={question.selected === answer}
-                                       readOnly
-                                       className="mr-2"
-                                    />
-                                    <label htmlFor={`question-${index}-answer-${i}`}>{String.fromCharCode(65 + i)}. {answer}</label>
-                                 </div>
-                              );
-                           })}
-                        </div>
-                        {/* Hiển thị thông báo nếu chưa chọn câu trả lời */}
-                        {question.selected === "null" && (
-                           <div className="text-sm text-red-600 mt-2">Chưa chọn câu trả lời</div>
-                        )}
+         <div className="min-h-screen bg-gray-100 flex justify-center">
+            <div className="w-7/12 max-w-screen-lg mx-auto py-6">
+
+               {/* THANH CHI TIẾT NỘI DUNG */}
+               <div className="mb-6 bg-gray-200 p-4 border-collapse rounded-xl">
+
+                  <div className=" h-16 flex flex-col justify-between border-b-[1px] border-gray-500 py-9'">
+                     <p><strong>Tên bài thi:</strong> {submissionData._id_test.title}</p>
+                     <p className="text-gray-600">ID: {submissionData._id}</p>
+                  </div>
+
+                  <div className=" h-16 flex justify-between border-b-[1px] border-gray-500 py-9-2'">
+                     <p className="font-semibold">Tổng số câu hỏi: {totalQuestions}</p>
+                     <p className="">Số câu trả lời đúng: {correctAnswers}</p>
+                     <p><strong>Thời gian làm:</strong> {new Date(submissionData.started_at).toLocaleString()}</p>
+                  </div>
+                  <div className=" h-16 flex border-b-[1px] gap-2 border-gray-500 py-9-2'">
+                     <div>
+                        <img
+                           className='h-14 w-14 rounded-full border border-gray-300'
+                           src="https://tse1.mm.bing.net/th?id=OIP.Y5a7pZjy5Xz0uFHpZR64ZwHaHa&pid=Api&P=0&h=180"
+                           alt="User Avatar"
+                        />
                      </div>
-                  ))
-               ) : (
-                  <div>Đang tải dữ liệu câu hỏi...</div>
-               )}
-
-               {/* Navigation Buttons */}
-               <div className="flex justify-between mt-4">
-                  <button
-                     onClick={handlePreviousPage}
-                     className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-md hover:bg-gray-400 transition duration-200"
-                     disabled={currentPage === 0}
-                  >
-                     Trang trước
-                  </button>
-                  <button
-                     onClick={handleNextPage}
-                     className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition duration-200"
-                     disabled={currentPage === Math.ceil(questions.length / questionsPerPage) - 1}
-                  >
-                     Trang tiếp theo
-                  </button>
+                     <div>
+                        <p><strong>Người dùng:</strong> {submissionData._id_user.name}</p>
+                        <p><strong>Email:</strong> {submissionData._id_user.email}</p>
+                     </div>
+                  </div>
+                  <div className="h-16 ">
+                     <div justify="space-between">
+                        <div>
+                           <p>
+                              Số câu đã chọn : {correctAnswers}
+                           </p>
+                        </div>
+                        <div className="text-right">
+                           <p className="text-xl">Điểm: <span className="text-green-600">{score}/10</span> </p>
+                        </div>
+                     </div>
+                  </div>
                </div>
+
+               {/* THANH CHI TIẾT NỘI DUNG */}
+
+               {/* Danh sách câu hỏi và kết quả */}
+               <Card>
+                  <List
+                     header={<h3 className="text-lg font-semibold">Chi tiết câu hỏi</h3>}
+                     bordered
+                     dataSource={submissionData.questions}
+                     renderItem={(question, index) => (
+                        <List.Item>
+                           <div className="w-full">
+                              {/* Câu hỏi */}
+                              <div className="mb-2">
+                                 <strong>{index + 1}. {question.question_text}</strong>
+                              </div>
+
+                              {/* Các lựa chọn */}
+                              <div className="mb-2">
+                                 {question.options.map((option, idx) => (
+                                    <div key={idx} className={`mb-1 ${option === question.correct_answers[0] ? 'text-green-600' : ''}`}>
+                                       <span className="font-medium">{String.fromCharCode(65 + idx)}. {option}</span>
+                                       {option === question.answer && (
+                                          option === question.correct_answers[0] ? (
+                                             <Tag icon={<CheckCircleOutlined />} color="success" className="ml-2">
+                                                Đúng
+                                             </Tag>
+                                          ) : (
+                                             <Tag icon={<CloseCircleOutlined />} color="error" className="ml-2">
+                                                Sai
+                                             </Tag>
+                                          )
+                                       )}
+                                    </div>
+                                 ))}
+                              </div>
+
+                              {/* Hiển thị đáp án đúng */}
+                              <Divider />
+                              <p><strong>Đáp án đúng:</strong> {question.correct_answers.join(', ')}</p>
+                           </div>
+                        </List.Item>
+                     )}
+                  />
+               </Card>
             </div>
          </div>
       </div>
    );
 };
 
-export default LearnerDashboard;
+export default ViewExamResults;
