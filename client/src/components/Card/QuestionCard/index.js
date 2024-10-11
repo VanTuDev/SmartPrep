@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// import './QuestionCard.css'
 import { Card, Input, Button, Radio, Space, message, Tooltip } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { Trash2 } from 'lucide-react';
@@ -7,55 +6,64 @@ import { Trash2 } from 'lucide-react';
 const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemove }) => {
     const [localQuestion, setLocalQuestion] = useState(question);
 
-    // Update data to local state when changing question
-    const handleAnswerChange = (id, text) => {
-        const updatedAnswers = localQuestion.answers.map((answer) =>
-            answer.id === id ? { ...answer, text } : answer
-        );
-        setLocalQuestion({ ...localQuestion, answers: updatedAnswers });
+    // Update an answer's text
+    const handleAnswerChange = (index, text) => {
+        const updatedAnswers = [...localQuestion.options];
+        updatedAnswers[index] = text;
+        setLocalQuestion({ ...localQuestion, options: updatedAnswers });
     };
 
-    // Func add answer
+    // Add a new answer
     const handleAddAnswer = () => {
-        const newAnswer = { id: localQuestion.answers.length + 1, text: '' };
-        setLocalQuestion({ ...localQuestion, answers: [...localQuestion.answers, newAnswer] });
+        setLocalQuestion({ ...localQuestion, options: [...localQuestion.options, ''] });
     };
 
-    // Func remove answer
-    const handleRemoveAnswer = (id) => {
-        const updatedAnswers = localQuestion.answers.filter((answer) => answer.id !== id);
-        setLocalQuestion({ ...localQuestion, answers: updatedAnswers });
+    // Remove an answer
+    const handleRemoveAnswer = (optionText) => {
+        const updatedAnswers = localQuestion.options.filter((answer) => answer !== optionText);
+
+        // Nếu đáp án bị xóa là đáp án đúng, thì cập nhật trường correct thành null
+        let updatedCorrect = localQuestion.correct_answers;
+        if (localQuestion.correct_answers === optionText) {
+            updatedCorrect = null;
+        }
+
+        setLocalQuestion({ ...localQuestion, options: updatedAnswers, correct_answers: updatedCorrect });
     };
 
-    // Func update correct answer
-    const handleCorrectAnswerChange = (id) => {
-        setLocalQuestion({ ...localQuestion, correctAnswer: id });
+    // Update the correct answer (ensure it exists in the options)
+    const handleCorrectAnswerChange = (correctText) => {
+        if (localQuestion.options.includes(correctText)) {
+            setLocalQuestion({ ...localQuestion, correct_answers: [correctText] });
+        } else {
+            message.error('Correct answer must be one of the provided options!');
+        }
     };
 
-    // Func save question
+    // Save the question
     const handleSaveQuestion = () => {
-        if (!localQuestion.text.trim()) {
-            message.error('Question should not empty!');
+        if (!localQuestion.question_text.trim()) {
+            message.error('Question should not be empty!');
             return;
         }
-        if (localQuestion.answers.some((answer) => !answer.text.trim())) {
-            message.error('All choice must be filled!');
+        if (localQuestion.options.some((answer) => !answer.trim())) {
+            message.error('All choices must be filled!');
             return;
         }
-        if (localQuestion.correctAnswer === null) {
-            message.error('Choose correct answer!');
+        if (!localQuestion.options.includes(localQuestion.correct_answers[0])) {
+            message.error('Choose a correct answer!');
             return;
         }
 
         onUpdate(localQuestion); // Save data to parent
-        setEditMode(null); // Return preview mode
+        setEditMode(null); // Return to preview mode
         message.success('Saved!');
     };
 
-    // Func turn into edit mode
+    // Enter edit mode
     const handleCardClick = () => {
         if (editMode !== localQuestion.id) {
-            setEditMode(localQuestion.id); // Set edit mode for question
+            setEditMode(localQuestion.id); // Set edit mode for this question
         }
     };
 
@@ -70,43 +78,42 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                 <div>
                     <div className="mb-4">
                         <Input
-                            className='input-custom'
-                            size='large'
+                            className="input-custom"
+                            size="large"
                             placeholder="Enter question"
-                            value={localQuestion.text}
-                            onChange={(e) => setLocalQuestion({ ...localQuestion, text: e.target.value })}
+                            value={localQuestion.question_text}
+                            onChange={(e) => setLocalQuestion({ ...localQuestion, question_text: e.target.value })}
                             onClick={(e) => e.stopPropagation()} // Prevent click
                         />
                     </div>
                     <div className="w-full mb-4">
-                        <Space direction="vertical" className='w-full'>
-                            {localQuestion.answers.map((answer, index) => (
-                                <div key={answer.id} className="w-full flex items-center space-x-2">
+                        <Space direction="vertical" className="w-full">
+                            {localQuestion.options.map((option, index) => (
+                                <div key={index} className="w-full flex items-center space-x-2">
                                     <Tooltip title="Choose correct answer">
                                         <Radio
-                                            className='custom-radio'
-
-                                            checked={localQuestion.correctAnswer === answer.id}
-                                            onChange={() => handleCorrectAnswerChange(answer.id)}
+                                            className="custom-radio"
+                                            checked={localQuestion.correct_answers.includes(option)}
+                                            onChange={() => handleCorrectAnswerChange(option)}
                                             onClick={(e) => e.stopPropagation()} // Prevent click
                                         />
                                     </Tooltip>
                                     <Input
-                                        className='input-custom w-4/5'
-                                        value={answer.text}
+                                        className="input-custom w-4/5"
+                                        value={option}
                                         placeholder={`Answer ${index + 1}`}
-                                        onChange={(e) => handleAnswerChange(answer.id, e.target.value)}
+                                        onChange={(e) => handleAnswerChange(index, e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
                                     />
-                                    {localQuestion.answers.length > 1 && (
+                                    {localQuestion.options.length > 1 && (
                                         <Tooltip title="Delete">
                                             <Button
-                                                className='primary-color'
+                                                className="primary-color"
                                                 type="link"
                                                 icon={<MinusCircleOutlined />}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleRemoveAnswer(answer.id);
+                                                    handleRemoveAnswer(option);
                                                 }}
                                             />
                                         </Tooltip>
@@ -117,7 +124,7 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                     </div>
                     <Tooltip title="Add choice">
                         <button
-                            size='small'
+                            size="small"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleAddAnswer();
@@ -128,26 +135,25 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                         </button>
                     </Tooltip>
 
-                    <div className='flex justify-end space-x-2'>
-                        <Tooltip title="Delete question" >
-                            <button className='button-error-custom' onClick={onRemove}>
+                    <div className="flex justify-end space-x-2">
+                        <Tooltip title="Delete question">
+                            <button className="button-error-custom" onClick={onRemove}>
                                 <Trash2 />
                             </button>
                         </Tooltip>
-                        <button className='button-normal-custom px-3 py-2' onClick={handleSaveQuestion}>
+                        <button className="button-normal-custom px-3 py-2" onClick={handleSaveQuestion}>
                             Update
                         </button>
-
                     </div>
                 </div>
             ) : (
                 <div>
-                    <p><strong>{localQuestion.text}</strong></p>
+                    <p><strong>{localQuestion.question_text}</strong></p>
                     <Space direction="vertical">
-                        {localQuestion.answers.map((answer, index) => (
-                            <div key={answer.id}>
-                                <Radio checked={localQuestion.correctAnswer === answer.id} disabled />
-                                <span>{answer.text}</span>
+                        {localQuestion.options.map((option, index) => (
+                            <div key={index}>
+                                <Radio checked={localQuestion.correct_answers.includes(option)} disabled />
+                                <span>{option}</span>
                             </div>
                         ))}
                     </Space>

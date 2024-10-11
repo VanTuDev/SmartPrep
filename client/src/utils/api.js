@@ -21,7 +21,7 @@ export const register = async (username, fullname, email, phone, password) => {
 // Đăng nhập người dùng
 // 'identifier' có thể là 'username' hoặc 'email'
 export const login = async (identifier, password) => {
-   const response = await fetch('http://localhost:8080/api/login', {
+   const response = await fetch('http://localhost:5000/api/users/login', {
       method: 'POST',
       headers: {
          'Content-Type': 'application/json',
@@ -90,4 +90,5 @@ export const getUserById = async (id, token) => {
      return null;
    }
  };
+ 
  

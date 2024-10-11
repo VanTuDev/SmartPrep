@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify'; // Import toast
 import { CircleUserRound, Mail, PhoneCall, Key, Eye, EyeOff, UserRoundSearch } from 'lucide-react';
 
 const RegisterPage = () => {
@@ -10,9 +11,8 @@ const RegisterPage = () => {
    const [password, setPassword] = useState('');
    const [showPassword, setShowPassword] = useState(false);
    const [agreeTerms, setAgreeTerms] = useState(false);
-
-   const [errors, setErrors] = useState({}); // State để lưu các lỗi cho từng ô input
-
+   const [errors, setErrors] = useState({});
+   const [role, setRole] = useState('learner'); // State cho vai trò, mặc định là "learner"
    const navigate = useNavigate();
 
    const validateEmail = (email) => {
@@ -30,9 +30,9 @@ const RegisterPage = () => {
       return usernameRegex.test(username);
    };
 
+
    const handleRegister = async (e) => {
       e.preventDefault();
-
       let validationErrors = {};
 
       // Kiểm tra nếu bất kỳ trường nào bị bỏ trống
@@ -41,6 +41,7 @@ const RegisterPage = () => {
       if (!email) validationErrors.email = 'Email không được để trống';
       if (!phoneNumber) validationErrors.phoneNumber = 'Số điện thoại không được để trống';
       if (!password) validationErrors.password = 'Mật khẩu không được để trống';
+      if (!role) validationErrors.password = 'Mật khẩu không được để trống';
 
       // Kiểm tra định dạng email
       if (email && !validateEmail(email)) {
@@ -74,7 +75,7 @@ const RegisterPage = () => {
       }
 
       try {
-         const response = await fetch('http://localhost:8080/api/register', {
+         const response = await fetch('http://localhost:5000/api/users/register', {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',
@@ -85,19 +86,21 @@ const RegisterPage = () => {
                email,
                phone: phoneNumber,
                password,
-               profile: ''
+               profile: '',
+               role, // Thêm role vào body request
             }),
          });
 
          const result = await response.json();
 
          if (response.ok) {
+            toast.success('Đăng ký thành công!'); // Hiển thị thông báo thành công
             navigate('/login');
          } else {
-            setErrors({ server: result.error || 'Đăng ký thất bại' });
+            toast.error(result.error || 'Đăng ký thất bại'); // Hiển thị thông báo lỗi
          }
       } catch (error) {
-         setErrors({ server: 'Có lỗi xảy ra, vui lòng thử lại' });
+         toast.error('Có lỗi xảy ra, vui lòng thử lại'); // Hiển thị thông báo lỗi
       }
    };
 
@@ -110,10 +113,10 @@ const RegisterPage = () => {
          <div className="bg-white p-9 rounded-lg shadow-md w-full max-w-md">
             <div className="flex justify-center mb-6">
                <img
-                        src="/image/logo.svg"
-                        alt="Logo"
-                        className="h-24"
-                     />
+                  src="/image/logo.svg"
+                  alt="Logo"
+                  className="h-24"
+               />
             </div>
             <h2 className="text-xl text-center mb-6">Đăng ký thành viên</h2>
 
@@ -152,7 +155,7 @@ const RegisterPage = () => {
                         <Mail color="#707070" strokeWidth={2} />
                      </div>
                      <input
-                        className="w-full py-2 border-b-[1px] text-sm border-gray-500 focus:outline-none"
+                        className="w-full py-2 border-b-[1.1px] text-sm border-gray-500 focus:outline-none"
                         type="email"
                         placeholder="Nhập email"
                         value={email}
@@ -166,7 +169,7 @@ const RegisterPage = () => {
                         <PhoneCall color="#707070" strokeWidth={2} />
                      </div>
                      <input
-                        className="w-full py-2 border-b-[1px] text-sm border-gray-500 focus:outline-none"
+                        className="w-full py-2 border-b-[1.1px] text-sm border-gray-500 focus:outline-none"
                         type="text"
                         placeholder="Nhập số điện thoại"
                         value={phoneNumber}
@@ -180,7 +183,7 @@ const RegisterPage = () => {
                         <Key color="#707070" strokeWidth={1.5} />
                      </div>
                      <input
-                        className="w-full py-2 border-b-[1px] text-sm border-gray-500 focus:outline-none"
+                        className="w-full py-2 border-b-[1.1px] text-sm border-gray-500 focus:outline-none"
                         type={showPassword ? "text" : "password"}
                         placeholder="Nhập mật khẩu"
                         value={password}
@@ -191,7 +194,17 @@ const RegisterPage = () => {
                      </div>
                   </div>
                   {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-
+                  <div className="flex items-center my-2 w-full">
+                     <label className="mr-2 text-gray-700">Chọn vai trò:</label>
+                     <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="p-2 border border-gray-300 rounded-lg shadow-sm"
+                     >
+                        <option value="learner">Learner</option>
+                        <option value="instructor">Instructor</option>
+                     </select>
+                  </div>
                   <div className="flex items-center my-4">
                      <input
                         type="checkbox"

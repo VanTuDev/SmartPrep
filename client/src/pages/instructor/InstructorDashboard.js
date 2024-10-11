@@ -1,6 +1,6 @@
 import React from 'react';
-import InstructorHeader from './common/InstructorHeader';
-import NavBar from './common/NavBar';
+import InstructorHeader from '../../components/instructor/InstructorHeader';
+import NavBar from '../../components/instructor/NavBar';
 import ExamDashboard from './ExamDashboard';
 
 const InstructorDashboard = () => {
@@ -8,10 +8,8 @@ const InstructorDashboard = () => {
     <div>
       {/* Header - Thanh điều hướng chính */}
       <InstructorHeader />
-
       {/* NavBar - Điều hướng phụ */}
       <NavBar />
-
       {/* Nội dung chính của trang - ExamDashboard */}
       <div className="flex justify-center mt-8">
         <div className="w-10/12">

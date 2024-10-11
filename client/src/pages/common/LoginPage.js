@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InputField from '../../components/Form/InputField';
 import PrimaryButton from '../../components/Button/PrimaryButton';
-import { login } from '../../utils/api';
 import { Mail, Key } from 'lucide-react';
+import { toast } from 'react-toastify';
+
 const LoginPage = () => {
   const [identifier, setIdentifier] = useState(''); // Dùng cho cả email hoặc username
   const [password, setPassword] = useState('');
@@ -20,27 +21,62 @@ const LoginPage = () => {
     }
 
     try {
-      const result = await login(identifier, password);
-      if (result.token) {
+      const response = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identifier,
+          password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        if (!result.user || !result.user._id) {
+          console.error("User ID is missing in response!");
+          return;
+        }
+
+        // Lưu thông tin vào localStorage sau khi đăng nhập thành công
         localStorage.setItem('token', result.token);
-        navigate('/learner/dashboard');
+        localStorage.setItem('userId', result.user._id); // Đảm bảo userId được lưu đúng cách
+        localStorage.setItem('userRole', result.user.role);
+        localStorage.setItem('userEmail', result.user.email);
+        localStorage.setItem('userPhone', result.user.phone);
+
+        console.log("LocalStorage User ID:", localStorage.getItem('userId')); // Kiểm tra lại localStorage
+
+        toast.success('Đăng nhập thành công!');
+
+        // Điều hướng dựa trên vai trò
+        if (result.user.role === 'instructor') {
+          navigate('/instructor/dashboard');
+        } else if (result.user.role === 'learner') {
+          navigate('/learner/dashboard'); // Đường dẫn cho user
+        } else {
+          setError('Vai trò không xác định.');
+          toast.error('Vai trò không xác định.');
+        }
       } else {
         setError(result.error || 'Đăng nhập thất bại.');
+        toast.error(result.error || 'Đăng nhập thất bại.');
       }
     } catch (error) {
       setError('Có lỗi xảy ra. Vui lòng thử lại.');
+      toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
     }
   };
+
+
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="bg-white p-9 rounded-lg shadow-md w-full max-w-md">
         <div className="flex justify-center mb-6">
-          <img
-            src="/image/logo.svg"
-            alt="Logo"
-            className="h-24"
-          />
+          <img src="/image/logo.svg" alt="Logo" className="h-24" />
         </div>
         <h2 className="text-2xl font-medium text-center mb-6">Đăng Nhập</h2>
         <form onSubmit={handleLogin}>
@@ -50,7 +86,7 @@ const LoginPage = () => {
               label=""
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="Email"
+              placeholder="Email hoặc Tên đăng nhập"
               className="w-full py-2 border-b-[1.1px] text-sm border-gray-500 focus:outline-none"
             />
           </div>
@@ -69,28 +105,11 @@ const LoginPage = () => {
             <PrimaryButton text="Đăng Nhập" />
           </div>
 
-
-          <div className="flex justify-center items-center my-4">
-            <span className="text-gray-500">Hoặc</span>
-          </div>
-          <div className="flex  justify-center text-gray-600 font-bold ">
-            <button
-              type="button"
-              className="bg-white border shadow-lg border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-100 flex items-center"
-            >
-              <img
-                src="https://www.svgrepo.com/show/355037/google.svg"
-                alt="Google Icon"
-                className="w-6 h-6 mr-2 "
-              />
-              Login with google
-            </button>
-          </div>
+          {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+          <p className="text-center mt-4">
+            Chưa có tài khoản? <a href="/register" className="text-indigo-600">Đăng ký</a>
+          </p>
         </form>
-        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-        <p className="text-center mt-4">
-          Chưa có tài khoản? <a href="/register" className="text-indigo-600">Đăng ký</a>
-        </p>
       </div>
     </div>
   );
