@@ -39,7 +39,7 @@ function Exam() {
             <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab} setExamId={setExamId} examId={examId} />
             <div className="mt-24">
                 {activeTab === '1' && <ExamCreate examId={examId} />}
-                {activeTab === '2' && <Submission />}
+                {activeTab === '2' && <Submission examId={examId} />}
             </div>
         </Provider>
     );
