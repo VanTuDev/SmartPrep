@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import 'styles/instructor/ExamCreate.css'
 import { Col, DatePicker, Row } from 'antd';
-import { Switch, InputNumber, TimePicker, Typography  } from 'antd';
+import { Switch, InputNumber, TimePicker, Typography, message  } from 'antd';
 import dayjs from 'dayjs';
 import { updateExam } from 'store/examSlice';
 
@@ -19,6 +19,24 @@ function TimeSetUp({exam, onUpdateExam}) {
 
     const dateFormatList = 'DD/MM/YYYY';
     const format = 'HH:mm';
+
+    // Function to validate the start and end date
+    const validateDates = (start, end) => {
+        const now = dayjs(); // Get the current time
+
+        if (start && start.isBefore(now)) {
+            message.error("Start date cannot be in the past.");
+            return false;
+        }
+
+        if (start && end && end.isBefore(start)) {
+            message.error("End date must be after the start date.");
+            return false;
+        }
+
+        return true;
+    };
+
 
     const onDurationChange = (checked) => {
         setIsDurationChecked(checked)
@@ -38,13 +56,29 @@ function TimeSetUp({exam, onUpdateExam}) {
     };
 
     const handleStartDateChange = (value) => {
-        setStartDate(value);
-        onUpdateExam({ ...exam, start_date: value?.toISOString() });
+        const newStartDate = dayjs(value); // Tạm thời lưu start date
+        setStartDate(newStartDate);
+
+        // Kiểm tra nếu đã có end date thì mới kiểm tra logic
+        if (endDate && validateDates(newStartDate, endDate)) {
+            onUpdateExam({ ...exam, start_date: newStartDate.toISOString(), end_date: endDate.toISOString() });
+        } else if (!endDate) {
+            // Nếu chưa có end date thì chỉ lưu start date
+            onUpdateExam({ ...exam, start_date: newStartDate.toISOString() });
+        }
     };
 
     const handleEndDateChange = (value) => {
-        setEndDate(value);
-        onUpdateExam({ ...exam, endDate: value?.toISOString() });
+        const newEndDate = dayjs(value); // Tạm thời lưu end date
+        setEndDate(newEndDate);
+
+        // Kiểm tra nếu đã có start date thì mới kiểm tra logic
+        if (startDate && validateDates(startDate, newEndDate)) {
+            onUpdateExam({ ...exam, start_date: startDate.toISOString(), end_date: newEndDate.toISOString() });
+        } else if (!startDate) {
+            // Nếu chưa có start date thì chỉ lưu end date
+            onUpdateExam({ ...exam, end_date: newEndDate.toISOString() });
+        }
     };
     return (
         <>

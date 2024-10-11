@@ -56,7 +56,7 @@ const DraftExam = () => {
 
          {/* Container displaying the exam cards in 4 columns */}
          <div className="grid grid-cols-4 gap-6">
-         {draftExams.map((exam) => (
+         {draftExams?.map((exam) => (
                <MiniExamCard
                   key={exam._id}
                   exam={exam}

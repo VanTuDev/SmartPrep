@@ -17,7 +17,7 @@ const ExamDashboard = () => {
       })
          .then((response) => response.json())
          .then((data) => {
-            const publishedExams = data.filter(exam => exam.status === 'published');
+            const publishedExams = data?.filter(exam => exam.status === 'published');
             setOngoingExams(publishedExams);
          });
    }, []);
@@ -59,9 +59,9 @@ const ExamDashboard = () => {
                   <h1 className="text-xl font-semibold text-gray-700">Đang diễn ra</h1>
                </div>
                <div className="border-b border-gray-300 my-4"></div>
-               {ongoingExams.length > 0 ? (
+               {ongoingExams?.length > 0 ? (
                   <div className="grid grid-cols-4 gap-6">
-                     {ongoingExams.map((exam) => (
+                     {ongoingExams?.map((exam) => (
                         <MiniExamCard
                            key={exam._id}
                            exam={exam}

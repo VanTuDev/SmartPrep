@@ -51,6 +51,28 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
     const { exam, loading, error } = useSelector((state) => state.exam);
 
     const handleSubmit = (isPost) => {
+
+        // Validate exam data
+        if (!exam.title || !exam.description || !exam.questions.length) {
+            message.error("Please fill out all required fields: title, description, and at least one question.");
+            return;
+        }
+
+        // Validate time fields
+    const now = dayjs(); // Current time
+    const startTime = dayjs(exam.start_date);
+    const endTime = dayjs(exam.end_date);
+
+    if (exam.start_date && startTime.isBefore(now)) {
+        message.error("Start time cannot be in the past.");
+        return;
+    }
+
+    if (exam.start_date && exam.end_date && endTime.isBefore(startTime)) {
+        message.error("End time must be after the start time.");
+        return;
+    }
+
         const updatedExam = { ...exam, status: isPost ? 'published' : 'draft' };
 
         // Dispatch the updateExam action to update Redux state
@@ -59,11 +81,27 @@ function ExamHeader({ items, activeTab, onChangeTab, setExamId, examId }) {
 
         // Dispatch the appropriate Redux action
         if (examId) {
-            dispatch(updateExamAPI({ examId, examData: updatedExam }));
-            message.warning("Exam updated!");
+            dispatch(updateExamAPI({ examId, examData: updatedExam }))
+                .then((resultAction) => {
+                    if (updateExamAPI.fulfilled.match(resultAction)) {
+                        message.success("Exam updated successfully!");
+                        navigate('/instructor/dashboard');
+                    } else {
+                        message.error(`Error updating exam: ${resultAction.payload || 'Unknown error'}`);
+                    }
+                })
+                .catch((err) => message.error(`Error updating exam: ${err.message}`));
         } else {
-            dispatch(createExam(updatedExam));
-            message.warning("Exam created!");
+            dispatch(createExam(updatedExam))
+                .then((resultAction) => {
+                    if (createExam.fulfilled.match(resultAction)) {
+                        message.success("Exam created successfully!");
+                        navigate('/instructor/dashboard');
+                    } else {
+                        message.error(`Error creating exam: ${resultAction.payload || 'Unknown error'}`);
+                    }
+                })
+                .catch((err) => message.error(`Error creating exam: ${err.message}`));
         }
     };
 
