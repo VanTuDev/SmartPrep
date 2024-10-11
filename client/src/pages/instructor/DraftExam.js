@@ -17,7 +17,7 @@ const DraftExam = () => {
       })
          .then((response) => response.json())
          .then((data) => {
-            const draftExams = data.filter(exam => exam.status === 'draft');
+            const draftExams = data?.filter(exam => exam.status === 'draft');
             setDraftExams(draftExams);
          });
    }, []);
@@ -44,7 +44,7 @@ const DraftExam = () => {
 
          {/* Container displaying the exam cards in 4 columns */}
          <div className="grid grid-cols-4 gap-6">
-         {draftExams.map((exam) => (
+         {draftExams?.map((exam) => (
                <MiniExamCard
                   key={exam._id}
                   exam={exam}

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import dayjs from 'dayjs';
 
 // Initialize state with default fields to avoid errors when creating a new exam
 const initialState = {
@@ -10,8 +11,8 @@ const initialState = {
         duration: 60,
         access_link: '',
         access_type: 'public',
-        start_date: new Date().toISOString(),
-        end_date: new Date().toISOString(),
+        start_date: dayjs().add(1, 'hour').toISOString(), // Start date 1 hour from now
+        end_date: dayjs().add(24, 'hours').toISOString(), // End date 24 hours from now
         status: 'draft',
     },
     loading: false,
@@ -45,6 +46,10 @@ export const createExam = createAsyncThunk(
         console.log("Fetching started...");
         console.log("Original Exam Data: ", examData);
         try {
+            if (!examData.title || !examData.description || !examData.questions.length) {
+                return thunkAPI.rejectWithValue("Please fill out all required fields (title, description, and questions).");
+            }
+
             // Create a copy of examData to avoid directly mutating the original object
             const modifiedExamData = JSON.parse(JSON.stringify(examData));
 
@@ -176,8 +181,8 @@ const examSlice = createSlice({
                 duration: 60,
                 access_link: '',
                 access_type: 'public',
-                start_date: new Date().toISOString(),
-                end_date: new Date().toISOString(),
+                start_date: dayjs().add(1, 'hour').toISOString(), // Start date 1 hour from now
+                end_date: dayjs().add(24, 'hours').toISOString(), // End date 24 hours from now
                 status: 'draft',
             }; // Or whatever your default state should be
             state.loading = false;
