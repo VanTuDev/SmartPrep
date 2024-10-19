@@ -11,101 +11,94 @@ const RegisterPage = () => {
    const [password, setPassword] = useState('');
    const [showPassword, setShowPassword] = useState(false);
    const [agreeTerms, setAgreeTerms] = useState(false);
-   const [errors, setErrors] = useState({});
-   const [role, setRole] = useState('learner'); // State cho vai trò, mặc định là "learner"
+   const [role, setRole] = useState('learner'); 
+   const [cv, setCv] = useState(null); 
+   const [errors, setErrors] = useState({}); 
    const navigate = useNavigate();
 
-   const validateEmail = (email) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
+   // Kiểm tra định dạng email hợp lệ
+   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+   // Kiểm tra số điện thoại hợp lệ
+   const validatePhoneNumber = (phone) => /^0\d{9}$/.test(phone);
+
+   // Kiểm tra username không chứa ký tự đặc biệt
+   const validateUsername = (username) => /^[a-zA-Z0-9_]+$/.test(username);
+
+   // Xử lý khi chọn file PDF
+   const handleFileChange = (e) => {
+      const file = e.target.files[0];
+      if (file && file.type === 'application/pdf') {
+         setCv(file);
+      } else {
+         toast.error('Chỉ chấp nhận file PDF');
+         setCv(null);
+      }
    };
 
-   const validatePhoneNumber = (phone) => {
-      const phoneRegex = /^0\d{9}$/;
-      return phoneRegex.test(phone);
-   };
+   // Mở/đóng mật khẩu
+   const toggleShowPassword = () => setShowPassword(!showPassword);
 
-   const validateUsername = (username) => {
-      const usernameRegex = /^[a-zA-Z0-9_]+$/;
-      return usernameRegex.test(username);
-   };
-
-
+   // Xử lý form đăng ký
    const handleRegister = async (e) => {
       e.preventDefault();
       let validationErrors = {};
 
-      // Kiểm tra nếu bất kỳ trường nào bị bỏ trống
       if (!username) validationErrors.username = 'Tài khoản không được để trống';
       if (!fullName) validationErrors.fullname = 'Họ và tên không được để trống';
       if (!email) validationErrors.email = 'Email không được để trống';
       if (!phoneNumber) validationErrors.phoneNumber = 'Số điện thoại không được để trống';
       if (!password) validationErrors.password = 'Mật khẩu không được để trống';
-      if (!role) validationErrors.password = 'Mật khẩu không được để trống';
-
-      // Kiểm tra định dạng email
-      if (email && !validateEmail(email)) {
-         validationErrors.email = 'Email không hợp lệ';
-      }
-
-      // Kiểm tra số điện thoại
+      if (email && !validateEmail(email)) validationErrors.email = 'Email không hợp lệ';
       if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
-         validationErrors.phoneNumber = 'Số điện thoại phải có 10 số và bắt đầu bằng số "0"';
+         validationErrors.phoneNumber = 'Số điện thoại phải có 10 số và bắt đầu bằng "0"';
       }
-
-      // Kiểm tra mật khẩu
       if (password.length < 8 || password.length > 32) {
          validationErrors.password = 'Mật khẩu phải từ 8 đến 32 ký tự';
       }
-
-      // Kiểm tra username có ký tự đặc biệt hay không
       if (username && !validateUsername(username)) {
          validationErrors.username = 'Username không được chứa ký tự đặc biệt';
       }
-
-      // Kiểm tra điều khoản sử dụng
       if (!agreeTerms) {
          validationErrors.agreeTerms = 'Bạn phải đồng ý với các điều khoản sử dụng và bảo mật';
       }
+      if (role === 'instructor' && !cv) {
+         validationErrors.pdfFile = 'Vui lòng tải lên file PDF';
+      }
 
-      // Nếu có lỗi, cập nhật state và không gửi form
       if (Object.keys(validationErrors).length > 0) {
          setErrors(validationErrors);
          return;
       }
 
       try {
+         const formData = new FormData();
+         formData.append('username', username);
+         formData.append('fullname', fullName);
+         formData.append('email', email);
+         formData.append('phone', phoneNumber);
+         formData.append('password', password);
+         formData.append('role', role);
+         if (cv) {
+            formData.append('cv', cv);
+         }
+
          const response = await fetch('http://localhost:5000/api/users/register', {
             method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-               username,
-               fullname: fullName,
-               email,
-               phone: phoneNumber,
-               password,
-               profile: '',
-               role, // Thêm role vào body request
-            }),
+            body: formData,
          });
 
          const result = await response.json();
 
          if (response.ok) {
-            toast.success('Đăng ký thành công!'); // Hiển thị thông báo thành công
+            toast.success('Đăng ký thành công!');
             navigate('/login');
          } else {
-            toast.error(result.error || 'Đăng ký thất bại'); // Hiển thị thông báo lỗi
+            toast.error(result.error || 'Đăng ký thất bại');
          }
       } catch (error) {
-         toast.error('Có lỗi xảy ra, vui lòng thử lại'); // Hiển thị thông báo lỗi
+         toast.error('Có lỗi xảy ra, vui lòng thử lại');
       }
-   };
-
-   const toggleShowPassword = () => {
-      setShowPassword(!showPassword);
    };
 
    return (
@@ -205,6 +198,20 @@ const RegisterPage = () => {
                         <option value="instructor">Instructor</option>
                      </select>
                   </div>
+                   {/* Phần upload file PDF nếu role là instructor */}
+                  {role === 'instructor' && (
+                  <div className="my-4">
+                     <label className="block text-gray-700 mb-2">Tải lên chứng chỉ (PDF):</label>
+                     <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleFileChange}
+                        className="w-full border border-gray-300 p-2 rounded"
+                     />
+                     {errors.pdfFile && <p className="text-red-500 text-sm">{errors.pdfFile}</p>}
+                  </div>
+               )}
+
                   <div className="flex items-center my-4">
                      <input
                         type="checkbox"

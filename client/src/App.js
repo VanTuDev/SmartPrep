@@ -29,6 +29,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Import các thành phần chung
 import PrivateRoute from './components/PrivateRoute';
+import ForgotPassword from 'pages/common/ForgotPassword';
+import ResetPassword from 'pages/common/ResetPassword';
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path='/forgot-password'element={<ForgotPassword/>}/>
+          <Route path='/reset-password'element={<ResetPassword/>}/>
 
           {/* ========== Learner Pages ========== */}
           <Route
