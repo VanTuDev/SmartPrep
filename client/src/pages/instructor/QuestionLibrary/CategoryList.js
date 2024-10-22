@@ -1,145 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { Search, List, Edit, Trash2 } from 'lucide-react';
+import { Search, List, Edit, Trash2, Loader } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const CategoryList = () => {
    const [categories, setCategories] = useState([]);
+   const [grades, setGrades] = useState([]);
    const [questions, setQuestions] = useState([]);
    const [newCategory, setNewCategory] = useState('');
    const [newDescription, setNewDescription] = useState('');
+   const [newGrade, setNewGrade] = useState('');
    const [showModal, setShowModal] = useState(false);
    const [searchTerm, setSearchTerm] = useState('');
    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
    const [editingCategory, setEditingCategory] = useState(null);
-   const [groups, setGroups] = useState([]);
+   const [loading, setLoading] = useState(false);
 
+   // Gọi API để lấy danh mục và khối khi component được render
    useEffect(() => {
       fetchCategories();
-      fetchGroups();
+      fetchGrades();
    }, []);
 
    const fetchCategories = async () => {
       try {
-         const response = await fetch('http://localhost:5000/api/category', {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
+         setLoading(true);
+         const response = await fetch('http://localhost:5000/api/instructor/category', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
          });
          const data = await response.json();
-         setCategories(Array.isArray(data) ? data : []);
+         setCategories(data);
       } catch (error) {
          toast.error('Lỗi khi lấy danh mục!');
-         setCategories([]);
+      } finally {
+         setLoading(false);
       }
    };
 
-   const fetchGroups = async () => {
+   const fetchGrades = async () => {
       try {
-         const response = await fetch('http://localhost:5000/api/groups', {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
+         const response = await fetch('http://localhost:5000/api/instructor/grades/getAll', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
          });
          const data = await response.json();
-         setGroups(Array.isArray(data) ? data : []);
+         setGrades(data);
       } catch (error) {
-         toast.error('Lỗi khi lấy danh sách nhóm!');
-         setGroups([]);
-      }
-   };
-
-   const getGroupNameById = (groupId) => {
-      const group = groups.find((g) => g._id === groupId);
-      return group ? group.name : 'N/A';
-   };
-
-   // Cập nhật hàm để bật/tắt hiển thị câu hỏi
-   const fetchQuestionsByCategoryId = async (categoryId) => {
-      if (selectedCategoryId === categoryId) {
-         setSelectedCategoryId(null); // Ẩn danh sách câu hỏi nếu danh mục hiện đang được chọn
-         setQuestions([]);
-      } else {
-         try {
-            const response = await fetch(`http://localhost:5000/api/questions/category/${categoryId}`, {
-               headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
-               },
-            });
-            if (!response.ok) throw new Error('Lỗi khi lấy danh sách câu hỏi.');
-
-            const data = await response.json();
-            setQuestions(data || []);
-            setSelectedCategoryId(categoryId);
-         } catch (error) {
-            toast.error('Không thể lấy danh sách câu hỏi.');
-            setQuestions([]);
-         }
+         toast.error('Lỗi khi lấy danh sách khối học!');
       }
    };
 
    const handleAddOrEditCategory = async () => {
-      if (!newCategory.trim()) {
-         toast.error('Tên danh mục không được để trống.');
+      if (!newCategory.trim() || !newGrade) {
+         toast.error('Tên danh mục và khối học là bắt buộc.');
          return;
       }
 
-      const newCat = { name: newCategory.trim(), description: newDescription.trim() };
-      try {
-         const token = localStorage.getItem('token');
-         let response;
+      const categoryData = {
+         name: newCategory.trim(),
+         description: newDescription.trim(),
+         grade_id: newGrade,
+      };
 
-         if (editingCategory) {
-            response = await fetch(`http://localhost:5000/api/category/${editingCategory._id}`, {
-               method: 'PUT',
-               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-               body: JSON.stringify(newCat),
-            });
-         } else {
-            response = await fetch('http://localhost:5000/api/category/create', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-               body: JSON.stringify(newCat),
-            });
-         }
+      try {
+         const url = editingCategory
+            ? `http://localhost:5000/api/instructor/category/${editingCategory._id}`
+            : 'http://localhost:5000/api/instructor/category/create';
+         const method = editingCategory ? 'PUT' : 'POST';
+
+         const response = await fetch(url, {
+            method,
+            headers: {
+               'Content-Type': 'application/json',
+               Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify(categoryData),
+         });
 
          if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || 'Lỗi khi tạo hoặc chỉnh sửa danh mục.');
+            const error = await response.json();
+            throw new Error(error.message || 'Lỗi khi lưu danh mục.');
          }
 
          fetchCategories();
-         toast.success(editingCategory ? 'Danh mục đã được chỉnh sửa thành công!' : 'Danh mục đã được tạo thành công!');
+         toast.success(editingCategory ? 'Danh mục đã được cập nhật!' : 'Danh mục đã được tạo!');
          resetForm();
       } catch (error) {
-         toast.error(`Lỗi khi tạo hoặc chỉnh sửa danh mục: ${error.message}. Vui lòng thử lại.`);
+         toast.error(`Lỗi: ${error.message}`);
       }
    };
 
    const handleDeleteCategory = async (categoryId) => {
+      const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa danh mục này?');
+      if (!confirmDelete) return;
+
       try {
-         const token = localStorage.getItem('token');
-         const response = await fetch(`http://localhost:5000/api/category/${categoryId}`, {
+         const response = await fetch(`http://localhost:5000/api/instructor/category/${categoryId}`, {
             method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
          });
 
          if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || 'Lỗi khi xóa danh mục.');
+            const error = await response.json();
+            throw new Error(error.message || 'Lỗi khi xóa danh mục.');
          }
 
          setCategories(categories.filter((cat) => cat._id !== categoryId));
-         setSelectedCategoryId(null);
          toast.success('Danh mục đã được xóa thành công!');
       } catch (error) {
-         toast.error(`Không thể xóa danh mục: ${error.message}. Vui lòng thử lại.`);
+         toast.error(`Lỗi: ${error.message}`);
       }
    };
 
    const resetForm = () => {
       setNewCategory('');
       setNewDescription('');
+      setNewGrade('');
       setShowModal(false);
       setEditingCategory(null);
    };
@@ -148,6 +123,7 @@ const CategoryList = () => {
       setEditingCategory(category);
       setNewCategory(category.name);
       setNewDescription(category.description);
+      setNewGrade(category.grade_id?._id || '');
       setShowModal(true);
    };
 
@@ -159,129 +135,92 @@ const CategoryList = () => {
       <div className="p-6 bg-white rounded-lg shadow-md">
          <ToastContainer />
          <div className="flex justify-between mb-6">
-            <div className="relative w-full max-w-lg">
-               <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-               />
-               <button className="absolute right-2 top-2 text-gray-400">
-                  <Search />
-               </button>
-            </div>
-            <button onClick={() => setShowModal(true)} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800">
+            <input
+               type="text"
+               placeholder="Tìm kiếm danh mục"
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+               className="w-full p-2 border border-gray-300 rounded-lg shadow-sm"
+            />
+            <button onClick={() => setShowModal(true)} className="px-4 py-2 bg-purple-600 text-white rounded-lg">
                {editingCategory ? 'Chỉnh sửa danh mục' : 'Tạo danh mục +'}
             </button>
          </div>
 
-         {/* Modal thêm hoặc chỉnh sửa danh mục */}
+         {loading ? (
+            <div className="flex justify-center items-center">
+               <Loader className="animate-spin" size={48} />
+            </div>
+         ) : (
+            <div className="space-y-4">
+               {filteredCategories.map((category) => (
+                  <div key={category._id} className="p-4 bg-white rounded-lg shadow-sm border">
+                     <h3 className="font-semibold">{category.name}</h3>
+                     <p className="text-gray-500">{category.description}</p>
+                     <p className="text-gray-400">
+                        Khối: {category.grade_id ? category.grade_id.name : 'Không xác định'}
+                     </p>
+
+                     <div className="flex justify-end space-x-2 mt-2">
+                        <button onClick={() => handleEditClick(category)} className="text-blue-600 flex items-center">
+                           <Edit className="mr-1" /> Chỉnh sửa
+                        </button>
+                        <button
+                           onClick={() => handleDeleteCategory(category._id)}
+                           className="text-red-600 flex items-center"
+                        >
+                           <Trash2 className="mr-1" /> Xóa
+                        </button>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         )}
+
          {showModal && (
             <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-               <div className="bg-white p-6 rounded-lg shadow-lg">
-                  <h3 className="text-lg font-semibold mb-4">{editingCategory ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}</h3>
+               <div className="bg-white rounded-lg p-6 shadow-lg">
+                  <h3 className="text-lg font-semibold mb-4">
+                     {editingCategory ? 'Chỉnh sửa danh mục' : 'Thêm danh mục'}
+                  </h3>
                   <input
                      type="text"
                      value={newCategory}
                      onChange={(e) => setNewCategory(e.target.value)}
                      placeholder="Tên danh mục"
-                     className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                     className="mb-4 p-2 border border-gray-300 rounded-md w-full"
                   />
-                  <textarea
+                  <input
+                     type="text"
                      value={newDescription}
                      onChange={(e) => setNewDescription(e.target.value)}
-                     placeholder="Mô tả danh mục"
-                     className="w-full p-2 border border-gray-300 rounded-md mb-4"
-                  ></textarea>
-                  <div className="flex justify-end">
-                     <button onClick={resetForm} className="bg-gray-400 text-white px-4 py-2 rounded-md mr-2">
-                        Hủy
+                     placeholder="Mô tả"
+                     className="mb-4 p-2 border border-gray-300 rounded-md w-full"
+                  />
+                  <select
+                     value={newGrade}
+                     onChange={(e) => setNewGrade(e.target.value)}
+                     className="p-2 border border-gray-300 rounded-md flex-1"
+                  >
+                     <option value="">Chọn khối</option>
+                     {grades.map((grade) => (
+                        <option key={grade._id} value={grade._id}>
+                           {grade.name}
+                        </option>
+                     ))}
+                  </select>
+
+                  <div className="flex justify-end mt-4">
+                     <button onClick={resetForm} className="mr-2 px-4 py-2 bg-gray-300 rounded-md">
+                        Đóng
                      </button>
-                     <button onClick={handleAddOrEditCategory} className="bg-purple-600 text-white px-4 py-2 rounded-md">
-                        {editingCategory ? 'Lưu' : 'Thêm'}
+                     <button onClick={handleAddOrEditCategory} className="px-4 py-2 bg-purple-600 text-white rounded-md">
+                        {editingCategory ? 'Cập nhật' : 'Thêm'}
                      </button>
                   </div>
                </div>
             </div>
          )}
-
-         {/* Danh sách danh mục */}
-         <div className="space-y-4">
-            {filteredCategories.length === 0 ? (
-               <div className="flex flex-col items-center justify-center text-center mt-20">
-                  <img src="/image/empty@2x.png" alt="No categories" className="w-1/6 mb-6" />
-                  <p className="text-600">Hiện tại không có danh mục nào. Nhấn tạo để thêm mới.</p>
-               </div>
-            ) : (
-               filteredCategories.map((category, index) => (
-                  <div key={index} className={`p-4 bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer`}>
-                     <div className="flex justify-between items-center">
-                        <div className="flex flex-col">
-                           <h3 className="font-semibold">{category.name}</h3>
-                           <span className="text-gray-500">Mô tả: {category.description}</span>
-                        </div>
-                        <div className="flex items-center">
-                           <button className="text-blue-600 mr-2 flex items-center" onClick={() => handleEditClick(category)}>
-                              <Edit className="mr-1" />
-                              Chỉnh sửa
-                           </button>
-                           <button className="text-red-600 flex items-center" onClick={() => handleDeleteCategory(category._id)}>
-                              <Trash2 className="mr-1" />
-                              Xóa
-                           </button>
-                        </div>
-                     </div>
-                     <button className="text-gray-400 flex items-center mt-2" onClick={() => fetchQuestionsByCategoryId(category._id)}>
-                        <List className="mr-1" />
-                        <span>Hiển thị chi tiết câu hỏi</span>
-                     </button>
-                     {selectedCategoryId === category._id && (
-                        <div className="mt-4">
-                           <h4 className="font-semibold">Danh sách câu hỏi chi tiết:</h4>
-                           {questions.length > 0 ? (
-                              <table className="min-w-full bg-white border">
-                                 <thead>
-                                    <tr className="w-full bg-gray-200">
-                                       <th className="px-4 py-2 border">Câu hỏi</th>
-                                       <th className="px-4 py-2 border">Các tùy chọn</th>
-                                       <th className="px-4 py-2 border">Đáp án đúng</th>
-                                       <th className="px-4 py-2 border">Nhóm</th>
-                                    </tr>
-                                 </thead>
-                                 <tbody>
-                                    {questions.map((question, index) => (
-                                       <tr key={index}>
-                                          <td className="px-4 py-2 border">{question.question_text}</td>
-                                          <td className="px-4 py-2 border">
-                                             <div className="flex flex-col space-y-1">
-                                                {question.options ? (
-                                                   question.options.map((option, idx) => (
-                                                      <div key={idx} className="flex items-start">
-                                                         <span className="font-bold mr-1">{String.fromCharCode(65 + idx)}.</span> {/* Hiển thị A, B, C, D */}
-                                                         <span>{option}</span>
-                                                      </div>
-                                                   ))
-                                                ) : (
-                                                   'N/A'
-                                                )}
-                                             </div>
-                                          </td>
-                                          <td className="px-4 py-2 border">{Array.isArray(question.correct_answers) ? question.correct_answers.join(', ') : 'N/A'}</td>
-                                          <td className="px-4 py-2 border">{getGroupNameById(question.group)}</td>
-                                       </tr>
-                                    ))}
-                                 </tbody>
-                              </table>
-                           ) : (
-                              <p>Không có câu hỏi nào trong danh mục này.</p>
-                           )}
-                        </div>
-                     )}
-                  </div>
-               ))
-            )}
-         </div>
       </div>
    );
 };

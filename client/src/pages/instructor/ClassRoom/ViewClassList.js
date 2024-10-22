@@ -134,7 +134,7 @@ const ViewClassList = () => {
                )}
 
                {/* Danh sách các lớp học hiển thị dưới dạng thẻ */}
-               <div className="w-5/12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+               <div className="w-6/12 grid grid-cols-1 border-gray-600 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredClasses.map((classInfo) => (
                      <CardClassList
                         key={classInfo._id}

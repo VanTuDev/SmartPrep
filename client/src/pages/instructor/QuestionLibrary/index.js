@@ -4,7 +4,7 @@ import QuestionList from './QuestionList';
 import Header from '../../../components/instructor/InstructorHeader';
 import CategoryList from './CategoryList';
 import GroupList from './GroupList';
-
+import GradeList from './GradeList';
 const QuestionLibrary = () => {
   const [activeTab, setActiveTab] = useState('1');
 
@@ -16,6 +16,8 @@ const QuestionLibrary = () => {
         return <CategoryList />;
       case '3':
         return <GroupList />;
+      case '4':
+        return <GradeList />;
       default:
         return null;
     }
