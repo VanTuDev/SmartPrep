@@ -10,19 +10,25 @@ const QuestionLibraryTabs = ({ activeTab, onChangeTab }) => {
             className={`text-gray-600 hover:text-purple-700 pb-2 tag-menu ${activeTab === '1' ? 'border-b-2 border-purple-700' : ''}`}
             onClick={() => onChangeTab('1')}
           >
-            Question
+            Tạo ngân hàng câu hỏi
           </button>
           <button
             className={`text-gray-600 hover:text-purple-700 pb-2 tag-menu ${activeTab === '2' ? 'border-b-2 border-purple-700' : ''}`}
             onClick={() => onChangeTab('2')}
-          > 
-            Directory
+          >
+            Môn học
           </button>
           <button
             className={`text-gray-600 hover:text-purple-700 pb-2 tag-menu ${activeTab === '3' ? 'border-b-2 border-purple-700' : ''}`}
             onClick={() => onChangeTab('3')}
           >
-            Group
+            Chương học
+          </button>
+          <button
+            className={`text-gray-600 hover:text-purple-700 pb-2 tag-menu ${activeTab === '4' ? 'border-b-2 border-purple-700' : ''}`}
+            onClick={() => onChangeTab('4')}
+          >
+            Khối học
           </button>
         </div>
       </nav>

@@ -1,315 +1,210 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Search, List } from 'lucide-react';
+import { Edit, Trash2, ChevronDown, ChevronRight, Plus, Save, X } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 const GroupList = () => {
    const [groups, setGroups] = useState([]);
-   const [questions, setQuestions] = useState([]);
+   const [categories, setCategories] = useState([]);
    const [newGroupName, setNewGroupName] = useState('');
    const [newGroupDescription, setNewGroupDescription] = useState('');
-   const [showModal, setShowModal] = useState(false);
-   const [editingGroupIndex, setEditingGroupIndex] = useState(null);
-   const [searchTerm, setSearchTerm] = useState('');
-   const [selectedGroupId, setSelectedGroupId] = useState(null);
+   const [editingGroupId, setEditingGroupId] = useState(null); // Track the editing group
+   const [openCategory, setOpenCategory] = useState(null); // Manage expanded category
 
    useEffect(() => {
       fetchGroups();
+      fetchCategories();
    }, []);
 
    const fetchGroups = async () => {
       try {
-         const response = await fetch('http://localhost:5000/api/groups', {
-            headers: {
-               'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            },
+         const response = await axios.get('http://localhost:5000/api/instructor/groups', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
          });
-         const data = await response.json();
-         if (Array.isArray(data)) {
-            setGroups(data);
-         } else {
-            console.error('Unexpected data format', data);
-         }
+         setGroups(response.data);
       } catch (error) {
-         console.error('Error fetching groups:', error);
-         toast.error('Có lỗi khi lấy danh sách nhóm.');
+         toast.error('Có lỗi khi lấy danh sách chương.');
       }
    };
 
-   const fetchQuestionsByGroupId = async (groupId) => {
-      if (selectedGroupId === groupId) {
-         setSelectedGroupId(null);
-         setQuestions([]);
-      } else {
-         try {
-
-            const response = await fetch(`http://localhost:5000/api/groups/${groupId}/questions`, {
-               headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
-               },
-            });
-            const data = await response.json();
-            setQuestions(data || []);
-            setSelectedGroupId(groupId);
-         } catch (error) {
-            console.error('Error fetching questions:', error);
-            toast.error('Không thể lấy danh sách câu hỏi.');
-            setQuestions([]);
-         }
-      }
-   };
-
-   const handleAddGroup = async () => {
-      const newGroup = {
-         name: newGroupName,
-         description: newGroupDescription,
-      };
-
+   const fetchCategories = async () => {
       try {
-         const response = await fetch('http://localhost:5000/api/groups/create', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify(newGroup),
+         const response = await axios.get('http://localhost:5000/api/instructor/category', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
          });
-
-         if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || 'Error creating group');
-         }
-
-         const createdGroup = await response.json();
-         setGroups([...groups, createdGroup.group]);
-         toast.success('Nhóm đã được tạo thành công!');
-         resetForm();
+         setCategories(response.data);
       } catch (error) {
-         console.error('Error adding group:', error);
-         toast.error(error.message);
-      }
-   };
-
-   const handleEditGroup = (index) => {
-      const groupToEdit = groups[index];
-      setEditingGroupIndex(index);
-      setNewGroupName(groupToEdit.name);
-      setNewGroupDescription(groupToEdit.description);
-      setShowModal(true);
-   };
-
-   const handleUpdateGroup = async () => {
-      if (editingGroupIndex === null) return;
-
-      const updatedGroup = {
-         name: newGroupName,
-         description: newGroupDescription,
-      };
-
-      try {
-         const groupId = groups[editingGroupIndex]._id;
-         const response = await fetch(`http://localhost:5000/api/groups/${groupId}`, {
-            method: 'PUT',
-            headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify(updatedGroup),
-         });
-
-         if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || 'Error updating group');
-         }
-
-         const updatedData = await response.json();
-         const updatedGroups = [...groups];
-         updatedGroups[editingGroupIndex] = updatedData.group;
-         setGroups(updatedGroups);
-         toast.success('Nhóm đã được cập nhật thành công!');
-         resetForm();
-      } catch (error) {
-         console.error('Error updating group:', error);
-         toast.error(error.message);
-      }
-   };
-
-   const handleDeleteGroup = async (index) => {
-      const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa nhóm này?");
-      if (confirmDelete) {
-         try {
-            const groupId = groups[index]._id;
-            const response = await fetch(`http://localhost:5000/api/groups/${groupId}`, {
-               method: 'DELETE',
-               headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
-               },
-            });
-
-            if (!response.ok) {
-               const errorResponse = await response.json();
-               throw new Error(errorResponse.error || 'Error deleting group');
-            }
-
-            const updatedGroups = groups.filter((_, i) => i !== index);
-            setGroups(updatedGroups);
-            toast.success('Nhóm đã được xóa thành công!');
-         } catch (error) {
-            console.error('Error deleting group:', error);
-            toast.error(error.message);
-         }
+         toast.error('Có lỗi khi lấy danh sách môn học.');
       }
    };
 
    const resetForm = () => {
       setNewGroupName('');
       setNewGroupDescription('');
-      setEditingGroupIndex(null);
-      setShowModal(false);
+      setEditingGroupId(null);
    };
 
-   const filteredGroups = groups.filter(group =>
-      group.name.toLowerCase().includes(searchTerm.toLowerCase())
-   );
+   const handleAddOrUpdateGroup = async (categoryId) => {
+      if (!newGroupName || !newGroupDescription) {
+         toast.error('Tên và mô tả chương là bắt buộc.');
+         return;
+      }
+
+      const groupData = {
+         name: newGroupName,
+         description: newGroupDescription,
+         category_id: categoryId,
+      };
+
+      try {
+         const url = editingGroupId
+            ? `http://localhost:5000/api/instructor/groups/${editingGroupId}`
+            : 'http://localhost:5000/api/instructor/groups/create';
+         const method = editingGroupId ? 'PUT' : 'POST';
+
+         await axios({
+            method,
+            url,
+            data: groupData,
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+         });
+
+         toast.success(editingGroupId ? 'Chương đã được cập nhật!' : 'Chương đã được tạo!');
+         fetchGroups();
+         resetForm();
+      } catch (error) {
+         toast.error('Lỗi khi thêm hoặc cập nhật chương.');
+      }
+   };
+
+   const handleEditGroup = (group) => {
+      setNewGroupName(group.name);
+      setNewGroupDescription(group.description);
+      setEditingGroupId(group._id); // Track the group being edited
+   };
+
+   const handleDeleteGroup = async (groupId) => {
+      const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa chương này?');
+      if (confirmDelete) {
+         try {
+            await axios.delete(`http://localhost:5000/api/instructor/groups/${groupId}`, {
+               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            });
+            setGroups((prevGroups) => prevGroups.filter((group) => group._id !== groupId));
+            toast.success('Chương đã được xóa thành công!');
+         } catch (error) {
+            toast.error('Lỗi khi xóa chương.');
+         }
+      }
+   };
+
+   const toggleCategory = (categoryId) => {
+      setOpenCategory(openCategory === categoryId ? null : categoryId);
+      resetForm();
+   };
+
+   const groupsByCategory = (categoryId) =>
+      groups.filter((group) => group.category_id === categoryId);
 
    return (
       <div className="p-6 bg-white rounded-lg shadow-md">
          <ToastContainer />
-         <div className="flex justify-between mb-6">
-            <div className="relative w-full max-w-lg">
-               <input
-                  type="text"
-                  placeholder="Tìm kiếm"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-               />
-               <button className="absolute right-2 top-2 text-gray-400">
-                  <Search />
-               </button>
-            </div>
-            <button
-               onClick={() => setShowModal(true)}
-               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800"
-            >
-               Tạo nhóm +
-            </button>
-         </div>
-
          <div className="space-y-4">
-            {filteredGroups.length === 0 ? (
-               <div className="flex flex-col items-center justify-center text-center mt-20">
-                  <img src="/image/empty@2x.png" alt="No groups" className="w-1/6 mb-6" />
-                  <p className="text-600">Hiện tại không có nhóm nào. Nhấn tạo để thêm mới.</p>
-               </div>
-            ) : (
-               filteredGroups.map((group, index) => (
-                  <div key={index} className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                     <div className="flex justify-between items-center">
-                        <div className="flex flex-col">
-                           <h3 className="font-semibold">{group.name}</h3>
-                           <span className="text-gray-500">Mô tả: {group.description}</span>
-                        </div>
-                        <div className="flex space-x-2">
-                           <button onClick={() => handleEditGroup(index)} className="text-blue-500 hover:text-blue-700 flex items-center space-x-1">
-                              <Edit />
-                              <span>Chỉnh sửa</span>
-                           </button>
-                           <button onClick={() => handleDeleteGroup(index)} className="text-red-500 hover:text-red-700 flex items-center space-x-1">
-                              <Trash2 />
-                              <span>Xóa</span>
+            {categories.map((category) => (
+               <div key={category._id} className="p-4 bg-gray-100 rounded-lg shadow-sm">
+                  <div
+                     className="flex justify-between items-center cursor-pointer"
+                     onClick={() => toggleCategory(category._id)}
+                  >
+                     <h2 className="font-bold text-lg">{category.name}</h2>
+                     {openCategory === category._id ? <ChevronDown /> : <ChevronRight />}
+                  </div>
+                  {openCategory === category._id && (
+                     <div className="mt-2 space-y-2">
+                        {groupsByCategory(category._id).map((group) => (
+                           <div key={group._id} className="p-2 bg-white rounded-lg shadow-sm">
+                              {editingGroupId === group._id ? (
+                                 <div className="space-y-2">
+                                    <input
+                                       type="text"
+                                       value={newGroupName}
+                                       onChange={(e) => setNewGroupName(e.target.value)}
+                                       className="p-2 border border-gray-300 rounded-md w-full"
+                                       placeholder="Tên chương"
+                                    />
+                                    <input
+                                       type="text"
+                                       value={newGroupDescription}
+                                       onChange={(e) => setNewGroupDescription(e.target.value)}
+                                       className="p-2 border border-gray-300 rounded-md w-full"
+                                       placeholder="Mô tả chương"
+                                    />
+                                    <div className="flex justify-end space-x-2">
+                                       <button
+                                          onClick={() => handleAddOrUpdateGroup(category._id)}
+                                          className="bg-green-600 text-white px-4 py-2 rounded-md flex items-center"
+                                       >
+                                          <Save className="mr-1" /> Lưu
+                                       </button>
+                                       <button
+                                          onClick={resetForm}
+                                          className="bg-gray-300 px-4 py-2 rounded-md flex items-center"
+                                       >
+                                          <X className="mr-1" /> Hủy
+                                       </button>
+                                    </div>
+                                 </div>
+                              ) : (
+                                 <div>
+                                    <h3 className="font-semibold">{group.name}</h3>
+                                    <p className="text-gray-500">{group.description}</p>
+                                    <div className="flex justify-end space-x-2 mt-2">
+                                       <button
+                                          onClick={() => handleEditGroup(group)}
+                                          className="text-blue-600 flex items-center"
+                                       >
+                                          <Edit className="mr-1" /> Chỉnh sửa
+                                       </button>
+                                       <button
+                                          onClick={() => handleDeleteGroup(group._id)}
+                                          className="text-red-600 flex items-center"
+                                       >
+                                          <Trash2 className="mr-1" /> Xóa
+                                       </button>
+                                    </div>
+                                 </div>
+                              )}
+                           </div>
+                        ))}
+
+                        <div className="flex items-center space-x-2 mt-4">
+                           <input
+                              type="text"
+                              value={newGroupName}
+                              onChange={(e) => setNewGroupName(e.target.value)}
+                              placeholder="Tên chương mới"
+                              className="p-2 border border-gray-300 rounded-md w-full"
+                           />
+                           <input
+                              type="text"
+                              value={newGroupDescription}
+                              onChange={(e) => setNewGroupDescription(e.target.value)}
+                              placeholder="Mô tả chương mới"
+                              className="p-2 border border-gray-300 rounded-md w-full"
+                           />
+                           <button
+                              onClick={() => handleAddOrUpdateGroup(category._id)}
+                              className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center"
+                           >
+                              <Plus className="mr-1" /> Thêm
                            </button>
                         </div>
                      </div>
-                     <button className="text-gray-400 flex items-center mt-2" onClick={() => fetchQuestionsByGroupId(group._id)}>
-                        <List className="mr-1" />
-                        <span>Hiển thị chi tiết câu hỏi</span>
-                     </button>
-                     {selectedGroupId === group._id && (
-                        <div className="mt-4">
-                           <h4 className="font-semibold">Danh sách câu hỏi chi tiết:</h4>
-                           {questions.length > 0 ? (
-                              <table className="min-w-full bg-white border">
-                                 <thead>
-                                    <tr className="w-full bg-gray-200">
-                                       <th className="px-4 py-2 border">Câu hỏi</th>
-                                       <th className="px-4 py-2 border">Các tùy chọn</th>
-                                       <th className="px-4 py-2 border">Đáp án đúng</th>
-                                    </tr>
-                                 </thead>
-                                 <tbody>
-                                    {questions.map((question, index) => (
-                                       <tr key={index}>
-                                          <td className="px-4 py-2 border">{question.question_text}</td>
-                                          <td className="px-4 py-2 border">
-                                             <div className="flex flex-col space-y-1">
-                                                {question.options ? (
-                                                   question.options.map((option, idx) => (
-                                                      <div key={idx} className="flex items-start">
-                                                         <span className="font-bold mr-1">{String.fromCharCode(65 + idx)}.</span>
-                                                         <span>{option}</span>
-                                                      </div>
-                                                   ))
-                                                ) : (
-                                                   'N/A'
-                                                )}
-                                             </div>
-                                          </td>
-                                          <td className="px-4 py-2 border">{Array.isArray(question.correct_answers) ? question.correct_answers.join(', ') : 'N/A'}</td>
-                                       </tr>
-                                    ))}
-                                 </tbody>
-                              </table>
-                           ) : (
-                              <p>Không có câu hỏi nào trong nhóm này.</p>
-                           )}
-                        </div>
-                     )}
-                  </div>
-               ))
-            )}
-         </div>
-
-         {/* Modal cho thêm hoặc chỉnh sửa nhóm */}
-         {showModal && (
-            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-               <div className="bg-white rounded-lg p-6 shadow-lg">
-                  <h3 className="text-lg font-semibold mb-4">{editingGroupIndex !== null ? 'Chỉnh sửa nhóm' : 'Thêm nhóm'}</h3>
-                  <div className="mb-4">
-                     <input
-                        type="text"
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        placeholder="Tên nhóm"
-                        className="p-2 border border-gray-300 rounded-md flex-1"
-                     />
-                  </div>
-                  <div className="mb-4">
-                     <input
-                        type="text"
-                        value={newGroupDescription}
-                        onChange={(e) => setNewGroupDescription(e.target.value)}
-                        placeholder="Mô tả nhóm"
-                        className="p-2 border border-gray-300 rounded-md flex-1"
-                     />
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                     <button
-                        onClick={resetForm} // Đóng modal
-                        className="mr-2 bg-gray-300 text-black px-4 py-2 rounded-md"
-                     >
-                        Đóng
-                     </button>
-                     <button
-                        onClick={editingGroupIndex !== null ? handleUpdateGroup : handleAddGroup}
-                        className="bg-purple-600 text-white px-4 py-2 rounded-md"
-                     >
-                        {editingGroupIndex !== null ? 'Cập nhật' : 'Thêm'}
-                     </button>
-                  </div>
+                  )}
                </div>
-            </div>
-         )}
+            ))}
+         </div>
       </div>
    );
 };

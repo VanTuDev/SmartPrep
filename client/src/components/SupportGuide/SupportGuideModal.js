@@ -7,15 +7,15 @@ Modal.setAppElement('#root');
 const UserGuideModal = ({ isOpen, onRequestClose }) => {
   // Danh sách video URLs
   const videos = [
-    { id: 1, title: 'Hướng dẫn "Tạo lớp học" trên Ninequiz', videoId: '4Q2LT8X2cM8' },
-    { id: 2, title: 'Hướng dẫn "Mời thành viên" trên Ninequiz', videoId: 'qRuSS93OEfw' },
-    { id: 3, title: 'Hướng dẫn "Tạo bài kiểm tra" trên Ninequiz', videoId: 'w28YjHjafy0' },
-    { id: 4, title: 'Hướng dẫn "Làm bài kiểm tra" trên Ninequiz', videoId: '4Q2LT8X2cM8' },
-    { id: 5, title: 'Hướng dẫn "Chấm điểm bài kiểm tra" trên Ninequiz', videoId: 'qRuSS93OEfw' },
-    { id: 6, title: 'Hướng dẫn "Tạo lịch học" trên Ninequiz', videoId: 'w28YjHjafy0' },
-    { id: 7, title: 'Hướng dẫn "Tạo thư viện câu hỏi" trên Ninequiz', videoId: '4Q2LT8X2cM8' },
-    { id: 8, title: 'Hướng dẫn "Tải file PDF/Word/Excel" trên Ninequiz', videoId: 'qRuSS93OEfw' },
-    { id: 9, title: 'Hướng dẫn "Chia sẻ thư viện" trên Ninequiz', videoId: 'w28YjHjafy0' },
+    { id: 1, title: 'Hướng dẫn "Tạo lớp học" trên Ninequiz', videoId: '0sn5Z8Blkek' },
+    { id: 2, title: 'Hướng dẫn "Mời thành viên" trên Ninequiz', videoId: 'O3tVtfaWBfA' },
+    { id: 3, title: 'Hướng dẫn "Tạo bài kiểm tra" trên Ninequiz', videoId: 'Y-EUTklrt3M' },
+    { id: 4, title: 'Hướng dẫn "Làm bài kiểm tra" trên Ninequiz', videoId: 'C-lAjDrWHkQ' },
+    { id: 5, title: 'Hướng dẫn "Chấm điểm bài kiểm tra" trên Ninequiz', videoId: '3mt_KbH2QAs' },
+    { id: 6, title: 'Hướng dẫn "Tạo lịch học" trên Ninequiz', videoId: '6xnTdsjA8FI' },
+    { id: 7, title: 'Hướng dẫn "Tạo thư viện câu hỏi" trên Ninequiz', videoId: 'ALlAUFiAuy4' },
+    { id: 8, title: 'Hướng dẫn "Tải file PDF/Word/Excel" trên Ninequiz', videoId: 'e55-vuXq5yw' },
+    { id: 9, title: 'Hướng dẫn "Chia sẻ thư viện" trên Ninequiz', videoId: 'Ww6jLpLvn1I' },
   ];
 
   const [selectedVideo, setSelectedVideo] = useState(null);

@@ -104,6 +104,9 @@ const LoginPage = () => {
               placeholder="Mật khẩu"
             />
           </div>
+          <div className='flex justify-end my-5 text-center'>
+            <a className=' text-indigo-600' href='/forgot-password'>Quên mật khẩu ?</a>
+          </div>
           <div className="flex justify-center items-center h-full">
             <PrimaryButton text="Đăng Nhập" />
           </div>

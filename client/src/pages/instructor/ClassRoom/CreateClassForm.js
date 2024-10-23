@@ -11,6 +11,7 @@ const CreateClassForm = ({ onCreate, onClose }) => {
          return;
       }
 
+      // Tạo một lớp mới với dữ liệu nhập vào
       const newClass = {
          _id: Math.random().toString(36).substr(2, 9), // Tạo ID ngẫu nhiên cho lớp
          code: `CLASS${Math.floor(1000 + Math.random() * 9000)}`, // Mã lớp ngẫu nhiên
@@ -19,8 +20,8 @@ const CreateClassForm = ({ onCreate, onClose }) => {
          description: description
       };
 
-      onCreate(newClass);
-      onClose();
+      onCreate(newClass); // Gửi dữ liệu lớp mới lên component cha
+      onClose(); // Đóng form
    };
 
    return (
