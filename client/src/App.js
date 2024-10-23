@@ -25,10 +25,16 @@ import InstructorProfile from './components/instructor/InstructorProfile';
 import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
 
 // Import các trang Admin
+import AdminLayout from 'layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import LearnerTable from 'pages/admin/UserManagement/LearnerTable';
+import InstructorTable from 'pages/admin/UserManagement/InstructorTable';
+import AdminTable from 'pages/admin/UserManagement/AdminTable';
+import InstructorApplicationsTable from 'pages/admin/UserManagement/InstructorApplicationsTable ';
 
 // Import các thành phần chung
 import PrivateRoute from './components/PrivateRoute';
+import InstructorRegistration from 'pages/instructor/InstructorRegistration/InstructorRegistration';
 import ForgotPassword from 'pages/common/ForgotPassword';
 import ResetPassword from 'pages/common/ResetPassword';
 
@@ -153,15 +159,37 @@ function App() {
             }
           />
 
-          {/* ========== Admin Pages ========== */}
           <Route
+            path="/instructor/registration"
+            element={
+                <InstructorRegistration />
+            }
+          />
+
+          {/* ========== Admin Pages ========== */}
+          {/* <Route
             path="/admin/dashboard"
             element={
               <PrivateRoute role="admin">
                 <AdminDashboard />
               </PrivateRoute>
             }
-          />
+          /> */}
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute role="admin">
+                <AdminLayout /> {/* Layout của Admin */}
+              </PrivateRoute>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users/learner" element={<LearnerTable />} />
+            <Route path="users/instructor" element={<InstructorTable />} />
+            <Route path="users/admin" element={<AdminTable />} />
+            <Route path="users/instructor-application" element={<InstructorApplicationsTable />} />
+            {/* Các route khác trong khu vực admin */}
+          </Route>
 
           {/* ========== Catch-All Route (for 404 Pages) ========== */}
           {/* Uncomment and implement NotFound component if needed */}
