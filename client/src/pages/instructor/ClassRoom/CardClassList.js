@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    const [showEditModal, setShowEditModal] = useState(false); // Trạng thái hiển thị modal chỉnh sửa
@@ -12,23 +14,31 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    // Hàm xử lý xóa lớp học
    const handleDeleteClass = async () => {
       try {
-         const response = await axios.delete(`http://localhost:5000/api/classrooms/${classInfo._id}`, {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-         });
+         const response = await axios.delete(
+            `http://localhost:5000/api/classrooms/instructor/delete/${classInfo._id}`,
+            {
+               headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+               },
+            }
+         );
+
          if (response.status === 200) {
-            onDeleteSuccess(classInfo._id); // Cập nhật danh sách lớp học sau khi xóa
+            if (onDeleteSuccess) {
+               onDeleteSuccess(classInfo._id); // Gọi hàm khi xóa thành công
+            }
             alert('Xóa lớp học thành công!');
          } else {
-            console.error('Phản hồi API không thành công:', response.data);
+            console.error('API trả về lỗi:', response.data);
             alert('Không thể xóa lớp học!');
          }
       } catch (error) {
          console.error('Lỗi khi xóa lớp học:', error);
-         alert('Không thể xóa lớp học!');
+         alert('Đã xảy ra lỗi, vui lòng thử lại!');
       }
    };
+
+
 
    // Hàm xử lý cập nhật lớp học
    const handleEditClass = async () => {
@@ -37,32 +47,43 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
             name: editedName,
             code: editedCode,
          };
-         const response = await axios.put(`http://localhost:5000/api/classrooms/${classInfo._id}`, updatedClass, {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-         });
-         if (response.status === 200) {
-            onEditSuccess(response.data.classRoom); // Cập nhật thông tin lớp học sau khi chỉnh sửa
-            setShowEditModal(false); // Đóng modal chỉnh sửa
-            alert('Cập nhật lớp học thành công!');
+
+         const response = await axios.put(
+            `http://localhost:5000/api/classrooms/instructor/update/${classInfo._id}`,
+            updatedClass,
+            {
+               headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+               },
+            }
+         );
+
+         // Kiểm tra phản hồi API và lấy classroom từ response.data
+         if (response.status === 200 && response.data.classroom) {
+            onEditSuccess(response.data.classroom); // Đảm bảo đúng với cấu trúc trả về
+            setShowEditModal(false); // Đóng modal sau khi cập nhật thành công
+            toast.success(response.data.msg || 'Cập nhật lớp học thành công!');
+         } else {
+            toast.error('Không thể cập nhật lớp học!');
          }
-      } catch{
-         alert('Cập nhật lớp học thành công!');
+      } catch (error) {
+         console.error('Lỗi khi cập nhật lớp:', error);
+         toast.error('Không thể cập nhật lớp học!');
       }
    };
+
 
    // Hàm xử lý mời thành viên vào lớp học
    const handleInviteMembers = async () => {
       const emailList = inviteEmails.split(',').map((email) => email.trim()); // Tách email thành mảng
       if (emailList.length === 0) {
-         alert('Vui lòng nhập ít nhất một email!');
+         toast.error('Vui lòng nhập ít nhất một email hợp lệ!');
          return;
       }
 
       setIsInviting(true); // Bắt đầu trạng thái mời
       try {
-         const response = await axios.put(`http://localhost:5000/api/classrooms/${classInfo._id}/invite`, { emails: emailList }, {
+         const response = await axios.post(`http://localhost:5000/api/classrooms/instructor/${classInfo._id}/add-learners`, { emails: emailList }, {
             headers: {
                Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
@@ -72,6 +93,15 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
             alert('Mời thành viên thành công!');
             setInviteEmails(''); // Reset danh sách email
             setShowInviteModal(false); // Đóng modal mời thành viên
+            // Update classInfo state to reflect the new learners
+            const newLearners = response.data.addedLearners;
+            const updatedClassInfo = {
+               ...classInfo,
+               learners: [...classInfo.learners, ...newLearners],
+            };
+
+            // Trigger a re-render with the updated state
+            onEditSuccess(updatedClassInfo); // Ensure onEditSuccess updates classInfo in the parent component
          } else {
             console.error('Phản hồi API không thành công:', response.data);
             alert('Không thể mời thành viên!');
@@ -84,8 +114,14 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
       }
    };
 
+   const navigate = useNavigate();
+
+   const handleCardClick = () => {
+      navigate(`/instructor/dashboard/class/detail/${classInfo._id}`); // Navigate to class details page
+   };
+
    return (
-      <div className="bg-white shadow-md rounded-lg p-4 m-2 w-64">
+      <div className="bg-white shadow-md rounded-lg p-4 m-2 w-64" onClick={handleCardClick}>
          {/* Mã lớp và tiêu đề */}
          <div className="flex items-center justify-between mb-4">
             <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded">
@@ -178,6 +214,7 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
                         value={inviteEmails}
                         onChange={(e) => setInviteEmails(e.target.value)}
                         className="border rounded p-2 w-full h-24"
+                        placeholder="Nhập email, cách nhau bằng dấu phẩy"
                      />
                   </div>
                   <div className="flex justify-end space-x-4">

@@ -10,7 +10,7 @@ const CreateClassForm = ({ onCreate, onClose }) => {
          alert('Vui lòng nhập tên lớp!');
          return;
       }
-
+ 
       // Tạo một lớp mới với dữ liệu nhập vào
       const newClass = {
          _id: Math.random().toString(36).substr(2, 9), // Tạo ID ngẫu nhiên cho lớp

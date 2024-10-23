@@ -23,6 +23,7 @@ import Exam from './pages/instructor/Exam/Exam';
 import QuestionLibrary from './pages/instructor/QuestionLibrary';
 import InstructorProfile from './components/instructor/InstructorProfile';
 import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
+import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
 
 // Import các trang Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -145,6 +146,15 @@ function App() {
             element={
               <PrivateRoute role="instructor">
                 <ClassRoom />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/instructor/dashboard/class/detail/:classId"
+            element={
+              <PrivateRoute role="instructor">
+                <ClassDetail />
               </PrivateRoute>
             }
           />
