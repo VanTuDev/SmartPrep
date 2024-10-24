@@ -1,7 +1,11 @@
+
+// CÁC THANH UP LOAD QUESTION
+
+
 import React, { useState } from "react";
 import { LayoutTemplate, Upload as LucideUpload, Folder, BotMessageSquare, Plus } from "lucide-react";
 import { Modal, Upload, Button, message } from "antd";
-import { InboxOutlined, DownloadOutlined  } from "@ant-design/icons";
+import { InboxOutlined, DownloadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 
 function QuestionAdding({ handleAddQuestionsFromExcel, handleAddQuestion }) {
@@ -95,14 +99,14 @@ function QuestionAdding({ handleAddQuestionsFromExcel, handleAddQuestion }) {
     };
 
     // Hàm xử lý khi người dùng muốn tải file mẫu
-  const downloadSampleFile = () => {
-    const link = document.createElement("a");
-    link.href = "/sampleFileForQuestion/sample_questions.xlsx"; // Đường dẫn file mẫu
-    link.download = "sample_questions.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    const downloadSampleFile = () => {
+        const link = document.createElement("a");
+        link.href = "/sampleFileForQuestion/sample_questions.xlsx"; // Đường dẫn file mẫu
+        link.download = "sample_questions.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <>
@@ -111,10 +115,12 @@ function QuestionAdding({ handleAddQuestionsFromExcel, handleAddQuestion }) {
                     <LayoutTemplate />
                     <div className="text-xs">Section</div>
                 </button>
+                {/* upload file excel */}
                 <button onClick={openModal} className="flex flex-col items-center">
                     <LucideUpload />
                     <div className="text-xs">Upload files</div>
                 </button>
+                {/* tạo random câu hỏi */}
                 <button className="flex flex-col items-center">
                     <Folder />
                     <div className="text-xs">Library</div>
@@ -129,7 +135,7 @@ function QuestionAdding({ handleAddQuestionsFromExcel, handleAddQuestion }) {
                 </button>
             </div>
 
-            {/* Modal Upload */}
+            {/* Modal Upload excel*/}
             <Modal
                 title="Upload Excel File"
                 visible={isModalOpen}
