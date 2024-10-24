@@ -56,7 +56,10 @@ const LoginPage = () => {
           navigate('/instructor/dashboard');
         } else if (result.user.role === 'learner') {
           navigate('/learner/dashboard'); // Đường dẫn cho user
-        } else {
+        } else if (result.user.role === 'admin') {
+          navigate('/admin'); // Đường dẫn cho user
+        } 
+        else {
           setError('Vai trò không xác định.');
           toast.error('Vai trò không xác định.');
         }
@@ -100,6 +103,9 @@ const LoginPage = () => {
               type="password"
               placeholder="Mật khẩu"
             />
+          </div>
+          <div className='flex justify-end my-5 text-center'>
+            <a className=' text-indigo-600' href='/forgot-password'>Quên mật khẩu ?</a>
           </div>
           <div className="flex justify-center items-center h-full">
             <PrimaryButton text="Đăng Nhập" />

@@ -3,7 +3,9 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, HelpCircle, Bell, User } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode'; // Sửa lại import statement
 import { Dropdown, Menu as AntdMenu } from 'antd';
+import VideoModal from '../../components/SupportGuide/SupportGuideModal';
 const LearnerHeader = () => {
+   const [modalIsOpen, setModalIsOpen] = useState(false);
    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
    const [username, setUsername] = useState('');
    const navigate = useNavigate();
@@ -81,12 +83,14 @@ const LearnerHeader = () => {
                   <span className="text-sm text-gray-600">Menu</span>
                </div>
 
-               <div className="flex flex-col items-center">
-                  <NavLink to="/support">
+               <div className="flex flex-col items-center" onClick={() => setModalIsOpen(true)}>
                      <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
-                  </NavLink>
                   <span className="text-sm text-gray-600">Hỗ trợ</span>
                </div>
+               <VideoModal
+                  isOpen={modalIsOpen}
+                  onRequestClose={() => setModalIsOpen(false)}
+               />
 
                <div className="flex flex-col items-center">
                   <NavLink to="/notifications">
