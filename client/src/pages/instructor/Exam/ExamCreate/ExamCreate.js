@@ -1,3 +1,7 @@
+
+
+// GIAO DIỆN TẠO CÂU HỎI - Tạo câu hỏi
+
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 // import { addQuestion, updateQuestion, removeQuestion, setEditMode } from 'store/questionSlice';
@@ -14,15 +18,15 @@ import { generateRandomId } from 'utils/generateRandomId';
 
 const { TextArea } = Input;
 
-function ExamCreate({examId}) {
-    const [editMode, setEditMode] = useState(null); 
+function ExamCreate({ examId }) {
+    const [editMode, setEditMode] = useState(null);
     const { exam, loading, error } = useSelector((state) => state.exam);
 
     const dispatch = useDispatch();
 
     // Gọi API để tải bài test khi component được mount
     useEffect(() => {
-        if(examId){
+        if (examId) {
             dispatch(fetchExam(examId));
         }
 
@@ -40,8 +44,8 @@ function ExamCreate({examId}) {
             id: generateRandomId(),
             question_text: 'New Question?',
             question_type: 'multiple-choice',
-            options: ["abc", "cdf"],
-            correct_answers: ["abc"]
+            options: ["1", "2"],
+            correct_answers: ["1"]
         };
         dispatch(addQuestion(newQuestion));
     };
@@ -71,25 +75,6 @@ function ExamCreate({examId}) {
                     <SingleCollapse header="General information">
                         <GeneralInformation exam={exam} onUpdateExam={handleUpdateExam} />
                     </SingleCollapse>
-                </div>
-
-                <div className='mb-4'>
-                    <SectionCollapse
-                        header="Section 1"
-                    >
-                        <div>
-                            <Input
-                                className='input-custom'
-                                size='large'
-                                placeholder="Enter section title"
-                            />
-                            <TextArea
-                                className='input-custom mt-3'
-                                placeholder="Enter section description"
-                                autoSize={{ minRows: 2, maxRows: 2 }}
-                            />
-                        </div>
-                    </SectionCollapse>
                 </div>
 
                 {/* Questions Section */}

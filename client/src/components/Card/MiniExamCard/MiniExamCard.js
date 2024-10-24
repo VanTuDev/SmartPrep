@@ -42,24 +42,39 @@ const MiniExamCard = ({ exam, onUpdate, onDelete }) => {
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">⏳</span>
-                    Thời gian làm bài: {exam.duration}
+                    Thời gian làm bài: {exam.duration} phút
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">📋</span>
                     Số câu hỏi: {exam.questions.length}
                 </div>
-
+                <div className="flex items-center">
+                    <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🏫</span>
+                    Khối: {exam.grade}
+                </div>
+                <div className="flex items-center">
+                    <span className="inline-flex items-center justify-center w-4 h-4 mr-2">📘</span>
+                    Môn: {exam.subject}
+                </div>
+                <div className="flex items-center">
+                    <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🔗</span>
+                    <a href={exam.access_link} target="_blank" rel="noopener noreferrer">
+                        Link kiểm tra
+                    </a>
+                </div>
             </div>
+
             <div className="mt-6 flex justify-between items-center">
-                <span className={`text-sm font-semibold ${exam.status === 'published' ? 'text-green-600' : 'text-yellow-600'
-                    }`}>
+                <span
+                    className={`text-sm font-semibold ${exam.status === 'published' ? 'text-green-600' : 'text-yellow-600'
+                        }`}
+                >
                     <div className="flex items-center">
-                        <span className="inline-flex items-center justify-center w-4 h-4 mr-2">
-                            🌍
-                        </span>
+                        <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🌍</span>
                         {exam.status}
                     </div>
                 </span>
+
                 <Dropdown
                     className="mx-3"
                     menu={{
@@ -76,8 +91,14 @@ const MiniExamCard = ({ exam, onUpdate, onDelete }) => {
                         </Space>
                     </a>
                 </Dropdown>
-                <Modal title="Confirm Delete" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-                    <p>Do you want to delete this exam?</p>
+
+                <Modal
+                    title="Xác nhận xóa"
+                    open={isModalOpen}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                >
+                    <p>Bạn có chắc chắn muốn xóa bài kiểm tra này không?</p>
                 </Modal>
             </div>
         </div>
