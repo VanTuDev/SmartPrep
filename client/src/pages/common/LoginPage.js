@@ -15,63 +15,38 @@ const LoginPage = () => {
     e.preventDefault();
     setError(null);
 
-    if (!identifier || !password) {
-      setError('Vui lòng nhập đầy đủ thông tin.');
-      return;
-    }
-
     try {
       const response = await fetch('http://localhost:5000/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          identifier,
-          password,
-        }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        if (!result.user || !result.user._id) {
-          console.error("User ID is missing in response!");
-          return;
-        }
-
-        // Lưu thông tin vào localStorage sau khi đăng nhập thành công
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('userId', result.user._id); // Đảm bảo userId được lưu đúng cách
-        localStorage.setItem('userRole', result.user.role);
-        localStorage.setItem('userEmail', result.user.email);
-        localStorage.setItem('userPhone', result.user.phone);
-
-        console.log("LocalStorage User ID:", localStorage.getItem('userId')); // Kiểm tra lại localStorage
-
         toast.success('Đăng nhập thành công!');
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('userId', result.user._id);
 
-        // Điều hướng dựa trên vai trò
         if (result.user.role === 'instructor') {
           navigate('/instructor/dashboard');
-        } else if (result.user.role === 'learner') {
-          navigate('/learner/dashboard'); // Đường dẫn cho user
         } else if (result.user.role === 'admin') {
-          navigate('/admin'); // Đường dẫn cho user
-        } 
-        else {
-          setError('Vai trò không xác định.');
-          toast.error('Vai trò không xác định.');
+          navigate('/admin');
+        } else {
+          navigate('/learner/dashboard');
         }
       } else {
-        setError(result.error || 'Đăng nhập thất bại.');
         toast.error(result.error || 'Đăng nhập thất bại.');
+        setError(result.error || 'Đăng nhập thất bại.');
       }
     } catch (error) {
-      setError('Có lỗi xảy ra. Vui lòng thử lại.');
       toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
     }
   };
+
 
 
 
