@@ -2,25 +2,31 @@ import React, { useState } from 'react';
 import { Steps, Button, Form, Input, Upload, message, Result } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 
-
 const { Step } = Steps;
 
 const InstructorRegistration = () => {
     const [current, setCurrent] = useState(0);
     const [finished, setFinished] = useState(false);
+    const [formData, setFormData] = useState({
+        fullname: '',
+        email: '',
+        phone: '',
+        identityCard: null,
+        cvFile: null,
+    });
 
     const steps = [
         {
             title: 'Thông tin cơ bản',
-            content: <BasicInfoForm />,
+            content: <BasicInfoForm formData={formData} setFormData={setFormData} />,
         },
         {
             title: 'Tải ảnh căn cước',
-            content: <UploadIdentityCard />,
+            content: <UploadIdentityCard formData={formData} setFormData={setFormData} />,
         },
         {
             title: 'Tải CV',
-            content: <UploadCV />,
+            content: <UploadCV formData={formData} setFormData={setFormData} />,
         },
     ];
 
@@ -32,9 +38,32 @@ const InstructorRegistration = () => {
         setCurrent(current - 1);
     };
 
-    const handleSubmit = () => {
-        message.success('Nộp hồ sơ thành công!');
-        setFinished(true);
+    const handleSubmit = async () => {
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('fullname', formData.fullname);
+            formDataToSend.append('email', formData.email);
+            formDataToSend.append('phone', formData.phone);
+            formDataToSend.append('citizenIdPhotos', formData.identityCard);
+            formDataToSend.append('cv', formData.cvFile);
+
+            const response = await fetch('http://localhost:5000/api/access_instructor/applications', {
+                method: 'POST',
+                body: formDataToSend,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add the token here
+                },
+            });
+
+            if (response.ok) {
+                message.success('Nộp hồ sơ thành công!');
+                setFinished(true);
+            } else {
+                message.error('Có lỗi xảy ra khi nộp hồ sơ!');
+            }
+        } catch (error) {
+            message.error('Có lỗi xảy ra khi nộp hồ sơ!');
+        }
     };
 
     if (finished) {
@@ -85,9 +114,18 @@ const InstructorRegistration = () => {
     );
 };
 
-const BasicInfoForm = () => {
+const BasicInfoForm = ({ formData, setFormData }) => {
+    const [form] = Form.useForm();
+
+    const handleChange = (changedValues) => {
+        setFormData({
+            ...formData,
+            ...changedValues,
+        });
+    };
+
     return (
-        <Form layout="vertical">
+        <Form form={form} layout="vertical" onValuesChange={handleChange}>
             <Form.Item label="Tên đầy đủ" name="fullname" rules={[{ required: true, message: 'Vui lòng nhập tên đầy đủ!' }]}>
                 <Input />
             </Form.Item>
@@ -101,12 +139,17 @@ const BasicInfoForm = () => {
     );
 };
 
-const UploadIdentityCard = () => {
+const UploadIdentityCard = ({ formData, setFormData }) => {
     const uploadProps = {
         beforeUpload: (file) => {
             const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
             if (!isJpgOrPng) {
                 message.error('Chỉ được phép tải lên file JPG/PNG!');
+            } else {
+                setFormData({
+                    ...formData,
+                    identityCard: file,
+                });
             }
             return isJpgOrPng || Upload.LIST_IGNORE;
         },
@@ -119,32 +162,26 @@ const UploadIdentityCard = () => {
     );
 };
 
-const UploadCV = () => {
-    const [fileUrl, setFileUrl] = useState(null);
-
+const UploadCV = ({ formData, setFormData }) => {
     const uploadProps = {
         beforeUpload: (file) => {
             const isPDF = file.type === 'application/pdf';
             if (!isPDF) {
                 message.error('Chỉ được phép tải lên file PDF!');
-            }
-            if (isPDF) {
-                const fileReader = new FileReader();
-                fileReader.onload = function (e) {
-                    setFileUrl(e.target.result);
-                };
-                fileReader.readAsDataURL(file);
+            } else {
+                setFormData({
+                    ...formData,
+                    cvFile: file,
+                });
             }
             return isPDF || Upload.LIST_IGNORE;
         },
     };
 
     return (
-        <div>
-            <Upload {...uploadProps}>
-                <Button icon={<UploadOutlined />}>Tải lên CV PDF</Button>
-            </Upload>
-        </div>
+        <Upload {...uploadProps}>
+            <Button icon={<UploadOutlined />}>Tải lên CV PDF</Button>
+        </Upload>
     );
 };
 

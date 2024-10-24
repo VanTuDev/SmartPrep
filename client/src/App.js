@@ -162,7 +162,9 @@ function App() {
           <Route
             path="/instructor/registration"
             element={
+              <PrivateRoute role="instructor">
                 <InstructorRegistration />
+              </PrivateRoute>
             }
           />
 

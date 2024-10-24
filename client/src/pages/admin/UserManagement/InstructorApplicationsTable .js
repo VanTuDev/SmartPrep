@@ -1,37 +1,14 @@
 import { useState, useEffect } from "react";
+import { message } from "antd";
 import Breadcrumb from "components/Breadcrumbs/Breadcrumb";
 import { Eye, Trash } from "lucide-react";
-
-// Mock data cho danh sách giáo viên đăng ký duyệt
+import ApplicationDetailDialog from "./Details/ApplicationDetailDialog";
+// Giả lập dữ liệu từ API
 const mockInstructorApplications = [
-    {
-        _id: "1",
-        teacher: { fullname: "Nguyễn Văn A", email: "nguyenvana@example.com" },
-        applicationStatus: "pending",
-        applicationDate: "2024-10-22",
-        specialization: "Math",
-        cv: "/cv/nguyenvana.pdf",
-        citizenIdPhoto: "/photos/nguyenvana.jpg"
-    },
-    {
-        _id: "2",
-        teacher: { fullname: "Trần Thị B", email: "tranthib@example.com" },
-        applicationStatus: "approved",
-        applicationDate: "2024-10-21",
-        specialization: "Physics",
-        cv: "/cv/tranthib.pdf",
-        citizenIdPhoto: "/photos/tranthib.jpg"
-    },
-    {
-        _id: "3",
-        teacher: { fullname: "Lê Văn C", email: "levanc@example.com" },
-        applicationStatus: "rejected",
-        applicationDate: "2024-10-20",
-        specialization: "Chemistry",
-        cv: "/cv/levanc.pdf",
-        citizenIdPhoto: "/photos/levanc.jpg"
-    }
+    // Sample data format as per your backend structure
 ];
+
+const baseUrl = "http://localhost:5000/";
 
 const InstructorApplicationsTable = () => {
     const [applicationsData, setApplicationsData] = useState([]);
@@ -42,6 +19,8 @@ const InstructorApplicationsTable = () => {
     const [sortField, setSortField] = useState(null); // Trường để sắp xếp
     const [sortOrder, setSortOrder] = useState("asc"); // Sắp xếp tăng dần ("asc") hoặc giảm dần ("desc")
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedApplicationId, setSelectedApplicationId] = useState(null); // Track selected application ID
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const applicationsPerPage = 5;
 
     useEffect(() => {
@@ -49,7 +28,16 @@ const InstructorApplicationsTable = () => {
             setLoading(true);
             setError(null);
             try {
-                setApplicationsData(mockInstructorApplications);
+                // Fetch real data from your API
+                const response = await fetch("http://localhost:5000/api/access_instructor/applications", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem('token')}`, // Add the token here
+                    },
+                });
+                const result = await response.json();
+                setApplicationsData(result.applications); // Adjust according to your response structure
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -59,12 +47,44 @@ const InstructorApplicationsTable = () => {
         fetchData();
     }, []);
 
+    const handleRemove = async (applicationId) => {
+        if (!window.confirm("Are you sure you want to delete this application?")) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${baseUrl}api/access_instructor/applications/${applicationId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete application");
+            }
+
+            message.success("Application deleted successfully!");
+        } catch (error) {
+            message.success("Error deleting!");
+            console.error("Error deleting application:", error);
+        } finally {
+            
+        }
+    };
+
     const handleRowClick = (_id) => {
         console.log("Clicked application with ID:", _id);
     };
+    const handleViewClick = (id) => {
+        setSelectedApplicationId(id); // Set the selected application ID
+        setIsDialogOpen(true); // Open the dialog
+    };
 
     // Lọc ứng viên dựa trên search term và status filter
-    const filteredApplications = applicationsData.filter((application) =>
+    const filteredApplications = applicationsData?.filter((application) =>
         application.teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (statusFilter === "" || application.applicationStatus === statusFilter)
     );
@@ -93,11 +113,11 @@ const InstructorApplicationsTable = () => {
 
     const sortedApplications = sortData(filteredApplications);
 
-    const totalPages = Math.ceil(sortedApplications.length / applicationsPerPage);
+    const totalPages = Math.ceil(sortedApplications?.length / applicationsPerPage);
 
     const indexOfLastApplication = currentPage * applicationsPerPage;
     const indexOfFirstApplication = indexOfLastApplication - applicationsPerPage;
-    const currentApplications = sortedApplications.slice(indexOfFirstApplication, indexOfLastApplication);
+    const currentApplications = sortedApplications?.slice(indexOfFirstApplication, indexOfLastApplication);
 
     // Hàm để hiển thị tag trạng thái với màu phù hợp
     const getStatusTag = (status) => {
@@ -187,7 +207,7 @@ const InstructorApplicationsTable = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentApplications.map((application) => (
+                                    {currentApplications?.map((application) => (
                                         <tr key={application._id} onClick={() => handleRowClick(application._id)} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
                                             <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                                 <h5 className="font-medium text-black dark:text-white">{application.teacher.fullname}</h5>
@@ -199,7 +219,7 @@ const InstructorApplicationsTable = () => {
                                                 <p className="text-black dark:text-white">{application.specialization}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <p className="text-black dark:text-white">{application.applicationDate}</p>
+                                                <p className="text-black dark:text-white">{new Date(application.applicationDate).toLocaleDateString()}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 {getStatusTag(application.applicationStatus)}
@@ -207,9 +227,9 @@ const InstructorApplicationsTable = () => {
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <div className="flex space-x-2">
                                                     <button className="hover:text-primary">
-                                                        <Eye className="w-5 h-5" />
+                                                        <Eye onClick={() => handleViewClick(application._id)} className="w-5 h-5" />
                                                     </button>
-                                                    <button className="hover:text-primary">
+                                                    <button onClick={() => handleRemove(application._id)} className="hover:text-primary">
                                                         <Trash className="w-5 h-5" />
                                                     </button>
                                                 </div>
@@ -219,28 +239,21 @@ const InstructorApplicationsTable = () => {
                                 </tbody>
                             </table>
                         </div>
-                        <div className="flex justify-between mt-4">
-                            <button
-                                onClick={() => setCurrentPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="px-4 py-2 bg-gray-300 text-black rounded-md disabled:opacity-50"
-                            >
-                                Previous
-                            </button>
-                            <span>
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="px-4 py-2 bg-gray-300 text-black rounded-md disabled:opacity-50"
-                            >
-                                Next
-                            </button>
+                        {/* Pagination controls */}
+                        <div className="mt-4 flex justify-between items-center">
+                            <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="bg-gray-300 rounded px-4 py-2">Previous</button>
+                            <span>Page {currentPage} of {totalPages}</span>
+                            <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="bg-gray-300 rounded px-4 py-2">Next</button>
                         </div>
                     </>
                 )}
             </div>
+
+            <ApplicationDetailDialog 
+                applicationId={selectedApplicationId}
+                isOpen={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+            />
         </>
     );
 };
