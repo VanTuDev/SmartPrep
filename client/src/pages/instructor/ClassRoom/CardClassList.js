@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Eye, Pencil, Trash } from 'lucide-react';
+import { Button, Modal } from 'antd';
+
 
 const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    const [showEditModal, setShowEditModal] = useState(false); // Trạng thái hiển thị modal chỉnh sửa
@@ -10,6 +13,7 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    const [editedCode, setEditedCode] = useState(classInfo.code); // Mã lớp chỉnh sửa
    const [inviteEmails, setInviteEmails] = useState(''); // Input cho danh sách email để mời
    const [isInviting, setIsInviting] = useState(false); // Trạng thái cho quá trình mời thành viên
+   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
    // Hàm xử lý xóa lớp học
    const handleDeleteClass = async () => {
@@ -24,20 +28,18 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
          );
 
          if (response.status === 200) {
-            if (onDeleteSuccess) {
-               onDeleteSuccess(classInfo._id); // Gọi hàm khi xóa thành công
-            }
-            alert('Xóa lớp học thành công!');
+            onDeleteSuccess && onDeleteSuccess(classInfo._id);
+            toast.success('Xóa lớp học thành công!');
          } else {
-            console.error('API trả về lỗi:', response.data);
-            alert('Không thể xóa lớp học!');
+            toast.error('Không thể xóa lớp học!');
          }
       } catch (error) {
          console.error('Lỗi khi xóa lớp học:', error);
-         alert('Đã xảy ra lỗi, vui lòng thử lại!');
+         toast.error('Đã xảy ra lỗi, vui lòng thử lại!');
+      } finally {
+         setIsDeleteModalVisible(false); // Close the modal
       }
    };
-
 
 
    // Hàm xử lý cập nhật lớp học
@@ -121,7 +123,7 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    };
 
    return (
-      <div className="bg-white shadow-md rounded-lg p-4 m-2 w-64" onClick={handleCardClick}>
+      <div className="bg-white shadow-md rounded-lg p-4 m-2 w-64" >
          {/* Mã lớp và tiêu đề */}
          <div className="flex items-center justify-between mb-4">
             <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded">
@@ -142,24 +144,34 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
 
          {/* Các nút hành động */}
          <div className="flex justify-around mt-4">
-            <button
+            <Button
                onClick={() => setShowInviteModal(true)} // Hiển thị modal mời thành viên
                className="bg-green-500 text-white rounded-lg px-3 py-1 hover:bg-green-600 transition duration-200"
             >
                Mời
-            </button>
-            <button
+            </Button>
+            <Button
                onClick={() => setShowEditModal(true)} // Hiển thị modal chỉnh sửa khi nhấn "Sửa"
                className="bg-yellow-500 text-white rounded-lg px-3 py-1 hover:bg-yellow-600 transition duration-200"
+               title='Sửa thông tin lớp'
             >
-               Sửa
-            </button>
-            <button
-               onClick={handleDeleteClass}
+               <Pencil />
+            </Button>
+            <Button
+               type="primary"
+               danger
+               onClick={() => setIsDeleteModalVisible(true)} // Open confirmation modal
+               title='Xoá lớp'
+            >
+               <Trash />
+            </Button>
+            <Button
+               onClick={handleCardClick}
                className="bg-red-500 text-white rounded-lg px-3 py-1 hover:bg-red-600 transition duration-200"
+               title='Xem chi tiết'
             >
-               Xóa
-            </button>
+               <Eye />
+            </Button>
          </div>
 
          {/* Modal chỉnh sửa lớp học */}
@@ -235,6 +247,20 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
                </div>
             </div>
          )}
+
+         {/* Delete Confirmation Modal */}
+         <Modal
+            title="Xác nhận xóa lớp học"
+            visible={isDeleteModalVisible}
+            onOk={handleDeleteClass}
+            onCancel={() => setIsDeleteModalVisible(false)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+         >
+            <p>Bạn có chắc chắn muốn xóa lớp học này không?</p>
+         </Modal>
+
       </div>
    );
 };

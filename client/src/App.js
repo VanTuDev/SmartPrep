@@ -16,6 +16,7 @@ import ClassList from './pages/learner/ClassList';
 import LearnerProfile from './pages/learner/LearnerProfile';
 import QuizCard from './pages/learner/TakeExam/QuizCard';
 import Exam1 from './pages/learner/TakeExam/Exam';
+import ClassDetailforLeaner from './pages/learner/ClassDetail';
 
 // Import các trang Instructor
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
@@ -96,6 +97,15 @@ function App() {
             element={
               <PrivateRoute role="learner">
                 <ViewExamResults />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/learner/dashboard/class/detail/:classId"
+            element={
+              <PrivateRoute role="learner">
+                <ClassDetailforLeaner />
               </PrivateRoute>
             }
           />
