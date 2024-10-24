@@ -16,6 +16,7 @@ import ClassList from './pages/learner/ClassList';
 import LearnerProfile from './pages/learner/LearnerProfile';
 import QuizCard from './pages/learner/TakeExam/QuizCard';
 import Exam1 from './pages/learner/TakeExam/Exam';
+import ClassDetailforLeaner from './pages/learner/ClassDetail';
 
 // Import các trang Instructor
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
@@ -23,6 +24,7 @@ import Exam from './pages/instructor/Exam/Exam';
 import QuestionLibrary from './pages/instructor/QuestionLibrary';
 import InstructorProfile from './components/instructor/InstructorProfile';
 import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
+import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
 
 // Import các trang Admin
 import AdminLayout from 'layouts/AdminLayout';
@@ -109,6 +111,15 @@ function App() {
             }
           />
 
+          <Route
+            path="/learner/dashboard/class/detail/:classId"
+            element={
+              <PrivateRoute role="learner">
+                <ClassDetailforLeaner />
+              </PrivateRoute>
+            }
+          />
+
           {/* ========== Instructor Pages ========== */}
           <Route
             path="/instructor/dashboard"
@@ -159,6 +170,17 @@ function App() {
             }
           />
 
+
+          <Route
+            path="/instructor/dashboard/class/detail/:classId"
+            element={
+              <PrivateRoute role="instructor">
+                <ClassDetail />
+              </PrivateRoute>
+            }
+          />
+
+          {/* ========== Admin Pages ========== */}
           <Route
             path="/instructor/registration"
             element={

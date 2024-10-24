@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { Eye, Pencil, Trash } from 'lucide-react';
+import { Button, Modal } from 'antd';
+
 
 const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    const [showEditModal, setShowEditModal] = useState(false); // Trạng thái hiển thị modal chỉnh sửa
@@ -8,27 +13,34 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    const [editedCode, setEditedCode] = useState(classInfo.code); // Mã lớp chỉnh sửa
    const [inviteEmails, setInviteEmails] = useState(''); // Input cho danh sách email để mời
    const [isInviting, setIsInviting] = useState(false); // Trạng thái cho quá trình mời thành viên
+   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
    // Hàm xử lý xóa lớp học
    const handleDeleteClass = async () => {
       try {
-         const response = await axios.delete(`http://localhost:5000/api/classrooms/${classInfo._id}`, {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-         });
+         const response = await axios.delete(
+            `http://localhost:5000/api/classrooms/instructor/delete/${classInfo._id}`,
+            {
+               headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+               },
+            }
+         );
+
          if (response.status === 200) {
-            onDeleteSuccess(classInfo._id); // Cập nhật danh sách lớp học sau khi xóa
-            alert('Xóa lớp học thành công!');
+            onDeleteSuccess && onDeleteSuccess(classInfo._id);
+            toast.success('Xóa lớp học thành công!');
          } else {
-            console.error('Phản hồi API không thành công:', response.data);
-            alert('Không thể xóa lớp học!');
+            toast.error('Không thể xóa lớp học!');
          }
       } catch (error) {
          console.error('Lỗi khi xóa lớp học:', error);
-         alert('Không thể xóa lớp học!');
+         toast.error('Đã xảy ra lỗi, vui lòng thử lại!');
+      } finally {
+         setIsDeleteModalVisible(false); // Close the modal
       }
    };
+
 
    // Hàm xử lý cập nhật lớp học
    const handleEditClass = async () => {
@@ -37,32 +49,43 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
             name: editedName,
             code: editedCode,
          };
-         const response = await axios.put(`http://localhost:5000/api/classrooms/${classInfo._id}`, updatedClass, {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-         });
-         if (response.status === 200) {
-            onEditSuccess(response.data.classRoom); // Cập nhật thông tin lớp học sau khi chỉnh sửa
-            setShowEditModal(false); // Đóng modal chỉnh sửa
-            alert('Cập nhật lớp học thành công!');
+
+         const response = await axios.put(
+            `http://localhost:5000/api/classrooms/instructor/update/${classInfo._id}`,
+            updatedClass,
+            {
+               headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+               },
+            }
+         );
+
+         // Kiểm tra phản hồi API và lấy classroom từ response.data
+         if (response.status === 200 && response.data.classroom) {
+            onEditSuccess(response.data.classroom); // Đảm bảo đúng với cấu trúc trả về
+            setShowEditModal(false); // Đóng modal sau khi cập nhật thành công
+            toast.success(response.data.msg || 'Cập nhật lớp học thành công!');
+         } else {
+            toast.error('Không thể cập nhật lớp học!');
          }
-      } catch{
-         alert('Cập nhật lớp học thành công!');
+      } catch (error) {
+         console.error('Lỗi khi cập nhật lớp:', error);
+         toast.error('Không thể cập nhật lớp học!');
       }
    };
+
 
    // Hàm xử lý mời thành viên vào lớp học
    const handleInviteMembers = async () => {
       const emailList = inviteEmails.split(',').map((email) => email.trim()); // Tách email thành mảng
       if (emailList.length === 0) {
-         alert('Vui lòng nhập ít nhất một email!');
+         toast.error('Vui lòng nhập ít nhất một email hợp lệ!');
          return;
       }
 
       setIsInviting(true); // Bắt đầu trạng thái mời
       try {
-         const response = await axios.put(`http://localhost:5000/api/classrooms/${classInfo._id}/invite`, { emails: emailList }, {
+         const response = await axios.post(`http://localhost:5000/api/classrooms/instructor/${classInfo._id}/add-learners`, { emails: emailList }, {
             headers: {
                Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
@@ -72,6 +95,15 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
             alert('Mời thành viên thành công!');
             setInviteEmails(''); // Reset danh sách email
             setShowInviteModal(false); // Đóng modal mời thành viên
+            // Update classInfo state to reflect the new learners
+            const newLearners = response.data.addedLearners;
+            const updatedClassInfo = {
+               ...classInfo,
+               learners: [...classInfo.learners, ...newLearners],
+            };
+
+            // Trigger a re-render with the updated state
+            onEditSuccess(updatedClassInfo); // Ensure onEditSuccess updates classInfo in the parent component
          } else {
             console.error('Phản hồi API không thành công:', response.data);
             alert('Không thể mời thành viên!');
@@ -84,8 +116,14 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
       }
    };
 
+   const navigate = useNavigate();
+
+   const handleCardClick = () => {
+      navigate(`/instructor/dashboard/class/detail/${classInfo._id}`); // Navigate to class details page
+   };
+
    return (
-      <div className="bg-white shadow-md rounded-lg p-4 m-2 w-64">
+      <div className="bg-white shadow-md rounded-lg p-4 m-2 w-64" >
          {/* Mã lớp và tiêu đề */}
          <div className="flex items-center justify-between mb-4">
             <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded">
@@ -106,24 +144,34 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
 
          {/* Các nút hành động */}
          <div className="flex justify-around mt-4">
-            <button
+            <Button
                onClick={() => setShowInviteModal(true)} // Hiển thị modal mời thành viên
                className="bg-green-500 text-white rounded-lg px-3 py-1 hover:bg-green-600 transition duration-200"
             >
                Mời
-            </button>
-            <button
+            </Button>
+            <Button
                onClick={() => setShowEditModal(true)} // Hiển thị modal chỉnh sửa khi nhấn "Sửa"
                className="bg-yellow-500 text-white rounded-lg px-3 py-1 hover:bg-yellow-600 transition duration-200"
+               title='Sửa thông tin lớp'
             >
-               Sửa
-            </button>
-            <button
-               onClick={handleDeleteClass}
+               <Pencil />
+            </Button>
+            <Button
+               type="primary"
+               danger
+               onClick={() => setIsDeleteModalVisible(true)} // Open confirmation modal
+               title='Xoá lớp'
+            >
+               <Trash />
+            </Button>
+            <Button
+               onClick={handleCardClick}
                className="bg-red-500 text-white rounded-lg px-3 py-1 hover:bg-red-600 transition duration-200"
+               title='Xem chi tiết'
             >
-               Xóa
-            </button>
+               <Eye />
+            </Button>
          </div>
 
          {/* Modal chỉnh sửa lớp học */}
@@ -178,6 +226,7 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
                         value={inviteEmails}
                         onChange={(e) => setInviteEmails(e.target.value)}
                         className="border rounded p-2 w-full h-24"
+                        placeholder="Nhập email, cách nhau bằng dấu phẩy"
                      />
                   </div>
                   <div className="flex justify-end space-x-4">
@@ -198,6 +247,20 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
                </div>
             </div>
          )}
+
+         {/* Delete Confirmation Modal */}
+         <Modal
+            title="Xác nhận xóa lớp học"
+            visible={isDeleteModalVisible}
+            onOk={handleDeleteClass}
+            onCancel={() => setIsDeleteModalVisible(false)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+         >
+            <p>Bạn có chắc chắn muốn xóa lớp học này không?</p>
+         </Modal>
+
       </div>
    );
 };
