@@ -6,9 +6,10 @@ import { Mail, Key } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const LoginPage = () => {
-  const [identifier, setIdentifier] = useState(''); // Dùng cho cả email hoặc username
+  const [identifier, setIdentifier] = useState(''); // Email or username
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null); // Store userId to resend verification email
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -39,6 +40,9 @@ const LoginPage = () => {
           navigate('/learner/dashboard');
         }
       } else {
+        if (result.error === 'Email chưa được xác thực.') {
+          setUserId(result.userId); // Save userId for resending email
+        }
         toast.error(result.error || 'Đăng nhập thất bại.');
         setError(result.error || 'Đăng nhập thất bại.');
       }
@@ -47,8 +51,33 @@ const LoginPage = () => {
     }
   };
 
-
-
+  const handleResendEmail = async () => {
+    if (!identifier) {
+      toast.error('Vui lòng nhập email hoặc tên đăng nhập để gửi lại email.');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ identifier }),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        toast.success('Email xác thực đã được gửi lại!');
+      } else {
+        toast.error(result.error || 'Không thể gửi lại email.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Có lỗi xảy ra khi gửi lại email.');
+    }
+  };
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -79,18 +108,37 @@ const LoginPage = () => {
               placeholder="Mật khẩu"
             />
           </div>
-          <div className='flex justify-end my-5 text-center'>
-            <a className=' text-indigo-600' href='/forgot-password'>Quên mật khẩu ?</a>
+          <div className="flex justify-end my-5 text-center">
+            <a className="text-indigo-600" href="/forgot-password">
+              Quên mật khẩu ?
+            </a>
           </div>
           <div className="flex justify-center items-center h-full">
             <PrimaryButton text="Đăng Nhập" />
           </div>
 
-          {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+          
           <p className="text-center mt-4">
-            Chưa có tài khoản? <a href="/register" className="text-indigo-600">Đăng ký</a>
+            Chưa có tài khoản?{' '}
+            <a href="/register" className="text-indigo-600">
+              Đăng ký
+            </a>
           </p>
         </form>
+        {error && (
+            <p className="text-red-500 mt-4 text-center">
+              {error}{' '}
+              {error && (
+                <button
+                  onClick={handleResendEmail}
+                  type="button" // Ensure it's not treated as a submit button
+                  className="text-indigo-600 underline ml-2"
+                >
+                  Gửi lại email
+                </button>
+              )}
+            </p>
+          )}
       </div>
     </div>
   );

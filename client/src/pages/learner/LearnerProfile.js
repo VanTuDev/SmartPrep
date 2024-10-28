@@ -111,17 +111,19 @@ function LearnerProfile() {
       <div className="bg-white shadow-md rounded-lg p-6">
         <div className="flex items-center mb-6">
           <div className="w-32 h-32">
-            <img
-              src={
-                selectedImage
-                  ? URL.createObjectURL(selectedImage)
+          <img
+            src={
+              selectedImage
+                ? URL.createObjectURL(selectedImage)
+                : userInfo.profile?.startsWith('http')
+                  ? userInfo.profile // Use the profile URL directly if it's a full URL
                   : userInfo.profile
-                    ? `http://localhost:5000/uploads/${userInfo.profile}`
-                    : "https://via.placeholder.com/150"
-              }
-              alt="Profile"
-              className="w-full h-full object-cover rounded-full shadow-md"
-            />
+                    ? `http://localhost:5000/uploads/${userInfo.profile}` // Use backend path otherwise
+                    : "https://via.placeholder.com/150" // Placeholder image if no profile available
+            }
+            alt="Profile"
+            className="w-full h-full object-cover rounded-full shadow-md"
+          />
           </div>
           {editMode && (
             <div className="ml-4">
