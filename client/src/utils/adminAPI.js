@@ -25,3 +25,16 @@ export const fetchUsersByRole = async (role) => {
         console.error('Fetch error:', error);
     }
 };
+
+export const deleteUser = async (id) => {
+    const response = await fetch(`http://localhost:5000/api/users/deleteuser/${id}`, { method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+    });
+    if (!response.ok) {
+        throw new Error('Failed to delete learner.');
+    }
+    return await response.json();
+};

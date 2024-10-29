@@ -1,10 +1,14 @@
+import { message } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const baseUrl = "http://localhost:5000/";
 
 const ApplicationDetailDialog = ({ applicationId, isOpen, onClose }) => {
     const [applicationDetails, setApplicationDetails] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const navigate = useNavigate;
 
     useEffect(() => {
         const fetchApplicationDetails = async () => {
@@ -61,7 +65,9 @@ const ApplicationDetailDialog = ({ applicationId, isOpen, onClose }) => {
 
             const updatedApplication = await response.json();
             setApplicationDetails(updatedApplication.application);
-            alert(`Application ${status} successfully!`);
+            message.success(`Application ${status} successfully!`);
+
+            navigate("/admin/users/instructor-application")
         } catch (error) {
             console.error(`Error updating application status to ${status}:`, error);
         } finally {

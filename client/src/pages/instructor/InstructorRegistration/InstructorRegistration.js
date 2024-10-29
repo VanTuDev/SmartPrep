@@ -3,14 +3,14 @@ import { Steps, Button, Form, Input, Upload, message, Result } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 
 const { Step } = Steps;
+const { TextArea } = Input;
 
 const InstructorRegistration = () => {
     const [current, setCurrent] = useState(0);
     const [finished, setFinished] = useState(false);
     const [formData, setFormData] = useState({
-        fullname: '',
-        email: '',
-        phone: '',
+        bio: '',
+        specialization: '',
         identityCard: null,
         cvFile: null,
     });
@@ -41,9 +41,8 @@ const InstructorRegistration = () => {
     const handleSubmit = async () => {
         try {
             const formDataToSend = new FormData();
-            formDataToSend.append('fullname', formData.fullname);
-            formDataToSend.append('email', formData.email);
-            formDataToSend.append('phone', formData.phone);
+            formDataToSend.append('bio', formData.bio);
+            formDataToSend.append('specialization', formData.specialization);
             formDataToSend.append('citizenIdPhotos', formData.identityCard);
             formDataToSend.append('cv', formData.cvFile);
 
@@ -126,14 +125,31 @@ const BasicInfoForm = ({ formData, setFormData }) => {
 
     return (
         <Form form={form} layout="vertical" onValuesChange={handleChange}>
-            <Form.Item label="Tên đầy đủ" name="fullname" rules={[{ required: true, message: 'Vui lòng nhập tên đầy đủ!' }]}>
-                <Input />
+            <Form.Item
+                name="bio"
+                label="Bio (Tiểu sử)"
+                className="mb-5"
+                rules={[{ required: true, message: 'Vui lòng nhập thông tin đầy đủ!' }]}
+                tooltip={{
+                    title: 'Giới thiệu ngắn về bản thân, bao gồm sở thích, điểm mạnh, hoặc kinh nghiệm nổi bật.',
+                    placement: 'topLeft',
+                    overlayClassName: 'tooltip-custom',
+                }}
+            >
+                <TextArea placeholder="Nhập bio của bạn" autoSize={{ minRows: 4, maxRows: 6 }} />
             </Form.Item>
-            <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Vui lòng nhập email!' }]}>
-                <Input />
-            </Form.Item>
-            <Form.Item label="Số điện thoại" name="phone" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}>
-                <Input />
+
+            <Form.Item
+                name="specialization"
+                label="Specialization (Chuyên môn)"
+                rules={[{ required: true, message: 'Vui lòng nhập thông tin đầy đủ!' }]}
+                tooltip={{
+                    title: 'Nêu rõ lĩnh vực bạn có chuyên môn hoặc mong muốn phát triển, như phát triển web, game, phân tích dữ liệu, v.v.',
+                    placement: 'topLeft',
+                    overlayClassName: 'tooltip-custom',
+                }}
+            >
+                <TextArea placeholder="Nhập chuyên môn của bạn" autoSize={{ minRows: 5, maxRows: 6 }} />
             </Form.Item>
         </Form>
     );
