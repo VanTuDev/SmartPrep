@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Breadcrumb from "components/Breadcrumbs/Breadcrumb";
 import { Eye, Trash, Edit } from "lucide-react";
 import LearnerDetails from "./Details/LearnerDetails";
-import { fetchUsersByRole } from "utils/adminAPI";
+import { fetchUsersByRole, deleteUser } from "utils/adminAPI";
 
 const LearnerTable = () => {
     const [openLearnerDetail, setOpenLearnerDetail] = useState(false);
@@ -36,7 +36,18 @@ const LearnerTable = () => {
         fetchData();
     }, []);
     
-    
+    // Hàm xóa người dùng
+    const handleDeleteLearner = async (learnerId) => {
+        if (window.confirm("Are you sure you want to delete this learner?")) {
+            try {
+                await deleteUser(learnerId); // Gọi API xóa người dùng
+                setStudentsData((prevData) => prevData.filter((student) => student._id !== learnerId)); // Cập nhật danh sách
+            } catch (error) {
+                console.error("Failed to delete learner:", error);
+                alert("Failed to delete learner.");
+            }
+        }
+    };
 
     const handleRowClick = (_id) => {
         console.log("Clicked student with ID:", _id);
@@ -129,7 +140,7 @@ const LearnerTable = () => {
                                                     <button className="hover:text-primary" onClick={() => handleOpenLearnerDetail(student._id)}>
                                                         <Eye className="w-5 h-5" />
                                                     </button>
-                                                    <button className="hover:text-primary">
+                                                    <button className="hover:text-primary" onClick={() => handleDeleteLearner(student._id)}>
                                                         <Trash className="w-5 h-5" />
                                                     </button>
                                                 </div>

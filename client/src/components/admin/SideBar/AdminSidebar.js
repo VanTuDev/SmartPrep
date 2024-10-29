@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from 'images/logo/logo.svg';
-import { ChevronDown, List, User, Users } from 'lucide-react'; // Importing Lucide icons
+import { ChevronDown, List, User, Users, LayoutDashboard } from 'lucide-react'; // Importing Lucide icons
+
 
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
@@ -54,9 +55,8 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
+      className={`absolute left-0 top-0 z-999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
@@ -96,13 +96,23 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 {(handleClick, open) => {
                   return (
                     <React.Fragment>
+                      <li>
+                        <NavLink
+                          to="/admin/dashboard"
+                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('calendar') &&
+                            'bg-graydark dark:bg-meta-4'
+                            }`}
+                        >
+                          <LayoutDashboard className="fill-current" size={18} />
+                          Tổng quan
+                        </NavLink>
+                      </li>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                          (pathname === '/admin/users' ||
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/admin/users' ||
                             pathname.includes('/admin/users')) &&
                           'bg-graydark dark:bg-meta-4'
-                        }`}
+                          }`}
                         onClick={(e) => {
                           e.preventDefault();
                           sidebarExpanded
@@ -113,17 +123,15 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                         <Users className="fill-current" size={18} /> {/* Using Lucide Users icon */}
                         Người dùng
                         <ChevronDown
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && 'rotate-180'
-                          }`}
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
+                            }`}
                           size={20}
                         /> {/* Using Lucide ChevronDown icon */}
                       </NavLink>
                       {/* <!-- Dropdown Menu Start --> */}
                       <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
+                        className={`translate transform overflow-hidden ${!open && 'hidden'
+                          }`}
                       >
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                           <li>
@@ -159,7 +167,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                               Quản lý
                             </NavLink>
                           </li>
-                          <hr/>
+                          <hr />
                           <li>
                             <NavLink
                               to="/admin/users/instructor-application"

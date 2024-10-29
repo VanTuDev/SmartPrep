@@ -32,7 +32,10 @@ const LoginPage = () => {
         localStorage.setItem('userId', result.user._id);
 
         if (result.user.role === 'instructor') {
-          navigate('/instructor/dashboard');
+          if(result.user.is_locked === false)
+            navigate('/instructor/dashboard');
+          else
+            navigate('/instructor/registration')
         } else if (result.user.role === 'admin') {
           navigate('/admin');
         } else {
