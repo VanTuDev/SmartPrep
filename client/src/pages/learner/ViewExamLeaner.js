@@ -10,7 +10,9 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
 
    // Fetch data từ API
    useEffect(() => {
-      fetch('http://localhost:5000/api/test/get_all_test', {
+      const userId = localStorage.getItem('userId'); // Lấy userId từ localStorage
+
+      fetch(`http://localhost:5000/api/test/user/${userId}`, {
          method: 'GET',
          headers: {
             'Content-Type': 'application/json',
@@ -19,26 +21,22 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
       })
          .then((response) => response.json())
          .then((data) => {
-            console.log("Data fetched from API:", data); // Kiểm tra dữ liệu trả về từ API
+            console.log("Data fetched from API:", data);
             let exams = [];
             if (Array.isArray(data)) {
-               // Kiểm tra nếu `data` là mảng, lọc các bài kiểm tra có trạng thái `published`
-               exams = data.filter(exam => exam.status === 'published');
+               exams = data.filter((exam) => exam.status === 'published');
                setPublishedExams(exams);
             } else if (data && Array.isArray(data.data)) {
-               // Nếu API trả về đối tượng với thuộc tính `data` chứa mảng, xử lý tương tự
-               exams = data.data.filter(exam => exam.status === 'published');
+               exams = data.data.filter((exam) => exam.status === 'published');
                setPublishedExams(exams);
             } else {
                console.error("API không trả về một mảng hợp lệ:", data);
             }
-
-            // Truyền số lượng bài kiểm tra vào `onFetchExamCount`
             onFetchExamCount(exams.length);
          })
          .catch((error) => {
             console.error("Lỗi khi lấy dữ liệu:", error);
-            onFetchExamCount(0); // Truyền số lượng bài kiểm tra bằng 0 nếu có lỗi xảy ra
+            onFetchExamCount(0);
          });
    }, [onFetchExamCount]);
 

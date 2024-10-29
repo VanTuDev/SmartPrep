@@ -50,7 +50,7 @@ const LearnerHeader = () => {
    return (
       <header className="bg-white shadow-md px-6 py-2 flex items-center justify-between">
          {/* Logo and system name */}
-         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
+         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/learner/dashboard')}>
             <img src="/image/logo.svg" alt="Logo" className="h-20 mr-2" />
             <span className="text-lg font-semibold text-gray-800">Smart Dev</span>
          </div>
