@@ -11,6 +11,7 @@ const Exam1 = () => {
    const [examData, setExamData] = useState(null);
    const [timeLeft, setTimeLeft] = useState(0);
    const [selectedAnswers, setSelectedAnswers] = useState({});
+   const [isBlackScreenVisible, setBlackScreenVisible] = useState(false);
    const [drawerVisible, setDrawerVisible] = useState(false);
    const [isModalVisible, setIsModalVisible] = useState(false);
    const [isCloseModalVisible, setIsCloseModalVisible] = useState(false);
@@ -115,21 +116,38 @@ const Exam1 = () => {
    }, []);
 
    useEffect(() => {
+      const handleVisibilityChange = () => {
+         if (document.hidden) {
+            setBlackScreenVisible(true); // Hiển thị lớp phủ đen khi chuyển tab
+         } else {
+            setBlackScreenVisible(false); // Xóa lớp phủ khi quay lại
+         }
+      };
+
       const handleWindowBlur = () => {
-         setOutsideClickCount((prevCount) => {
-            const newCount = prevCount + 1;
-            message.warning(`Không được nhấp ra khỏi trang! Số lần: ${newCount}`);
+         setOutsideClickCount((prev) => {
+            const newCount = prev + 1;
+            message.warning(`Không được rời trang! Số lần: ${newCount}`);
             if (newCount >= 3) {
-               setModalVisible(true);
+               setModalVisible(true); // Khóa bài thi nếu rời trang quá 3 lần
             }
             return newCount;
          });
+         setBlackScreenVisible(true); // Hiển thị lớp phủ khi cửa sổ bị mờ
       };
 
+      const handleWindowFocus = () => {
+         setBlackScreenVisible(false); // Xóa lớp phủ khi quay lại cửa sổ
+      };
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
       window.addEventListener("blur", handleWindowBlur);
+      window.addEventListener("focus", handleWindowFocus);
 
       return () => {
+         document.removeEventListener("visibilitychange", handleVisibilityChange);
          window.removeEventListener("blur", handleWindowBlur);
+         window.removeEventListener("focus", handleWindowFocus);
       };
    }, []);
 
@@ -289,6 +307,9 @@ const Exam1 = () => {
 
    return (
       <div className="min-h-screen bg-gray-100">
+         {isBlackScreenVisible && (
+            <div className="fixed inset-0 bg-black opacity-100 z-50"></div>
+         )}
          <div className="w-full bg-white shadow-md py-3 px-4 md:px-8 flex items-center justify-between relative">
             <div className="flex items-center">
                <CloseOutlined
