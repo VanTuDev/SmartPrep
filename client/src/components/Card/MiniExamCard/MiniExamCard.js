@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dropdown, Modal, Space } from 'antd';
 import { EllipsisVertical } from 'lucide-react';
 import dayjs from 'dayjs';
 
-const MiniExamCard = ({ exam, onUpdate, onDelete }) => {
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
+const MiniExamCard = ({ exam = {}, grades = {}, subjects = {}, onUpdate, onDelete }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleDropdownClick = (key) => {
         if (key === 'update') {
@@ -30,31 +30,33 @@ const MiniExamCard = ({ exam, onUpdate, onDelete }) => {
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 w-full">
-            <div className="font-semibold text-gray-800 mb-4 text-lg">{exam.title}</div>
+            <div className="font-semibold text-gray-800 mb-4 text-lg">
+                {exam.title || 'Untitled Exam'}
+            </div>
             <div className="text-sm text-gray-600 space-y-2">
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🕒</span>
-                    {dayjs(exam.start_date).format('DD/MM/YYYY HH:mm')}
+                    {exam.start_date ? dayjs(exam.start_date).format('DD/MM/YYYY HH:mm') : 'N/A'}
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">⏰</span>
-                    {dayjs(exam.end_date).format('DD/MM/YYYY HH:mm')}
+                    {exam.end_date ? dayjs(exam.end_date).format('DD/MM/YYYY HH:mm') : 'N/A'}
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">⏳</span>
-                    Thời gian làm bài: {exam.duration} phút
+                    Thời gian làm bài: {exam.duration || 0} phút
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">📋</span>
-                    Số câu hỏi: {exam.questions.length}
+                    Số câu hỏi: {exam.questions_id ? exam.questions_id.length : 0}
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🏫</span>
-                    Khối: {exam.grade}
+                    Khối: {grades[exam.grade_id] || 'N/A'}
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">📘</span>
-                    Môn: {exam.subject}
+                    Môn: {subjects[exam.category_id] || 'N/A'}
                 </div>
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🔗</span>
@@ -71,7 +73,7 @@ const MiniExamCard = ({ exam, onUpdate, onDelete }) => {
                 >
                     <div className="flex items-center">
                         <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🌍</span>
-                        {exam.status}
+                        {exam.status || 'draft'}
                     </div>
                 </span>
 

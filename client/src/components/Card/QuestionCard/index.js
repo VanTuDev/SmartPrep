@@ -22,16 +22,15 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
     const handleRemoveAnswer = (optionText) => {
         const updatedAnswers = localQuestion.options.filter((answer) => answer !== optionText);
 
-        // Nếu đáp án bị xóa là đáp án đúng, thì cập nhật trường correct thành null
         let updatedCorrect = localQuestion.correct_answers;
-        if (localQuestion.correct_answers === optionText) {
-            updatedCorrect = null;
+        if (localQuestion.correct_answers.includes(optionText)) {
+            updatedCorrect = updatedCorrect.filter((ans) => ans !== optionText);
         }
 
         setLocalQuestion({ ...localQuestion, options: updatedAnswers, correct_answers: updatedCorrect });
     };
 
-    // Update the correct answer (ensure it exists in the options)
+    // Update the correct answer
     const handleCorrectAnswerChange = (correctText) => {
         if (localQuestion.options.includes(correctText)) {
             setLocalQuestion({ ...localQuestion, correct_answers: [correctText] });
@@ -55,15 +54,14 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
             return;
         }
 
-        onUpdate(localQuestion); // Save data to parent
-        setEditMode(null); // Return to preview mode
+        onUpdate(localQuestion); // Save to parent
+        setEditMode(null); // Exit edit mode
         message.success('Saved!');
     };
 
-    // Enter edit mode
     const handleCardClick = () => {
         if (editMode !== localQuestion.id) {
-            setEditMode(localQuestion.id); // Set edit mode for this question
+            setEditMode(localQuestion.id); // Enter edit mode
         }
     };
 
@@ -76,6 +74,8 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
         >
             {editMode === localQuestion.id ? (
                 <div>
+                    {/* Hiển thị ID câu hỏi trong chế độ chỉnh sửa */}
+                    <p><strong>ID câu hỏi:</strong> {localQuestion._id || 'N/A'}</p>
                     <div className="mb-4">
                         <Input
                             className="input-custom"
@@ -83,7 +83,7 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                             placeholder="Enter question"
                             value={localQuestion.question_text}
                             onChange={(e) => setLocalQuestion({ ...localQuestion, question_text: e.target.value })}
-                            onClick={(e) => e.stopPropagation()} // Prevent click
+                            onClick={(e) => e.stopPropagation()} // Prevent click propagation
                         />
                     </div>
                     <div className="w-full mb-4">
@@ -95,7 +95,7 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                                             className="custom-radio"
                                             checked={localQuestion.correct_answers.includes(option)}
                                             onChange={() => handleCorrectAnswerChange(option)}
-                                            onClick={(e) => e.stopPropagation()} // Prevent click
+                                            onClick={(e) => e.stopPropagation()}
                                         />
                                     </Tooltip>
                                     <Input
@@ -148,6 +148,8 @@ const QuestionCard = ({ question, index, editMode, setEditMode, onUpdate, onRemo
                 </div>
             ) : (
                 <div>
+                    {/* Hiển thị ID câu hỏi trong chế độ xem */}
+                    <p><strong>ID câu hỏi:</strong> {localQuestion._id || 'N/A'}</p>
                     <p><strong>{localQuestion.question_text}</strong></p>
                     <Space direction="vertical">
                         {localQuestion.options.map((option, index) => (

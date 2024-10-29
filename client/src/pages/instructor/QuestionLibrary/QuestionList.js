@@ -15,6 +15,8 @@ const QuestionList = () => {
   const [groups, setGroups] = useState([]);
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // State để quản lý trang hiện tại
+  const itemsPerPage = 5; // Số câu hỏi mỗi trang
 
   // Lấy danh sách khối từ API
   const fetchGrades = async () => {
@@ -28,33 +30,7 @@ const QuestionList = () => {
     }
   };
 
-  // Lấy danh mục môn học theo khối
-  const fetchCategoriesByGrade = async (gradeId) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/instructor/category/getCategoryByGrade?grade_id=${gradeId}`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-      setCategories(response.data);
-    } catch (error) {
-      toast.error('Lỗi khi lấy danh sách môn học!');
-    }
-  };
-
-  // Lấy danh sách chương theo môn học
-  const fetchGroupsByCategory = async (categoryId) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/instructor/groups/byCategory?category_id=${categoryId}`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-      setGroups(response.data);
-    } catch (error) {
-      toast.error('Lỗi khi lấy danh sách chương!');
-    }
-  };
-
-  // Lấy danh sách câu hỏi
+  // Lấy danh sách câu hỏi từ API
   const fetchQuestions = async () => {
     try {
       const response = await axios.get('http://localhost:5000/api/instructor/questions', {
@@ -66,44 +42,33 @@ const QuestionList = () => {
     }
   };
 
-  // Cập nhật câu hỏi
-  const handleUpdateQuestion = async (updatedQuestion) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/instructor/questions/${updatedQuestion._id}`,
-        updatedQuestion,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-      fetchQuestions();
-      toast.success('Cập nhật câu hỏi thành công!');
-    } catch (error) {
-      toast.error('Lỗi khi cập nhật câu hỏi!');
-    }
-  };
-
-  // Xóa câu hỏi
-  const handleDeleteQuestion = async (questionId) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/instructor/questions/${questionId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      fetchQuestions();
-      toast.success('Xóa câu hỏi thành công!');
-    } catch (error) {
-      toast.error('Lỗi khi xóa câu hỏi!');
-    }
-  };
+  // Lấy dữ liệu ban đầu
+  useEffect(() => {
+    fetchGrades();
+    fetchQuestions();
+  }, []);
 
   // Lọc câu hỏi theo từ khóa tìm kiếm
   const filteredQuestions = questions.filter((question) =>
     question.question_text.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Lấy dữ liệu ban đầu
-  useEffect(() => {
-    fetchGrades();
-    fetchQuestions();
-  }, []);
+  // Tính toán câu hỏi cho trang hiện tại
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentQuestions = filteredQuestions.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Chuyển sang trang trước
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  // Chuyển sang trang sau
+  const handleNextPage = () => {
+    if (currentPage < Math.ceil(filteredQuestions.length / itemsPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   return (
     <div>
@@ -131,12 +96,12 @@ const QuestionList = () => {
       </div>
 
       <div className="space-y-4">
-        {filteredQuestions.length === 0 ? (
+        {currentQuestions.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-20">
             <p className="text-600">Hiện tại không có câu hỏi. Nhấn tạo để thêm mới.</p>
           </div>
         ) : (
-          filteredQuestions.map((question) => (
+          currentQuestions.map((question) => (
             <div
               key={question._id}
               className="p-4 bg-white rounded-lg shadow-sm border cursor-pointer"
@@ -162,14 +127,42 @@ const QuestionList = () => {
         )}
       </div>
 
+      {/* Phân trang */}
+      <div className="flex justify-between items-center mt-6">
+        <button
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 rounded-lg ${currentPage === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'}`}
+        >
+          Trang trước
+        </button>
+        <span>
+          Trang {currentPage} / {Math.ceil(filteredQuestions.length / itemsPerPage)}
+        </span>
+        <button
+          onClick={handleNextPage}
+          disabled={currentPage === Math.ceil(filteredQuestions.length / itemsPerPage)}
+          className={`px-4 py-2 rounded-lg ${currentPage === Math.ceil(filteredQuestions.length / itemsPerPage) ? 'bg-gray-300' : 'bg-blue-500 text-white'
+            }`}
+        >
+          Trang sau
+        </button>
+      </div>
+
       {selectedQuestion && (
         <QuestionCard
           question={selectedQuestion}
           grades={grades}
           categories={categories}
           groups={groups}
-          onUpdate={handleUpdateQuestion}
-          onDelete={handleDeleteQuestion}
+          onUpdate={(updatedQuestion) => {
+            setSelectedQuestion(null);
+            fetchQuestions();
+          }}
+          onDelete={(questionId) => {
+            setSelectedQuestion(null);
+            fetchQuestions();
+          }}
           onClose={() => setSelectedQuestion(null)}
         />
       )}

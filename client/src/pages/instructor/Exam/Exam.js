@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
-import ExamHeader from "./ExamHeader/ExamHeader";
+import ExamHeader from "./ExamCreate/ExamHeader";
 import ExamCreate from "./ExamCreate/ExamCreate";
 import Submission from "./Submission/Submission";
-import 'styles/instructor/ExamMain.css'
+
 
 //Import using Redux
 import { Provider } from 'react-redux';
