@@ -39,6 +39,7 @@ import PrivateRoute from './components/PrivateRoute';
 import InstructorRegistration from 'pages/instructor/InstructorRegistration/InstructorRegistration';
 import ForgotPassword from 'pages/common/ForgotPassword';
 import ResetPassword from 'pages/common/ResetPassword';
+import VerifyUser from 'pages/common/VerifyUser';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path='/forgot-password'element={<ForgotPassword/>}/>
           <Route path='/reset-password'element={<ResetPassword/>}/>
+          <Route path='/verify'element={<VerifyUser/>}/>
 
           {/* ========== Learner Pages ========== */}
           <Route
