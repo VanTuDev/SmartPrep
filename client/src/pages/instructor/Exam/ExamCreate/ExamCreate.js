@@ -82,10 +82,6 @@ function ExamCreate({ examId }) {
                     />
                 ))}
             </div>
-
-
-
-
         </div>
     );
 }

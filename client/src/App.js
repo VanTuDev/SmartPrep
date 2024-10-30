@@ -1,45 +1,46 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Import các trang chung (Common pages)
-import HomePage from './pages/common/HomePage';
-import LoginPage from './pages/common/LoginPage';
-import RegisterPage from './pages/common/RegisterPage';
+import HomePage from "./pages/common/HomePage";
+import LoginPage from "./pages/common/LoginPage";
+import RegisterPage from "./pages/common/RegisterPage";
 
 // Import các trang Learner
-import LearnerDashboard from './pages/learner/LearnerDashboard';
-import ViewExamResults from './pages/learner/ViewExamResults';
-import LearnerExamHistory from './pages/learner/ExamHistory';
-import ClassList from './pages/learner/ClassList';
-import LearnerProfile from './pages/learner/LearnerProfile';
-import QuizCard from './pages/learner/TakeExam/QuizCard';
-import Exam1 from './pages/learner/TakeExam/Exam';
-import ClassDetailforLeaner from './pages/learner/ClassDetail';
+import LearnerDashboard from "./pages/learner/LearnerDashboard";
+import ViewExamResults from "./pages/learner/ViewExamResults";
+import LearnerExamHistory from "./pages/learner/ExamHistory";
+import ClassList from "./pages/learner/ClassList";
+import LearnerProfile from "./pages/learner/LearnerProfile";
+import QuizCard from "./pages/learner/TakeExam/QuizCard";
+import Exam1 from "./pages/learner/TakeExam/Exam";
+import ClassDetailforLeaner from "./pages/learner/ClassDetail";
 
 // Import các trang Instructor
-import InstructorDashboard from './pages/instructor/InstructorDashboard';
-import Exam from './pages/instructor/Exam/Exam';
-import QuestionLibrary from './pages/instructor/QuestionLibrary';
-import InstructorProfile from './components/instructor/InstructorProfile';
-import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
-import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
+import InstructorDashboard from "./pages/instructor/InstructorDashboard";
+import Exam from "./pages/instructor/Exam/Exam";
+import QuestionLibrary from "./pages/instructor/QuestionLibrary";
+import InstructorProfile from "./components/instructor/InstructorProfile";
+import ClassRoom from "./pages/instructor/ClassRoom/ViewClassList";
+import ClassDetail from "pages/instructor/ClassRoom/ClassDetail";
 
 // Import các trang Admin
-import AdminLayout from 'layouts/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import LearnerTable from 'pages/admin/UserManagement/LearnerTable';
-import InstructorTable from 'pages/admin/UserManagement/InstructorTable';
-import AdminTable from 'pages/admin/UserManagement/AdminTable';
-import InstructorApplicationsTable from 'pages/admin/UserManagement/InstructorApplicationsTable ';
+import AdminLayout from "layouts/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import LearnerTable from "pages/admin/UserManagement/LearnerTable";
+import InstructorTable from "pages/admin/UserManagement/InstructorTable";
+import AdminTable from "pages/admin/UserManagement/AdminTable";
+import InstructorApplicationsTable from "pages/admin/UserManagement/InstructorApplicationsTable ";
 
 // Import các thành phần chung
-import PrivateRoute from './components/PrivateRoute';
-import InstructorRegistration from 'pages/instructor/InstructorRegistration/InstructorRegistration';
-import ForgotPassword from 'pages/common/ForgotPassword';
-import ResetPassword from 'pages/common/ResetPassword';
-import VerifyUser from 'pages/common/VerifyUser';
+import PrivateRoute from "./components/PrivateRoute";
+import InstructorRegistration from "pages/instructor/InstructorRegistration/InstructorRegistration";
+import ForgotPassword from "pages/common/ForgotPassword";
+import ResetPassword from "pages/common/ResetPassword";
+import VerifyUser from "pages/common/VerifyUser";
+import PublicRoute from "components/PublicRoute";
 
 function App() {
   return (
@@ -49,11 +50,51 @@ function App() {
         <Routes>
           {/* ========== Common Pages ========== */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path='/forgot-password'element={<ForgotPassword/>}/>
-          <Route path='/reset-password'element={<ResetPassword/>}/>
-          <Route path='/verify'element={<VerifyUser/>}/>
+
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <RegisterPage />
+              </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/reset-password"
+            element={
+              <PublicRoute>
+                <ResetPassword />
+              </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/verify"
+            element={
+              <PublicRoute>
+                <VerifyUser />
+              </PublicRoute>
+            }
+          />
 
           {/* ========== Learner Pages ========== */}
           <Route
@@ -172,7 +213,6 @@ function App() {
             }
           />
 
-
           <Route
             path="/instructor/dashboard/class/detail/:classId"
             element={
@@ -213,7 +253,10 @@ function App() {
             <Route path="users/learner" element={<LearnerTable />} />
             <Route path="users/instructor" element={<InstructorTable />} />
             <Route path="users/admin" element={<AdminTable />} />
-            <Route path="users/instructor-application" element={<InstructorApplicationsTable />} />
+            <Route
+              path="users/instructor-application"
+              element={<InstructorApplicationsTable />}
+            />
             {/* Các route khác trong khu vực admin */}
           </Route>
 

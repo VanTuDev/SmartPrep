@@ -1,206 +1,231 @@
+import LearnerHeader from 'components/learner/LearnerHeader';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function LearnerProfile() {
-  const [userInfo, setUserInfo] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [editedInfo, setEditedInfo] = useState({});
-  const [selectedImage, setSelectedImage] = useState(null);
-  const navigate = useNavigate();
+const LearnerProfile = () => {
+   const [userInfo, setUserInfo] = useState(null); // Trạng thái để lưu thông tin người dùng
+   const [editedInfo, setEditedInfo] = useState({}); // Trạng thái để lưu thông tin đã chỉnh sửa
+   const [editMode, setEditMode] = useState(false); // Trạng thái để bật tắt chế độ chỉnh sửa
+   const [selectedImage, setSelectedImage] = useState(null); // Trạng thái để lưu hình ảnh được chọn
+   const [success, setSuccess] = useState(''); // Trạng thái thông báo thành công
+   const [error, setError] = useState(''); // Trạng thái thông báo lỗi
+   const navigate = useNavigate(); // Hook điều hướng
 
-  // Hàm lấy thông tin người dùng từ API
-  const fetchUserInfo = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+   // Lấy thông tin người dùng khi component được render
+   const fetchUserInfo = async () => {
+      const token = localStorage.getItem('token');
+      try {
+         if (!token) {
+            setError('Không tìm thấy token. Vui lòng đăng nhập lại.');
+            navigate('/login');
+            return;
+         }
 
-    try {
-      const response = await fetch('http://localhost:5000/api/users/profile', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+         const response = await fetch('http://localhost:5000/api/users/profile', {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
+         });
 
-      if (!response.ok) {
-        navigate('/login');
-        return;
+         if (!response.ok) {
+            const errorResponse = await response.json();
+            setError(`Lỗi khi lấy thông tin người dùng: ${errorResponse.error || 'Không xác định'}`);
+            return;
+         }
+
+         const data = await response.json();
+         setUserInfo(data); // Lưu dữ liệu người dùng vào state
+         setEditedInfo(data); // Cập nhật state đã chỉnh sửa
+      } catch (err) {
+         setError('Có lỗi xảy ra trong quá trình lấy thông tin.');
       }
+   };
 
-      const data = await response.json();
-      setUserInfo(data);
-      setEditedInfo(data);
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin người dùng:", error);
-    }
-  };
+   // Cập nhật thông tin người dùng
+   const handleSave = async () => {
+      const token = localStorage.getItem('token');
+      try {
+         const formData = new FormData();
+         formData.append('username', editedInfo.username);
+         formData.append('fullname', editedInfo.fullname);
+         formData.append('email', editedInfo.email);
+         formData.append('phone', editedInfo.phone);
+         formData.append('role', editedInfo.role);
 
-  useEffect(() => {
-    fetchUserInfo();
-  }, []);
+         if (selectedImage) {
+            formData.append('profile', selectedImage);
+         }
 
-  const handleChange = (e) => {
-    setEditedInfo({
-      ...editedInfo,
-      [e.target.name]: e.target.value,
-    });
-  };
+         const response = await fetch('http://localhost:5000/api/users/updateuser', {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+         });
 
-  const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
-    }
-  };
+         if (!response.ok) {
+            const responseData = await response.json();
+            setError(`Lỗi khi cập nhật thông tin: ${responseData.error || 'Không xác định'}`);
+            return;
+         }
 
-  // Hàm xử lý cập nhật thông tin người dùng
-  const handleSave = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error("Không có token. Không thể cập nhật thông tin.");
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      Object.keys(editedInfo).forEach((key) => {
-        formData.append(key, editedInfo[key]);
-      });
-
-      if (selectedImage) formData.append('profile', selectedImage); // Thêm ảnh vào form data nếu có
-
-      // Kiểm tra lại dữ liệu đang được gửi đi
-      for (let pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
+         const updatedData = await response.json();
+         setUserInfo(updatedData);
+         setEditMode(false);
+         setSelectedImage(null); // Reset hình ảnh sau khi cập nhật thành công
+         setSuccess('Cập nhật thông tin thành công!');
+      } catch (err) {
+         setError('Có lỗi xảy ra trong quá trình cập nhật.');
       }
+   };
 
-      const response = await fetch('http://localhost:5000/api/users/updateuser', {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
+   // Xử lý thay đổi dữ liệu trong form
+   const handleChange = (e) => {
+      setEditedInfo({
+         ...editedInfo,
+         [e.target.name]: e.target.value,
       });
+   };
 
-      if (!response.ok) {
-        console.error("Lỗi khi cập nhật thông tin:", response.statusText);
-        return;
+   // Xử lý thay đổi ảnh đại diện
+   const handleImageChange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+         setSelectedImage(e.target.files[0]);
       }
+   };
 
-      const updatedData = await response.json();
-      setUserInfo(updatedData);
-      setEditMode(false);
-      console.log("Cập nhật thành công:", updatedData);
-    } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin:", error);
-    }
-  };
+   // Gọi API lấy thông tin người dùng khi component được render lần đầu
+   useEffect(() => {
+      fetchUserInfo();
+   }, []);
 
-  const toggleEditMode = () => {
-    setEditMode(!editMode);
-  };
+   console.log(userInfo);
+   
+   
+   return (
+      <div className="">
+         <LearnerHeader/>
+         <div className="container mx-auto p-6">
+            {/* Thông báo lỗi và thành công */}
+            {error && <p className="text-red-500 text-center">{error}</p>}
+            {success && <p className="text-green-500 text-center">{success}</p>}
+            <div className="bg-white shadow-md rounded-lg p-6">
 
-  if (!userInfo) {
-    return <div>Đang tải thông tin người dùng...</div>;
-  }
 
-  return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">Thông tin người dùng</h1>
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="flex items-center mb-6">
-          <div className="w-32 h-32">
-          <img
-            src={
-              selectedImage
-                ? URL.createObjectURL(selectedImage)
-                : userInfo.profile?.startsWith('http')
-                  ? userInfo.profile // Use the profile URL directly if it's a full URL
-                  : userInfo.profile
-                    ? `http://localhost:5000/uploads/${userInfo.profile}` // Use backend path otherwise
-                    : "https://via.placeholder.com/150" // Placeholder image if no profile available
-            }
-            alt="Profile"
-            className="w-full h-full object-cover rounded-full shadow-md"
-          />
-          </div>
-          {editMode && (
-            <div className="ml-4">
-              <input type="file" onChange={handleImageChange} className="text-sm text-gray-500" />
+               {/* Hiển thị thông tin người dùng */}
+               {userInfo ? (
+                  <>
+                     <div className="flex items-center space-x-6 mb-6">
+                        {/* Hiển thị và cập nhật ảnh đại diện */}
+                        <div className="flex flex-col items-center">
+                        <img
+                           src={
+                           selectedImage
+                              ? URL.createObjectURL(selectedImage)
+                              : userInfo.profile?.startsWith('http')
+                                 ? userInfo.profile // Use the profile URL directly if it's a full URL
+                                 : userInfo.profile
+                                 ? `http://localhost:5000/uploads/${userInfo.profile}` // Use backend path otherwise
+                                 : "https://via.placeholder.com/150" // Placeholder image if no profile available
+                           }
+                           alt="Profile"
+                           className="w-40 h-40 object-cover rounded-full shadow-md"
+                        />
+                           {editMode && (
+                              <input
+                                 type="file"
+                                 onChange={handleImageChange}
+                                 className="text-sm text-gray-500 flex justify-center ml-10 my-6"
+                              />
+                           )}
+                           <h2 className="text-xl font-semibold mt-4">{userInfo.fullname || 'Tên người dùng'}</h2>
+                           <p className="text-gray-500">ID: {userInfo?._id || '---'}</p>
+                        </div>
+
+                        {/* Các trường thông tin khác */}
+                        <div className="flex-1">
+                           <h2 className="text-2xl font-bold mb-4">Thông tin</h2>
+                           <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div>
+                                 <label className="block text-sm text-gray-700">Tên đăng nhập</label>
+                                 {editMode ? (
+                                    <input
+                                       type="text"
+                                       name="username"
+                                       value={editedInfo.username || ''}
+                                       onChange={handleChange}
+                                       className="border rounded p-2 w-full"
+                                    />
+                                 ) : (
+                                    <p className="p-2">{userInfo.username}</p>
+                                 )}
+                              </div>
+                              <div>
+                                 <label className="block text-sm text-gray-700">Email</label>
+                                 {editMode ? (
+                                    <input
+                                       type="email"
+                                       name="email"
+                                       value={editedInfo.email || ''}
+                                       onChange={handleChange}
+                                       className="border rounded p-2 w-full"
+                                    />
+                                 ) : (
+                                    <p className="p-2">{userInfo.email}</p>
+                                 )}
+                              </div>
+                              <div>
+                                 <label className="block text-sm text-gray-700">Số điện thoại</label>
+                                 {editMode ? (
+                                    <input
+                                       type="text"
+                                       name="phone"
+                                       value={editedInfo.phone || ''}
+                                       onChange={handleChange}
+                                       className="border rounded p-2 w-full"
+                                    />
+                                 ) : (
+                                    <p className="p-2">{userInfo.phone}</p>
+                                 )}
+                              </div>
+                              <div>
+                                 <label className="block text-sm text-gray-700">Vai trò</label>
+                                 {editMode ? (
+                                    <input
+                                       name="role"
+                                       value={editedInfo.role || ''}
+                                       onChange={handleChange}
+                                       disabled
+                                       className="border rounded p-2 w-full"
+                                    />
+                                 ) : (
+                                    <p className="p-2">{userInfo.role}</p>
+                                 )}
+                              </div>
+                           </div>
+                           {/* Nút Lưu và Hủy */}
+                           {editMode ? (
+                              <div className="flex justify-end space-x-4">
+                                 <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
+                                    Lưu
+                                 </button>
+                                 <button onClick={() => setEditMode(false)} className="bg-gray-500 text-white px-4 py-2 rounded">
+                                    Hủy
+                                 </button>
+                              </div>
+                           ) : (
+                              <button onClick={() => setEditMode(true)} className="bg-green-500 text-white px-4 py-2 rounded">
+                                 Chỉnh sửa
+                              </button>
+                           )}
+                        </div>
+                     </div>
+                  </>
+               ) : (
+                  <p>Đang tải dữ liệu...</p>
+               )}
             </div>
-          )}
-        </div>
-
-        {editMode ? (
-          <>
-            <div className="grid gap-4 grid-cols-2">
-              <div>
-                <label className="font-bold">Full Name:</label>
-                <input
-                  type="text"
-                  name="fullname"
-                  value={editedInfo.fullname}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                />
-              </div>
-              <div>
-                <label className="font-bold">Phone:</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={editedInfo.phone}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                />
-              </div>
-              <div>
-                <label className="font-bold">Birthday:</label>
-                <input
-                  type="date"
-                  name="birthday"
-                  value={editedInfo.birthday}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                />
-              </div>
-              <div>
-                <label className="font-bold">Address:</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={editedInfo.address}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-4 mt-4">
-              <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
-                Lưu
-              </button>
-              <button onClick={toggleEditMode} className="bg-gray-500 text-white px-4 py-2 rounded">
-                Hủy
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p><strong>Username:</strong> {userInfo.username}</p>
-            <p><strong>Email:</strong> {userInfo.email}</p>
-            <p><strong>Full Name:</strong> {userInfo.fullname}</p>
-            <p><strong>Phone:</strong> {userInfo.phone || 'Chưa cập nhật'}</p>
-            <p><strong>Birthday:</strong> {userInfo.birthday || 'Chưa cập nhật'}</p>
-            <p><strong>Address:</strong> {userInfo.address || 'Chưa cập nhật'}</p>
-            <button onClick={toggleEditMode} className="bg-green-500 text-white px-4 py-2 rounded mt-4">
-              Chỉnh sửa
-            </button>
-          </>
-        )}
+         </div>
       </div>
-    </div>
-  );
-}
+   );
+};
 
 export default LearnerProfile;

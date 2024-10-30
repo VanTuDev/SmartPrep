@@ -6,13 +6,10 @@ import { Dropdown, Menu as AntdMenu } from 'antd';
 import VideoModal from '../../components/SupportGuide/SupportGuideModal';
 const LearnerHeader = () => {
    const [modalIsOpen, setModalIsOpen] = useState(false);
-   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
    const [username, setUsername] = useState('');
    const navigate = useNavigate();
 
-   const toggleMobileMenu = () => {
-      setIsMobileMenuOpen(!isMobileMenuOpen);
-   };
+
    const handleLogout = () => {
       localStorage.removeItem('token'); // Xóa token khỏi localStorage
       navigate('/login'); // Điều hướng về trang đăng nhập
@@ -20,7 +17,7 @@ const LearnerHeader = () => {
    // Dropdown menu cho biểu tượng User
    const userMenu = (
       <AntdMenu>
-         <AntdMenu.Item key="profile" onClick={() => navigate('/instructor/profile')}>
+         <AntdMenu.Item key="profile" onClick={() => navigate('/learner/profile')}>
             Hồ sơ cá nhân
          </AntdMenu.Item>
          <AntdMenu.Item key="logout" onClick={handleLogout}>
@@ -41,11 +38,6 @@ const LearnerHeader = () => {
          }
       }
    }, []);
-
-   // Điều hướng đến LearnerProfile khi nhấn vào biểu tượng người dùng
-   const handleNavigateToProfile = () => {
-      navigate('/learner/profile'); // Đảm bảo đúng đường dẫn đến trang LearnerProfile
-   };
 
    return (
       <header className="bg-white shadow-md px-6 py-2 flex items-center justify-between">

@@ -97,6 +97,9 @@ const InstructorProfile = () => {
       fetchUserInfo();
    }, []);
 
+   console.log(userInfo);
+   
+   
    return (
       <div className="">
          <InstructorHeader></InstructorHeader>
@@ -124,13 +127,13 @@ const InstructorProfile = () => {
                                  : "https://via.placeholder.com/150" // Placeholder image if no profile available
                            }
                            alt="Profile"
-                           className="w-full h-full object-cover rounded-full shadow-md"
+                           className="w-40 h-40 object-cover rounded-full shadow-md"
                         />
                            {editMode && (
                               <input
                                  type="file"
                                  onChange={handleImageChange}
-                                 className="text-sm text-gray-500"
+                                 className="text-sm text-gray-500 flex justify-center ml-10 my-6"
                               />
                            )}
                            <h2 className="text-xl font-semibold mt-4">{userInfo.fullname || 'Tên người dùng'}</h2>
@@ -186,16 +189,13 @@ const InstructorProfile = () => {
                               <div>
                                  <label className="block text-sm text-gray-700">Vai trò</label>
                                  {editMode ? (
-                                    <select
+                                    <input
                                        name="role"
                                        value={editedInfo.role || ''}
                                        onChange={handleChange}
+                                       disabled
                                        className="border rounded p-2 w-full"
-                                    >
-                                       <option value="user">User</option>
-                                       <option value="admin">Admin</option>
-                                       <option value="instructor">Instructor</option>
-                                    </select>
+                                    />
                                  ) : (
                                     <p className="p-2">{userInfo.role}</p>
                                  )}

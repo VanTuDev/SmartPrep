@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; // Import toast
 import { CircleUserRound, Mail, PhoneCall, Key, Eye, EyeOff, UserRoundSearch } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
 
 const RegisterPage = () => {
    const [username, setUserName] = useState('');
@@ -103,58 +101,6 @@ const RegisterPage = () => {
       }
    };
    
-   const handleGGLogin = async (credentialResponse) => {
-      try {
-        if (!credentialResponse || typeof credentialResponse.credential !== 'string') {
-          throw new Error('Invalid credential response or missing JWT token.');
-        }
-    
-        const data = jwtDecode(credentialResponse.credential);
-        console.log('Decoded Google JWT:', data);
-    
-        const formData = {
-          username: data.name,
-          fullname: data.name,
-          email: data.email,
-          google_id: data.sub, // Use the Google ID from the JWT payload
-          profile: data.picture,
-          role: 'learner',
-        };
-    
-        const response = await fetch('http://localhost:5000/api/users/ggLogin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-    
-        const result = await response.json();
-    
-        if (response.ok) {
-          toast.success('Đăng nhập thành công!');
-          localStorage.setItem('token', result.token);
-          localStorage.setItem('userId', result.user._id);
-    
-          switch (result.user.role) {
-            case 'instructor':
-              navigate('/instructor/dashboard');
-              break;
-            case 'admin':
-              navigate('/admin');
-              break;
-            default:
-              navigate('/learner/dashboard');
-          }
-        } else {
-          toast.error(result.error || 'Đăng nhập thất bại.');
-        }
-      } catch (error) {
-        console.error('Error during Google login:', error.message);
-        toast.error('Đã xảy ra lỗi khi xử lý đăng nhập.');
-      }
-    };
-    
 
    return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -294,15 +240,7 @@ const RegisterPage = () => {
                   <span className="text-gray-500">Hoặc</span>
                </div>
 
-               {/* Google Login Button (dummy for UI) */}
-               <div className="flex  justify-center text-gray-600 font-bold ">
-               <GoogleLogin
-                  onSuccess={handleGGLogin}
-                  onError={() => {
-                     console.log('Login Failed');
-                  }}
-                  />
-               </div>
+               
             </form>
 
             <p className="text-center mt-4">
