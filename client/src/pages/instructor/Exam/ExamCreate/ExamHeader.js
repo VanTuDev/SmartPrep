@@ -5,7 +5,7 @@ import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import PreviewExam from './PreviewExam';
 import ExportPdfPage from './ExportPdfPage';
 
-const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
+const ExamHeader = ({ items, onChangeTab, loading, handleCreateExam }) => {
     const navigate = useNavigate();
     const [openPreview, setOpenPreview] = useState(false);
     const [openExportPage, setOpenExportPage] = useState(false);
@@ -47,7 +47,7 @@ const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
                             </Button>
                         </Tooltip>
 
-                        <Button onClick={onPost} type="primary" loading={loading}>
+                        <Button onClick={handleCreateExam} type="primary" loading={loading}>
                             Post
                         </Button>
 

@@ -43,7 +43,7 @@ function Submission({ examId }) {
               >
                 <th className="px-2 text-center">
                   <div className='flex justify-center items-center'>
-                    <Avatar size="large" src={<img alt="avatar" />} />
+                    <Avatar size="large" src={<img src='/image/profile.svg' alt="avatar" />} />
                   </div>
                 </th>
                 <th scope="row" className="px-2 py-4 text-gray-900">

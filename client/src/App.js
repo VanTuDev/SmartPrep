@@ -49,7 +49,14 @@ function App() {
         <ToastContainer /> {/* Thêm ToastContainer để hiển thị thông báo */}
         <Routes>
           {/* ========== Common Pages ========== */}
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <HomePage />
+              </PublicRoute>
+            }
+          />
 
           <Route
             path="/login"

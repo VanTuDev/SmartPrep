@@ -105,13 +105,21 @@ const LibraryModal = ({ isOpen, onClose, onSubmit }) => {
    };
 
    const handleGroupQuantityChange = (groupId, quantity) => {
-      setGroupData((prevState) => ({
-         ...prevState,
-         [groupId]: { ...prevState[groupId], quantity },
-      }));
-
-      const total = Object.values(groupData).reduce((sum, group) => sum + group.quantity, 0);
-      setTotalQuestions(total);
+      setGroupData((prevState) => {
+         const updatedGroupData = {
+            ...prevState,
+            [groupId]: { ...prevState[groupId], quantity },
+         };
+   
+         // Tính tổng số câu hỏi ngay sau khi cập nhật
+         const total = Object.values(updatedGroupData).reduce(
+            (sum, group) => sum + (group.quantity || 0),
+            0
+         );
+         setTotalQuestions(total);  // Cập nhật tổng số câu hỏi
+   
+         return updatedGroupData;
+      });
    };
 
    const handleLibrarySubmit = async () => {
