@@ -42,6 +42,7 @@ import PrivateRoute from './components/PrivateRoute';
 import InstructorRegistration from 'pages/instructor/InstructorRegistration/InstructorRegistration';
 import ForgotPassword from 'pages/common/ForgotPassword';
 import ResetPassword from 'pages/common/ResetPassword';
+import ChoseRolePage from 'pages/common/ChoseRolePage';
 
 function App() {
   return (
@@ -52,9 +53,10 @@ function App() {
           {/* ========== Common Pages ========== */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path='/forgot-password' element={<ForgotPassword />} />
-          <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path="/register" element={<ChoseRolePage />} />
+          <Route path="/register_role" element={<RegisterPage />} />
+          <Route path='/forgot-password'element={<ForgotPassword/>}/>
+          <Route path='/reset-password'element={<ResetPassword/>}/>
 
           {/* ========== Learner Pages ========== */}
           <Route
