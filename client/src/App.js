@@ -13,7 +13,7 @@ import LearnerDashboard from './pages/learner/LearnerDashboard';
 import ViewExamResults from './pages/learner/ViewExamResults';
 import LearnerExamHistory from './pages/learner/ExamHistory';
 import ClassList from './pages/learner/ClassList';
-import LearnerProfile from './pages/learner/LearnerProfile';
+import LearnerProfile from './components/learner/LearnerProfile';
 import QuizCard from './pages/learner/TakeExam/QuizCard';
 import Exam1 from './pages/learner/TakeExam/Exam';
 import ClassDetailforLeaner from './pages/learner/ClassDetail';
@@ -25,6 +25,9 @@ import QuestionLibrary from './pages/instructor/QuestionLibrary';
 import InstructorProfile from './components/instructor/InstructorProfile';
 import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
 import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
+
+
+import CreateExamLayout from './pages/instructor/Exams/CreateExamLayout';
 
 // Import các trang Admin
 import AdminLayout from 'layouts/AdminLayout';
@@ -221,6 +224,16 @@ function App() {
           {/* Uncomment and implement NotFound component if needed */}
           {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
+
+
+
+
+
+        <Routes>
+          <Route path="/instructor/exams/exam-create" element={<CreateExamLayout />} />
+          {/* Các route khác */}
+        </Routes>
+
       </div>
     </Router>
   );

@@ -1,24 +1,15 @@
-import { useState, useEffect } from "react";
+// File: Exam.jsx
+import { useState, useEffect, useRef } from "react";
 import { useParams } from 'react-router-dom';
-import ExamHeader from "./ExamHeader/ExamHeader";
+import ExamHeader from "./ExamCreate/ExamHeader";
 import ExamCreate from "./ExamCreate/ExamCreate";
 import Submission from "./Submission/Submission";
-import 'styles/instructor/ExamMain.css'
-
-//Import using Redux
 import { Provider } from 'react-redux';
 import { store } from '../../../store/store';
 
-
 const items = [
-    {
-        key: '1',
-        label: 'Exam',
-    },
-    {
-        key: '2',
-        label: 'Submission',
-    }
+    { key: '1', label: 'Exam' },
+    { key: '2', label: 'Submission' }
 ];
 
 function Exam() {
@@ -26,19 +17,39 @@ function Exam() {
     const { examId: initialExamId } = useParams();
     const [examId, setExamId] = useState(initialExamId);
 
+    const examCreateRef = useRef(); // Tạo ref cho ExamCreate
+
     const onChangeTab = (key) => {
-        setActiveTab(key)
-    }
+        setActiveTab(key);
+    };
 
     useEffect(() => {
-        setExamId(initialExamId); // Update local examId when params change
+        setExamId(initialExamId);
     }, [initialExamId]);
-    console.log(examId)
+
+    const handlePostExam = () => {
+        if (examCreateRef.current) {
+            examCreateRef.current.handlePostExam(); // Gọi hàm thông qua ref
+        }
+    };
+
     return (
         <Provider store={store}>
-            <ExamHeader items={items} activeTab={activeTab} onChangeTab={onChangeTab} setExamId={setExamId} examId={examId} />
+            <ExamHeader
+                items={items}
+                onChangeTab={onChangeTab}
+                onPost={handlePostExam} // Truyền hàm vào header
+                activeTab={activeTab}
+                setExamId={setExamId}
+                examId={examId}
+            />
             <div className="mt-24">
-                {activeTab === '1' && <ExamCreate examId={examId} />}
+                {activeTab === '1' && (
+                    <ExamCreate
+                        ref={examCreateRef} // Truyền ref vào ExamCreate
+                        examId={examId}
+                    />
+                )}
                 {activeTab === '2' && <Submission examId={examId} />}
             </div>
         </Provider>
