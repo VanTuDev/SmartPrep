@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const baseUrl = "http://localhost:5000/";
 
-const ApplicationDetailDialog = ({ applicationId, isOpen, onClose }) => {
+const ApplicationDetailDialog = ({ applicationId, isOpen, onClose, refreshApplicationsData  }) => {
     const [applicationDetails, setApplicationDetails] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -67,7 +67,9 @@ const ApplicationDetailDialog = ({ applicationId, isOpen, onClose }) => {
             setApplicationDetails(updatedApplication.application);
             message.success(`Application ${status} successfully!`);
 
-            navigate("/admin/users/instructor-application")
+            // Gọi hàm refresh để cập nhật bảng
+            refreshApplicationsData();
+            onClose(); // Đóng dialog sau khi cập nhật thành công
         } catch (error) {
             console.error(`Error updating application status to ${status}:`, error);
         } finally {

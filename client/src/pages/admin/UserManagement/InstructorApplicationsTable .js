@@ -84,6 +84,30 @@ const InstructorApplicationsTable = () => {
         setIsDialogOpen(true); // Open the dialog
     };
 
+    const refreshApplicationsData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch("http://localhost:5000/api/access_instructor/applications", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            const result = await response.json();
+            setApplicationsData(result.applications);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        refreshApplicationsData();
+    }, []);
+
     // Lọc ứng viên dựa trên search term và status filter
     const filteredApplications = applicationsData?.filter((application) =>
         application.teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -254,6 +278,7 @@ const InstructorApplicationsTable = () => {
                 applicationId={selectedApplicationId}
                 isOpen={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
+                refreshApplicationsData={refreshApplicationsData}
             />
         </>
     );
