@@ -1,37 +1,46 @@
-// File: GeneralInformation.jsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import axios from 'axios';
 import {
-    Input, Typography, Row, Col, DatePicker, TimePicker, InputNumber, Switch,
-    Button, message, Space, List
+    Input, Typography, Row, Col, DatePicker, TimePicker, InputNumber,
+    Button, message, Space, Divider
 } from 'antd';
-import { Captions, Pencil, Forward, Folder } from 'lucide-react';
+import { Captions, Pencil, Calendar } from 'lucide-react';
 import dayjs from 'dayjs';
 import CreateExamModal from '../../CreateExamModal';
-import LibraryModal from '../../../../components/instructor/LibraryModal'; // Import LibraryModal
+import LibraryModal from '../../../../components/instructor/LibraryModal';
+import LibrarySingleModal from '../../../../components/instructor/LibrarySingleModal';
 
 const { TextArea } = Input;
 const { Title } = Typography;
 
-const GeneralInformation = ({ exam = {}, onUpdateExam }) => {
+const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
     const [title, setTitle] = useState(exam?.title || '');
     const [description, setDescription] = useState(exam?.description || '');
     const [isPublic, setIsPublic] = useState(exam?.access_type === 'public');
-    const [duration, setDuration] = useState(exam.duration || 60);
-    const [startDate, setStartDate] = useState(dayjs(exam.start_date) || null);
-    const [endDate, setEndDate] = useState(dayjs(exam.end_date) || null);
-    const [questions, setQuestions] = useState(exam.questions || []);
+    const [duration, setDuration] = useState(exam?.duration || 60);
+    const [startDate, setStartDate] = useState(dayjs(exam?.start_date) || null);
+    const [startTime, setStartTime] = useState(dayjs(exam?.start_date) || null);
+    const [endDate, setEndDate] = useState(dayjs(exam?.end_date) || null);
+    const [endTime, setEndTime] = useState(dayjs(exam?.end_date) || null);
+    const [questions, setQuestions] = useState(exam?.questions || []);
+    const [randomQuestionIds, setRandomQuestionIds] = useState([]);
+    const [selectedQuestionIds, setSelectedQuestionIds] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(true);
-
+    const [isSingleLibraryModalOpen, setIsSingleLibraryModalOpen] = useState(false);
     const [selectedGrade, setSelectedGrade] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedClassRoom, setSelectedClassRoom] = useState('');
 
     const accessLink = exam.access_link || `http://localhost:3000/${Math.random().toString(36).substring(2)}`;
+
+    useImperativeHandle(ref, () => ({
+        handleCreateExam,
+        addRandomQuestions,
+        addSelectedQuestions,
+    }));
 
     const updateExam = (updatedFields) => {
         const updatedExam = { ...exam, ...updatedFields, questions };
@@ -43,62 +52,72 @@ const GeneralInformation = ({ exam = {}, onUpdateExam }) => {
         setSelectedCategory(categoryId);
         setSelectedGroup(groupId);
         setSelectedClassRoom(classRoomId || null);
-
         updateExam({
             grade_id: gradeId,
             category_id: categoryId,
             group_id: groupId,
             classRoom_id: classRoomId || null,
         });
-
         setIsModalOpen(false);
     };
 
-    const handleAddRandomQuestions = (selectedQuestions) => {
-        const updatedQuestions = [...questions, ...selectedQuestions];
-        setQuestions(updatedQuestions);
-        updateExam({ questions: updatedQuestions });
-        message.success('Questions added successfully!');
+    const addRandomQuestions = (newQuestions) => {
+        const newRandomIds = newQuestions.map((q) => q._id);
+        setRandomQuestionIds((prevIds) => Array.from(new Set([...prevIds, ...newRandomIds])));
+        setQuestions((prevQuestions) => [...prevQuestions, ...newQuestions]);
+        message.success('Random questions added successfully!');
+    };
+
+    const addSelectedQuestions = (selectedQuestions) => {
+        const newSelectedIds = selectedQuestions.map((q) => q._id);
+        setSelectedQuestionIds((prevIds) => Array.from(new Set([...prevIds, ...newSelectedIds])));
+        setQuestions((prevQuestions) => [...prevQuestions, ...selectedQuestions]);
+        message.success('Selected questions added successfully!');
     };
 
     const validateExam = () => {
-        if (!title.trim() || !description.trim() || questions.length === 0) {
+        if (!title.trim() || !description.trim() || (randomQuestionIds.length === 0 && selectedQuestionIds.length === 0)) {
             message.error('Please fill out all required fields (title, description, and questions).');
             return false;
         }
         if (startDate && endDate && dayjs(endDate).isBefore(dayjs(startDate))) {
-            message.error('End time must be after the start time.');
+            message.error('End date must be after the start date.');
             return false;
+        }
+        if (startDate && startTime && endDate && endTime) {
+            const start = dayjs(startDate).set('hour', startTime.hour()).set('minute', startTime.minute());
+            const end = dayjs(endDate).set('hour', endTime.hour()).set('minute', endTime.minute());
+            if (end.isBefore(start)) {
+                message.error('End time must be after the start time.');
+                return false;
+            }
         }
         return true;
     };
 
     const handleCreateExam = async () => {
         if (!validateExam()) return;
-
         try {
             setLoading(true);
+            const allQuestionIds = [...new Set([...randomQuestionIds, ...selectedQuestionIds])];
+            const start = dayjs(startDate).set('hour', startTime.hour()).set('minute', startTime.minute());
+            const end = dayjs(endDate).set('hour', endTime.hour()).set('minute', endTime.minute());
 
-            // Prepare payload
             const examData = {
                 title: title.trim(),
                 description: description.trim(),
                 access_type: isPublic ? 'public' : 'private',
                 duration: Number(duration),
-                start_date: startDate ? startDate.toISOString() : null,
-                end_date: endDate ? endDate.toISOString() : null,
+                start_date: start.toISOString(),
+                end_date: end.toISOString(),
                 access_link: accessLink,
                 status: 'published',
                 grade_id: selectedGrade || null,
                 category_id: selectedCategory || null,
                 group_id: selectedGroup || null,
                 classRoom_id: selectedClassRoom || null,
-                questions: questions, // Sending questions directly (either IDs or new ones)
+                questions: allQuestionIds,
             };
-
-            console.log('Sending Exam Data:', examData);
-
-            // Make API request to create the exam
             const response = await axios.post(
                 'http://localhost:5000/api/instructor/test/create',
                 examData,
@@ -109,23 +128,17 @@ const GeneralInformation = ({ exam = {}, onUpdateExam }) => {
                     },
                 }
             );
-
             message.success('Exam created successfully!');
             console.log('Exam creation response:', response.data);
         } catch (error) {
-            if (error.response) {
-                console.error('Backend error response:', error.response.data);
-                message.error(`Failed to create exam: ${error.response.data.error}`);
-            } else {
-                console.error('Network or server error:', error.message);
-                message.error('Could not connect to server.');
-            }
+            console.error('Failed to create exam:', error);
+            message.error('Failed to create exam.');
         } finally {
             setLoading(false);
         }
     };
 
-
+    const disabledDate = (current) => current && current.isBefore(dayjs(), 'day');
 
     if (isModalOpen) {
         return (
@@ -140,6 +153,7 @@ const GeneralInformation = ({ exam = {}, onUpdateExam }) => {
     return (
         <div className="exam-configuration-container">
             <div className="p-4 rounded-lg">
+                <Title level={4}>Exam Information</Title>
                 <div className="flex items-start w-full rounded-lg p-2">
                     <Captions className="primary-color" />
                     <Input
@@ -163,68 +177,53 @@ const GeneralInformation = ({ exam = {}, onUpdateExam }) => {
             </div>
 
             <div className="mt-6 p-3">
-                <Title level={4}>Exam Information</Title>
+                <Title level={4}>Grade and Category</Title>
                 <Space direction="vertical" className="w-full">
                     <Input placeholder="Selected Grade" value={selectedGrade} disabled />
                     <Input placeholder="Selected Category" value={selectedCategory} disabled />
-                    <Input placeholder="Selected Group" value={selectedGroup} disabled />
                     <Input placeholder="Selected ClassRoom" value={selectedClassRoom} disabled />
                 </Space>
             </div>
 
-            <div className="mt-6">
-                <Title level={4}>Questions</Title>
-                <Button icon={<Folder />} onClick={() => setIsLibraryModalOpen(true)}>
-                    Add Questions from Library
-                </Button>
-                <List
-                    bordered
-                    dataSource={questions}
-                    renderItem={(question) => (
-                        <List.Item>
-                            <div>
-                                <strong>ID:</strong> {question._id || 'N/A'} - {question.question_text || 'No Text'}
-                            </div>
-                        </List.Item>
-                    )}
-                />
-            </div>
-
-            <LibraryModal
-                isOpen={isLibraryModalOpen}
-                onClose={() => setIsLibraryModalOpen(false)}
-                onSubmit={handleAddRandomQuestions}
-            />
-
-            <div className="mt-6">
-                <Title level={4}>Time Setup</Title>
-                <Row className="mb-4">
+            <Divider orientation="left">Time Setup</Divider>
+            <div className="time-setup-section">
+                <Row gutter={16}>
                     <Col span={12}>
-                        <InputNumber
-                            value={duration}
-                            onChange={setDuration}
-                            addonAfter="Minutes"
+                        <Title level={5}>Start Date & Time</Title>
+                        <DatePicker
+                            placeholder="Select Start Date"
+                            value={startDate}
+                            onChange={setStartDate}
+                            className="w-full mb-2"
+                            disabledDate={disabledDate}
+                        />
+                        <TimePicker
+                            placeholder="Select Start Time"
+                            value={startTime}
+                            onChange={setStartTime}
                             className="w-full"
                         />
                     </Col>
                     <Col span={12}>
-                        <DatePicker value={startDate} onChange={setStartDate} className="w-full" />
-                        <TimePicker value={startDate} onChange={setStartDate} className="w-full mt-2" />
-                    </Col>
-                    <Col span={12}>
-                        <DatePicker value={endDate} onChange={setEndDate} className="w-full" />
-                        <TimePicker value={endDate} onChange={setEndDate} className="w-full mt-2" />
+                        <Title level={5}>End Date & Time</Title>
+                        <DatePicker
+                            placeholder="Select End Date"
+                            value={endDate}
+                            onChange={setEndDate}
+                            className="w-full mb-2"
+                            disabledDate={disabledDate}
+                        />
+                        <TimePicker
+                            placeholder="Select End Time"
+                            value={endTime}
+                            onChange={setEndTime}
+                            className="w-full"
+                        />
                     </Col>
                 </Row>
             </div>
-
-            <div className="mt-6 flex justify-end">
-                <Button type="primary" loading={loading} onClick={handleCreateExam}>
-                    Create Exam
-                </Button>
-            </div>
         </div>
     );
-};
+});
 
 export default GeneralInformation;

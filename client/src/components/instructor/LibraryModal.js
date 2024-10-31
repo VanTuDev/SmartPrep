@@ -128,7 +128,6 @@ const LibraryModal = ({ isOpen, onClose, onSubmit }) => {
             return;
          }
 
-         // Gọi API để lấy câu hỏi ngẫu nhiên từ các nhóm đã chọn
          const questionPromises = selectedGroups.map((group) =>
             axios.get(
                `http://localhost:5000/api/instructor/questions/random/${group.id}?quantity=${group.quantity}`,
@@ -138,13 +137,11 @@ const LibraryModal = ({ isOpen, onClose, onSubmit }) => {
 
          const responses = await Promise.all(questionPromises);
          const randomQuestions = responses.flatMap((res) => res.data.questions);
-
-         // Gửi danh sách câu hỏi về GeneralInformation
-         onSubmit(randomQuestions);
+         onSubmit(randomQuestions); // Truyền câu hỏi về GeneralInformation
          onClose();
       } catch (error) {
-         console.error('Lỗi khi thêm câu hỏi:', error);
-         message.error('Không thể thêm câu hỏi từ Library.');
+         console.error('Error adding questions:', error);
+         message.error('Failed to add questions from Library.');
       }
    };
 
@@ -206,7 +203,6 @@ const LibraryModal = ({ isOpen, onClose, onSubmit }) => {
                renderItem={(group) => (
                   <List.Item>
                      <div className="flex justify-between items-center w-full">
-                        {/* Hiển thị tên nhóm và số lượng câu hỏi */}
                         <Text>
                            {group.name} ({group.totalQuestions} câu hỏi)
                         </Text>
@@ -219,7 +215,6 @@ const LibraryModal = ({ isOpen, onClose, onSubmit }) => {
                   </List.Item>
                )}
             />
-
          </div>
 
          <div className="flex justify-end">

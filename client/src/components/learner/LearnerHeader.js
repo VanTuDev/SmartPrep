@@ -20,7 +20,7 @@ const LearnerHeader = () => {
    // Dropdown menu cho biểu tượng User
    const userMenu = (
       <AntdMenu>
-         <AntdMenu.Item key="profile" onClick={() => navigate('/instructor/profile')}>
+         <AntdMenu.Item key="profile" onClick={() => navigate('/learner/profile')}>
             Hồ sơ cá nhân
          </AntdMenu.Item>
          <AntdMenu.Item key="logout" onClick={handleLogout}>
@@ -84,7 +84,7 @@ const LearnerHeader = () => {
                </div>
 
                <div className="flex flex-col items-center" onClick={() => setModalIsOpen(true)}>
-                     <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
+                  <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
                   <span className="text-sm text-gray-600">Hỗ trợ</span>
                </div>
                <VideoModal

@@ -1,3 +1,5 @@
+// File: ExamHeader.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Tooltip, Tabs, Popover, DatePicker, TimePicker } from 'antd';
@@ -14,7 +16,6 @@ const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
         <header className="bg-white fixed top-0 left-0 right-0 shadow-lg h-20 z-50">
             <div className="w-full h-full px-8">
                 <nav className="w-full h-full grid grid-cols-3 items-center">
-                    {/* Cancel Button */}
                     <div className="flex justify-start">
                         <Tooltip title="Cancel">
                             <button onClick={() => navigate('/instructor/dashboard')}>
@@ -23,7 +24,6 @@ const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
                         </Tooltip>
                     </div>
 
-                    {/* Center Tabs */}
                     <div className="flex justify-center h-full">
                         <Tabs
                             defaultActiveKey="1"
@@ -33,7 +33,6 @@ const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
                         />
                     </div>
 
-                    {/* Right Action Buttons */}
                     <div className="flex justify-end space-x-1">
                         <Tooltip title="Preview">
                             <Button onClick={() => setOpenPreview(true)}>
@@ -79,10 +78,7 @@ const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
                 </nav>
             </div>
 
-            {/* Preview Exam Modal */}
             <PreviewExam visible={openPreview} onClose={() => setOpenPreview(false)} />
-
-            {/* Export PDF Modal */}
             <ExportPdfPage visible={openExportPage} onClose={() => setOpenExportPage(false)} />
         </header>
     );

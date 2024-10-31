@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import {  resetExam, fetchExam, createExam } from 'store/examSlice';
-import { message, Button } from "antd";
+import { resetExam, fetchExam } from 'store/examSlice';
+import { message } from "antd";
 import SingleCollapse from "components/Collapse/SingleCollapse";
 import GeneralInformation from "./GeneralInformation";
 import QuestionCard from 'components/Card/QuestionCard';
+import QuestionAdding from "./QuestionAdding";
 
-
-function ExamCreate({ examId }) {
+const ExamCreate = forwardRef(({ examId }, ref) => {
     const [editMode, setEditMode] = useState(null);
-    const [questionIds, setQuestionIds] = useState([]); // Quản lý ID câu hỏi
-    const [localExam, setLocalExam] = useState({ title: '', description: '' }); // Lưu trữ dữ liệu bài kiểm tra tạm thời
+    const [localExam, setLocalExam] = useState({ title: '', description: '', questions: [] });
     const { exam, loading, error } = useSelector((state) => state.exam);
     const dispatch = useDispatch();
+    const generalInformationRef = React.useRef();
 
-    // Tải bài kiểm tra khi component được mount
+    useImperativeHandle(ref, () => ({
+        handlePostExam: () => generalInformationRef.current.handleCreateExam()
+    }));
+
     useEffect(() => {
         if (examId) {
             dispatch(fetchExam(examId));
@@ -24,70 +27,92 @@ function ExamCreate({ examId }) {
         };
     }, [dispatch, examId]);
 
-    // Đồng bộ câu hỏi từ Redux vào `questionIds`
     useEffect(() => {
-        if (exam?.questions) {
-            const ids = exam.questions.map((q) => q._id);
-            setQuestionIds(ids);
-        }
-        if (exam) {
-            setLocalExam({ title: exam.title || '', description: exam.description || '' });
-        }
-    }, [exam]);
+        // Log questions to the console whenever they change
+        console.log("Current Questions:", localExam.questions);
+    }, [localExam.questions]);
 
-    // Thêm các ID câu hỏi khi có câu hỏi mới
-    const handleQuestionsUpdate = (newQuestions) => {
-        const newIds = newQuestions.map((q) => q._id);
-        setQuestionIds((prevIds) => [...new Set([...prevIds, ...newIds])]);
-    };
-
-    // Kiểm tra dữ liệu trước khi đăng bài kiểm tra
-    const validateExamData = () => {
-        const { title, description } = localExam;
-        if (!title || !description || questionIds.length === 0) {
-            message.error("Please fill out all required fields (title, description, and questions).");
-            return false;
-        }
-        return true;
-    };
-
-    // Cập nhật dữ liệu bài kiểm tra từ GeneralInformation
     const handleExamInfoUpdate = (field, value) => {
         setLocalExam((prev) => ({ ...prev, [field]: value }));
     };
 
+    const handleAddQuestionsFromExcel = (newQuestions) => {
+        const updatedQuestions = [...localExam.questions, ...newQuestions];
+        setLocalExam((prev) => ({ ...prev, questions: updatedQuestions }));
+    };
 
-    if (loading) return <p>Đang tải...</p>;
-    if (error) return <p>Lỗi: {error}</p>;
+    const handleAddRandomQuestions = (newQuestions) => {
+        if (generalInformationRef.current) {
+            generalInformationRef.current.addRandomQuestions(newQuestions);
+            setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...newQuestions] }));
+        } else {
+            message.error("Unable to add questions: GeneralInformation ref not available.");
+        }
+    };
+
+    const handleAddSelectedQuestions = (selectedQuestions) => {
+        if (generalInformationRef.current) {
+            generalInformationRef.current.addSelectedQuestions(selectedQuestions);
+            setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...selectedQuestions] }));
+        } else {
+            message.error("Unable to add selected questions: GeneralInformation ref not available.");
+        }
+    };
+
+    const handleUpdateQuestion = (updatedQuestion) => {
+        setLocalExam((prev) => ({
+            ...prev,
+            questions: prev.questions.map((q) => (q._id === updatedQuestion._id ? updatedQuestion : q)),
+        }));
+    };
+
+    const handleRemoveQuestion = (questionId) => {
+        setLocalExam((prev) => ({
+            ...prev,
+            questions: prev.questions.filter((q) => q._id !== questionId),
+        }));
+        if (generalInformationRef.current) {
+            generalInformationRef.current.removeQuestion(questionId);
+        }
+    };
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
 
     return (
-        <div className="w-3/5 mx-auto mt-5 mb-24">
-            <div className="mb-4">
-                <SingleCollapse header="Thông tin bài kiểm tra">
-                    <GeneralInformation
-                        exam={localExam}
-                        onUpdateExam={handleExamInfoUpdate}
-                    />
-                </SingleCollapse>
-            </div>
+        <div className="w-3/5 mx-auto mt-5 mb-24 relative">
+            <SingleCollapse header="Thông tin bài kiểm tra">
+                <GeneralInformation
+                    ref={generalInformationRef}
+                    exam={localExam}
+                    onUpdateExam={handleExamInfoUpdate}
+                />
+            </SingleCollapse>
 
             <div>
-                {exam?.questions.map((question, index) => (
-                    <QuestionCard
-                        key={question._id}
-                        question={question}
-                        index={index + 1}
-                        editMode={editMode}
-                        setEditMode={setEditMode}
-                    />
-                ))}
+                {localExam.questions.length > 0 ? (
+                    localExam.questions.map((question, index) => (
+                        <QuestionCard
+                            key={question._id || index}
+                            question={question}
+                            index={index}
+                            onUpdate={handleUpdateQuestion}
+                            onRemove={() => handleRemoveQuestion(question._id)}
+                        />
+                    ))
+                ) : (
+                    <p>No questions added yet.</p>
+                )}
             </div>
 
-
-
-
+            <QuestionAdding
+                handleAddQuestionsFromExcel={handleAddQuestionsFromExcel}
+                exam={localExam}
+                onAddRandomQuestions={handleAddRandomQuestions}
+                onAddSelectedQuestions={handleAddSelectedQuestions}
+            />
         </div>
     );
-}
+});
 
 export default ExamCreate;
