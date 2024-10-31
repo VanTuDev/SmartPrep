@@ -11,6 +11,7 @@ const Exam1 = () => {
    const [examData, setExamData] = useState(null);
    const [timeLeft, setTimeLeft] = useState(0);
    const [selectedAnswers, setSelectedAnswers] = useState({});
+   const [isBlackScreenVisible, setBlackScreenVisible] = useState(false);
    const [drawerVisible, setDrawerVisible] = useState(false);
    const [isModalVisible, setIsModalVisible] = useState(false);
    const [isCloseModalVisible, setIsCloseModalVisible] = useState(false);
@@ -39,16 +40,20 @@ const Exam1 = () => {
             });
 
             if (response.ok) {
-               const data = await response.json();
-               console.log("Exam data loaded:", data);
+               const submission = await response.json();
+               console.log("Submission data loaded:", submission);
 
-               // Kiểm tra kỹ các trường dữ liệu trước khi gán vào `setExamData`
-               if (!data.questions || !Array.isArray(data.questions)) {
-                  throw new Error("Invalid or missing 'questions' field in exam data");
+               if (!submission.questions || !Array.isArray(submission.questions)) {
+                  throw new Error("Invalid or missing 'questions' field in submission data");
                }
 
-               setExamData(data);
-               setTimeLeft(data.duration ? data.duration * 60 : 0); // Đảm bảo `duration` được đọc đúng
+               setExamData(submission);
+
+               const validDuration = submission.duration ?? 0;
+               console.log("Duration received:", validDuration);
+
+               // Đặt thời gian ban đầu và bắt đầu đếm ngược
+               setTimeLeft(validDuration * 60);
             } else {
                const error = await response.json();
                message.error(error.message || "Lỗi khi lấy dữ liệu bài thi!");
@@ -63,9 +68,30 @@ const Exam1 = () => {
          fetchExamData();
       } else {
          message.error("Không tìm thấy submissionId trong URL!");
-         navigate("/learner/TakeExam");
+         navigate(`/learner/TakeExam/${examId}`);
       }
-   }, [SUBMISSION_URL, submissionId, navigate]);
+   }, [submissionId, SUBMISSION_URL, navigate]);
+
+   // UseEffect cho logic đếm ngược
+   useEffect(() => {
+      if (!timeLeft) return; // Chặn đếm ngược nếu thời gian chưa được khởi tạo
+
+      const timer = setInterval(() => {
+         setTimeLeft((prevTime) => {
+            if (prevTime <= 1) {
+               clearInterval(timer); // Dừng đếm ngược khi hết thời gian
+               message.warning("Thời gian làm bài đã hết! Bài thi sẽ tự động nộp.");
+               handleFinish(); // Nộp bài tự động khi hết giờ
+               return 0;
+            }
+            return prevTime - 1;
+         });
+      }, 1000); // Giảm thời gian mỗi giây
+
+      // Dọn dẹp interval khi component bị hủy hoặc khi timeLeft thay đổi
+      return () => clearInterval(timer);
+   }, [timeLeft]); // Chỉ chạy lại khi `timeLeft` thay đổi
+
 
    useEffect(() => {
       const handleKeyDown = (event) => {
@@ -90,21 +116,38 @@ const Exam1 = () => {
    }, []);
 
    useEffect(() => {
+      const handleVisibilityChange = () => {
+         if (document.hidden) {
+            setBlackScreenVisible(true); // Hiển thị lớp phủ đen khi chuyển tab
+         } else {
+            setBlackScreenVisible(false); // Xóa lớp phủ khi quay lại
+         }
+      };
+
       const handleWindowBlur = () => {
-         setOutsideClickCount((prevCount) => {
-            const newCount = prevCount + 1;
-            message.warning(`Không được nhấp ra khỏi trang! Số lần: ${newCount}`);
+         setOutsideClickCount((prev) => {
+            const newCount = prev + 1;
+            message.warning(`Không được rời trang! Số lần: ${newCount}`);
             if (newCount >= 3) {
-               setModalVisible(true);
+               setModalVisible(true); // Khóa bài thi nếu rời trang quá 3 lần
             }
             return newCount;
          });
+         setBlackScreenVisible(true); // Hiển thị lớp phủ khi cửa sổ bị mờ
       };
 
+      const handleWindowFocus = () => {
+         setBlackScreenVisible(false); // Xóa lớp phủ khi quay lại cửa sổ
+      };
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
       window.addEventListener("blur", handleWindowBlur);
+      window.addEventListener("focus", handleWindowFocus);
 
       return () => {
+         document.removeEventListener("visibilitychange", handleVisibilityChange);
          window.removeEventListener("blur", handleWindowBlur);
+         window.removeEventListener("focus", handleWindowFocus);
       };
    }, []);
 
@@ -120,29 +163,39 @@ const Exam1 = () => {
       // Kiểm tra questionId trước khi thực hiện hành động
       console.log("Selected questionId:", questionId); // Log ID của câu hỏi để kiểm tra
 
-      // Xác minh rằng `questionId` không phải là `undefined`
       if (!questionId) {
          console.error("Question ID is undefined");
          return;
       }
 
-      const question = examData.questions.find((q) => q._id === questionId); // Sửa lại để sử dụng `_id`
-      if (!question) {
-         console.error("Question not found in examData:", questionId);
+      // Tìm kiếm câu hỏi dựa vào question_id._id
+      const questionWrapper = examData.questions.find(
+         (q) => q.question_id._id === questionId
+      );
+
+      if (!questionWrapper) {
+         console.error(`Question not found in examData: ${questionId}`);
+         message.error("Không tìm thấy câu hỏi trong dữ liệu!");
          return;
       }
 
-      setSelectedAnswers({ ...selectedAnswers, [questionId]: value });
+      const question = questionWrapper.question_id;
+
+      // Cập nhật câu trả lời đã chọn vào state
+      setSelectedAnswers((prevAnswers) => ({
+         ...prevAnswers,
+         [questionId]: value,
+      }));
 
       try {
          const payload = {
-            question_id: question._id, // Sử dụng đúng trường `_id`
+            question_id: questionId, // Sử dụng đúng ID của câu hỏi
             selected_answer: value,
          };
-         console.log("Payload gửi đi:", payload); // In ra payload để kiểm tra
+         console.log("Payload gửi đi:", payload); // Log payload để kiểm tra
 
          const response = await fetch(ANSWER_URL, {
-            method: "POST",
+            method: "PUT",
             headers: {
                "Content-Type": "application/json",
                Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -159,8 +212,6 @@ const Exam1 = () => {
          message.error("Đã xảy ra lỗi trong quá trình nộp câu trả lời!");
       }
    };
-
-
 
    // Kết thúc bài thi
    // Ví dụ: xử lý khi kết thúc bài thi
@@ -256,6 +307,9 @@ const Exam1 = () => {
 
    return (
       <div className="min-h-screen bg-gray-100">
+         {isBlackScreenVisible && (
+            <div className="fixed inset-0 bg-black opacity-100 z-50"></div>
+         )}
          <div className="w-full bg-white shadow-md py-3 px-4 md:px-8 flex items-center justify-between relative">
             <div className="flex items-center">
                <CloseOutlined
@@ -269,7 +323,7 @@ const Exam1 = () => {
                {/* Hiển thị thời gian đếm ngược (timeLeft) */}
                <span className="text-2xl text-green-500 font-semibold">
                   {formatTime(timeLeft)}
-                  
+
                </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -282,7 +336,7 @@ const Exam1 = () => {
                <Button
                   type="primary"
                   className="bg-blue-500 hover:bg-blue-600 focus:bg-blue-700"
-                  onClick={handleFinish}
+                  onClick={showModal}
                >
                   Nộp bài
                </Button>
@@ -290,56 +344,74 @@ const Exam1 = () => {
          </div>
 
 
-         <div className="flex justify-center my-10">
+         <div className="flex justify-center my-10 px-4">
             <Card className="w-full max-w-[900px] rounded-lg shadow-lg">
                {/* Exam Info Section */}
-               <div className="p-6 bg-gray-200 border-b border-gray-200">
+               <div className="p-6 bg-gray-100 border-b border-gray-300">
                   <div className="flex justify-between items-center mb-4">
-                     <h2 className="text-2xl font-bold text-gray-700">{examData?.title}</h2>
+                     <h2 className="text-2xl font-extrabold text-gray-800">{examData?.test_id?.title}</h2>
                      <div className="text-sm text-gray-500">
-                        ID: <span className="font-semibold">{examId}</span>
+                        <span className="font-semibold">ID Bài Thi:</span> {examId}
                      </div>
                   </div>
 
                   <div className="flex justify-between items-center">
                      <div className="flex items-center space-x-2">
-                        <span className="text-gray-500">SmartPrep</span>
+                        <span className="text-lg font-medium text-gray-600">SmartPrep</span>
                      </div>
-                     <div className="flex flex-col items-end space-y-2">
-                        <span className="text-sm text-gray-500">Thời gian: {timeLeft / 60} phút</span>
-                        <p className="text-sm text-gray-500">Câu hỏi: {examData?.questions.length} câu</p>
-                        {/* Thêm số câu đã chọn */}
-                        <p className="text-sm text-gray-500">Câu đã chọn: {answeredQuestions}/{examData?.questions.length}</p>
+                     <div className="flex flex-col items-end space-y-1">
+                        <span className="text-sm text-gray-500">
+                           <strong>Thời gian:</strong> {Math.floor(timeLeft / 60)} phút
+                        </span>
+                        <span className="text-sm text-gray-500">
+                           <strong>Câu hỏi:</strong> {examData?.questions.length} câu
+                        </span>
+                        <span className="text-sm text-gray-500">
+                           <strong>Đã chọn:</strong> {answeredQuestions}/{examData?.questions.length} câu
+                        </span>
                      </div>
                   </div>
-                  -
                </div>
 
                {/* Questions Section */}
-               <div className="p-6">
-                  {examData?.questions.map((question, index) => (
-                     <div key={index} ref={(el) => (questionRefs.current[index] = el)} className="mb-6">
-                        <div className="font-semibold text-lg mb-2">
-                           {index + 1}: {question.question_text}
-                        </div>
-                        <Radio.Group
-                           className="flex flex-col space-y-2"
-                           onChange={(e) => handleAnswerChange(question._id, e.target.value)} // Sử dụng đúng trường `_id`
-                        >
-                           {question.options?.map((option, idx) => (
-                              <Radio key={idx} value={option}>
-                                 <span className="font-medium">{String.fromCharCode(65 + idx)}. </span>
-                                 {option}
-                              </Radio>
-                           ))}
-                        </Radio.Group>
-                        <span className="text-red-500 ml-2">{!selectedAnswers[question._id] ? 'Chưa chọn đáp án' : ''}</span>
+               <div className="p-6 bg-white">
+                  {examData?.questions.map((questionWrapper, index) => {
+                     const question = questionWrapper.question_id; // Truy cập thông tin câu hỏi
+                     if (!question) {
+                        console.error(`Không tìm thấy câu hỏi tại index: ${index}`, questionWrapper);
+                        return (
+                           <div key={index} className="text-red-500">
+                              Lỗi: Không tìm thấy câu hỏi!
+                           </div>
+                        );
+                     }
 
-                     </div>
-                  ))}
+                     return (
+                        <div key={question._id} ref={(el) => (questionRefs.current[index] = el)} className="mb-8">
+                           <div className="font-semibold text-xl mb-4 text-gray-800">
+                              {index + 1}. {question.question_text}
+                           </div>
+                           <Radio.Group
+                              className="flex flex-col space-y-3"
+                              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                              value={selectedAnswers[question._id] || null} // Xử lý nếu không có đáp án
+                           >
+                              {question.options?.map((option, idx) => (
+                                 <Radio key={idx} value={option}>
+                                    <span className="font-medium">{String.fromCharCode(65 + idx)}.</span> {option}
+                                 </Radio>
+                              ))}
+                           </Radio.Group>
+                           {!selectedAnswers[question._id] && (
+                              <span className="text-sm text-red-500 mt-2 block">Chưa chọn đáp án</span>
+                           )}
+                        </div>
+                     );
+                  })}
                </div>
             </Card>
          </div>
+
 
          <Drawer title="Danh sách câu hỏi" placement="right" onClose={closeDrawer} visible={drawerVisible} width={300}>
             <div className="grid grid-cols-5 gap-2">
@@ -365,7 +437,7 @@ const Exam1 = () => {
          />
          <CloseModal
             visible={isCloseModalVisible}
-            onConfirm={() => navigate("/learner/TakeExam")}
+            onConfirm={() => navigate(`/learner/TakeExam/${examId}`)}
             onCancel={() => setIsCloseModalVisible(false)}
          />
 
