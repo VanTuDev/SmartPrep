@@ -86,8 +86,8 @@ export const fetchAllClasses = async () => {
 
         // Chuyển đổi kết quả về dạng JSON
         const data = await response.json();
-
-        return data;
+        const classes = data.classes;
+        return classes;
 
     } catch (error) {
         // Bắt lỗi trong quá trình fetch
@@ -97,10 +97,9 @@ export const fetchAllClasses = async () => {
   
   export const fetchAllExams = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/instructor/test', {
+      const response = await fetch('http://localhost:5000/api/admin/get_all_exam_admin', {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
@@ -113,15 +112,18 @@ export const fetchAllClasses = async () => {
   
   export const fetchAllQuestions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/instructor/questions', {
+      const response = await fetch('http://localhost:5000/api/admin/get_all_question_admin', {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
       if (!response.ok) throw new Error(`Error fetching questions: ${response.statusText}`);
-      return await response.json();
+      // Chuyển đổi kết quả về dạng JSON
+
+      const data = await response.json();
+      const questions = data.questions;
+      return questions;
     } catch (error) {
       console.error('Fetch error:', error);
     }
