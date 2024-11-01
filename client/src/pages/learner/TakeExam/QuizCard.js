@@ -19,7 +19,7 @@ const QuizCard = () => {
    const userId = localStorage.getItem("userId");
    const token = localStorage.getItem("token");
 
-   const API_URL = `http://localhost:5000/api/instructor/test/671fb6e62d7d0d5fe728311a`;
+   const API_URL = `http://localhost:5000/api/instructor/test/${examId}`;
    const START_SUBMISSION_URL = `http://localhost:5000/api/submissions/start`;
 
    useEffect(() => {

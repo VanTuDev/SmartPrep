@@ -27,7 +27,6 @@ import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
 import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
 
 
-import CreateExamLayout from './pages/instructor/Exams/CreateExamLayout';
 
 // Import các trang Admin
 import AdminLayout from 'layouts/AdminLayout';
@@ -57,8 +56,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<ChoseRolePage />} />
           <Route path="/register_role" element={<RegisterPage />} />
-          <Route path='/forgot-password'element={<ForgotPassword/>}/>
-          <Route path='/reset-password'element={<ResetPassword/>}/>
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
 
           {/* ========== Learner Pages ========== */}
           <Route
@@ -230,13 +229,6 @@ function App() {
         </Routes>
 
 
-
-
-
-        <Routes>
-          <Route path="/instructor/exams/exam-create" element={<CreateExamLayout />} />
-          {/* Các route khác */}
-        </Routes>
 
       </div>
     </Router>
