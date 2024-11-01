@@ -26,8 +26,8 @@ const DropdownUser = () => {
           <span className="block text-xs dark:text-white">Admin</span>
         </span>
 
-        <span className="h-12 w-12 rounded-full">
-          <img src={UserOne} alt="User" />
+        <span className="h-12 w-12 rounded-full overflow-hidden">
+          <img src='/image/unnamed.png' alt="User" />
         </span>
 
         <svg

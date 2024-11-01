@@ -36,6 +36,8 @@ import LearnerTable from 'pages/admin/UserManagement/LearnerTable';
 import InstructorTable from 'pages/admin/UserManagement/InstructorTable';
 import AdminTable from 'pages/admin/UserManagement/AdminTable';
 import InstructorApplicationsTable from 'pages/admin/UserManagement/InstructorApplicationsTable ';
+import ClassTable from 'pages/admin/ClassManagement/ClassTable';
+import ExamTable from 'pages/admin/ExamManagement/ExamTable';
 
 // Import các thành phần chung
 import PrivateRoute from './components/PrivateRoute';
@@ -217,6 +219,8 @@ function App() {
             <Route path="users/instructor" element={<InstructorTable />} />
             <Route path="users/admin" element={<AdminTable />} />
             <Route path="users/instructor-application" element={<InstructorApplicationsTable />} />
+            <Route path="mainfeature/exam" element={<ExamTable />} />
+            <Route path="mainfeature/class" element={<ClassTable />} />
             {/* Các route khác trong khu vực admin */}
           </Route>
 
