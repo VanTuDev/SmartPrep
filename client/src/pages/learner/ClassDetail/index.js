@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { LogIn,  X } from 'lucide-react';
+import { LogIn, X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import TabPane from 'antd/es/tabs/TabPane';
 import { Tabs } from 'antd';
 import Exam from './Exam';
 import Member from './Member';
+import Chatting from './Chatting';
 
 const ClassDetail = () => {
     const { classId } = useParams();
@@ -79,28 +80,28 @@ const ClassDetail = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="px-4 py-2 ms-5 border rounded-md w-1/3 focus:outline-none"
                 />
-                <button className="text-red-500 font-semibold" onClick={() => navigate('/instructor/dashboard/class')}>
+                <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard')}>
                     <X size={20} />
                 </button>
             </div>
 
             {/* Class Info */}
-            <div className="px-16 pt-8 pb-1">
+            <div className="px-16 pt-2 pb-1">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                        <div className='flex justify-between'>
-                            <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
-                            <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                                onClick={() => setShowConfirmModal(true)}
-                            >
-                                <LogIn />
-                            </button>
-                        </div>
-                        <p className="text-gray-600 mt-2">
-                            <span className="font-bold text-blue-500">Code: </span> {classInfo.code}
-                        </p>
-                        <p className="text-gray-400">
-                            <span className="font-bold text-gray-600">Mô tả: </span> {classInfo.description || 'Chưa có mô tả.'}
-                        </p>
+                    <div className='flex justify-between'>
+                        <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
+                        <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                            onClick={() => setShowConfirmModal(true)}
+                        >
+                            <LogIn />
+                        </button>
+                    </div>
+                    <p className="text-gray-600 mt-2">
+                        <span className="font-bold text-blue-500">Code: </span> {classInfo.code}
+                    </p>
+                    <p className="text-gray-400">
+                        <span className="font-bold text-gray-600">Mô tả: </span> {classInfo.description || 'Chưa có mô tả.'}
+                    </p>
                 </div>
             </div>
 
@@ -111,6 +112,9 @@ const ClassDetail = () => {
                 </TabPane>
                 <TabPane tab="Bài thi" key="2">
                     <Exam />
+                </TabPane>
+                <TabPane tab="Phòng chat" key="3">
+                    <Chatting classId={classId} />
                 </TabPane>
             </Tabs>
 

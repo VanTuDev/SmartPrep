@@ -6,6 +6,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Tabs } from 'antd';
 import TabPane from 'antd/es/tabs/TabPane';
+import Exam from './Exam';
+import Chatting from './Chatting';
 
 const ClassDetail = () => {
     const { classId } = useParams();
@@ -163,21 +165,14 @@ const ClassDetail = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Search Bar and Header */}
-            <div className="flex justify-between items-center p-4 bg-white shadow-md mt-4">
-                <input
-                    type="text"
-                    placeholder="Nhập tên học sinh"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="px-4 py-2 ms-5 border rounded-md w-1/3 focus:outline-none"
-                />
+            <div className="flex justify-end items-center p-4 bg-white shadow-md mt-4">
                 <button className="text-red-500 font-semibold" onClick={() => navigate('/instructor/dashboard/class')}>
                     <X size={20} />
                 </button>
             </div>
 
             {/* Class Info */}
-            <div className="px-16 pt-8 pb-1">
+            <div className="px-16 pt-2 pb-1">
                 <div className="bg-white p-6 rounded-lg shadow-md flex justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">{classInfo.name}</h1>
@@ -201,9 +196,16 @@ const ClassDetail = () => {
                 {/* Learners List */}
                 {/* Tab for Class Information */}
                 <TabPane tab="Thành viên" key="1">
-                    <div className="py-8">
+                    <div className="py-1">
                         <div className="bg-white p-6 rounded-lg shadow-md">
                             <h2 className="text-xl font-semibold mb-4">Học viên</h2>
+                            <input
+                                type="text"
+                                placeholder="Nhập tên học sinh"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="px-4 py-2 border rounded-md w-1/3 focus:outline-none"
+                            />
                             {filteredLearners.length > 0 ? (
                                 filteredLearners.map((learner) => (
                                     <div key={learner._id} className="flex justify-between items-center py-4 border-b">
@@ -251,7 +253,7 @@ const ClassDetail = () => {
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Pending Requests */}
                     <div className="py-8">
                         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -321,7 +323,11 @@ const ClassDetail = () => {
                 </TabPane>
                 {/* Tab for Class Information */}
                 <TabPane tab="Bài thi" key="2">
-
+                    <Exam />
+                </TabPane>
+                {/* Tab for Class Information */}
+                <TabPane tab="Phòng chat" key="3">
+                    <Chatting classId={classId} />
                 </TabPane>
             </Tabs>
         </div>
