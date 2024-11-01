@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import CardComponent from '../../components/learner/ExamCard';
 import HeaderComponent from '../../components/learner/LearnerHeader';
-import { Search, Filter, ChevronDown } from 'lucide-react';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 
 const ExamHistory = () => {
-   const [selectedClass, setSelectedClass] = useState('Lớp');
    const [tests, setTests] = useState([]); // State lưu danh sách bài kiểm tra
    const userId = localStorage.getItem('userId'); // Lấy userId từ localStorage
    const token = localStorage.getItem('token'); // Lấy token từ localStorage
@@ -34,14 +32,14 @@ const ExamHistory = () => {
 
             if (response.ok) {
                const data = await response.json();
-               console.log("Fetched Test History: ", data);
+               console.log('Fetched Test History:', data);
                setTests(data || []); // Cập nhật danh sách bài kiểm tra từ API
             } else {
-               toast.error("Lỗi khi tải lịch sử bài kiểm tra");
+               toast.error('Lỗi khi tải lịch sử bài kiểm tra');
             }
          } catch (error) {
-            console.error("Error fetching test history:", error);
-            toast.error("Lỗi khi tải dữ liệu");
+            console.error('Error fetching test history:', error);
+            toast.error('Lỗi khi tải dữ liệu');
          }
       };
 
@@ -57,7 +55,6 @@ const ExamHistory = () => {
          <div className="min-h-screen bg-gray px-16 py-12">
             {/* Thanh tìm kiếm */}
             <div className="flex items-center justify-between mb-6">
-               {/* Ô tìm kiếm */}
                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-1/3">
                   <input
                      type="text"
@@ -74,14 +71,13 @@ const ExamHistory = () => {
                   tests.map((test, index) => (
                      <CardComponent
                         key={index}
-                        id={test._id} // ID của submission (chính là ID của bài làm)
-                        title={test._id_test.title} // Tên bài kiểm tra
+                        id={test._id} // ID của submission
+                        title={test.test_id.title} // Tên bài kiểm tra
                         startTime={dayjs(test.started_at).format('HH:mm - DD/MM/YYYY')} // Thời gian bắt đầu
                         endTime={dayjs(test.finished_at).format('HH:mm - DD/MM/YYYY')} // Thời gian kết thúc
-                        duration={`${dayjs(test.finished_at).diff(dayjs(test.started_at), 'minute')} phút`} // Thời gian làm bài (phút)
+                        duration={`${test.duration} phút`} // Thời gian làm bài (phút)
                         questionCount={test.questions.length} // Số câu hỏi
                         score={test.score} // Điểm số
-                        organization={test._id} // Sử dụng ID của `submission` để hiển thị
                      />
                   ))
                ) : (

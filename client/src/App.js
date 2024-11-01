@@ -13,7 +13,7 @@ import LearnerDashboard from './pages/learner/LearnerDashboard';
 import ViewExamResults from './pages/learner/ViewExamResults';
 import LearnerExamHistory from './pages/learner/ExamHistory';
 import ClassList from './pages/learner/ClassList';
-import LearnerProfile from './pages/learner/LearnerProfile';
+import LearnerProfile from './components/learner/LearnerProfile';
 import QuizCard from './pages/learner/TakeExam/QuizCard';
 import Exam1 from './pages/learner/TakeExam/Exam';
 import ClassDetailforLeaner from './pages/learner/ClassDetail';
@@ -26,6 +26,8 @@ import InstructorProfile from './components/instructor/InstructorProfile';
 import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
 import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
 
+
+
 // Import các trang Admin
 import AdminLayout from 'layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -33,12 +35,15 @@ import LearnerTable from 'pages/admin/UserManagement/LearnerTable';
 import InstructorTable from 'pages/admin/UserManagement/InstructorTable';
 import AdminTable from 'pages/admin/UserManagement/AdminTable';
 import InstructorApplicationsTable from 'pages/admin/UserManagement/InstructorApplicationsTable ';
+import ClassTable from 'pages/admin/ClassManagement/ClassTable';
+import ExamTable from 'pages/admin/ExamManagement/ExamTable';
 
 // Import các thành phần chung
 import PrivateRoute from './components/PrivateRoute';
 import InstructorRegistration from 'pages/instructor/InstructorRegistration/InstructorRegistration';
 import ForgotPassword from 'pages/common/ForgotPassword';
 import ResetPassword from 'pages/common/ResetPassword';
+import ChoseRolePage from 'pages/common/ChoseRolePage';
 
 function App() {
   return (
@@ -49,9 +54,10 @@ function App() {
           {/* ========== Common Pages ========== */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path='/forgot-password'element={<ForgotPassword/>}/>
-          <Route path='/reset-password'element={<ResetPassword/>}/>
+          <Route path="/register" element={<ChoseRolePage />} />
+          <Route path="/register_role" element={<RegisterPage />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
 
           {/* ========== Learner Pages ========== */}
           <Route
@@ -212,6 +218,8 @@ function App() {
             <Route path="users/instructor" element={<InstructorTable />} />
             <Route path="users/admin" element={<AdminTable />} />
             <Route path="users/instructor-application" element={<InstructorApplicationsTable />} />
+            <Route path="mainfeature/exam" element={<ExamTable />} />
+            <Route path="mainfeature/class" element={<ClassTable />} />
             {/* Các route khác trong khu vực admin */}
           </Route>
 
@@ -219,6 +227,9 @@ function App() {
           {/* Uncomment and implement NotFound component if needed */}
           {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
+
+
+
       </div>
     </Router>
   );
