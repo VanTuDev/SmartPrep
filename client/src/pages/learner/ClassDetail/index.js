@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { Tabs } from 'antd';
 import Exam from './Exam';
 import Member from './Member';
+import Chatting from './Chatting';
 
 const { TabPane } = Tabs;
 
@@ -73,18 +74,22 @@ const ClassDetail = () => {
                     placeholder="Nhập tên học sinh"
                     className="px-4 py-2 ms-5 border rounded-md w-1/3 focus:outline-none"
                 />
-                <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard/class')}>
+
+                <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard')}>
+
+
                     <X size={20} />
                 </button>
             </div>
 
             {/* Class Info */}
-            <div className="px-16 pt-8 pb-1">
+            <div className="px-16 pt-2 pb-1">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex justify-between">
+
+                    <div className='flex justify-between'>
                         <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
-                        <button
-                            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                        <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+
                             onClick={() => setShowConfirmModal(true)}
                         >
                             <LogIn />
@@ -106,6 +111,9 @@ const ClassDetail = () => {
                 </TabPane>
                 <TabPane tab="Bài thi" key="2">
                     <Exam classId={classId} /> {/* Truyền classId vào Exam */}
+                </TabPane>
+                <TabPane tab="Phòng chat" key="3">
+                    <Chatting classId={classId} />
                 </TabPane>
             </Tabs>
 
