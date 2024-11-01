@@ -124,6 +124,7 @@ const ViewExamResults = () => {
                      dataSource={submissionData.questions}
                      renderItem={(questionWrapper, index) => {
                         const question = questionWrapper.question_id;
+                        const correctAnswers = question.correct_answers || [];
                         return (
                            <List.Item>
                               <div className="w-full">
@@ -154,7 +155,10 @@ const ViewExamResults = () => {
 
                                  {/* Hiển thị đáp án đúng */}
                                  <Divider />
-                                 <p><strong>Đáp án đúng:</strong> {question.options[questionWrapper.user_answer] || 'Chưa trả lời'}</p>
+                                 <p><strong>Đáp án đúng:</strong> {correctAnswers.map((ans, idx) => (
+                                    <span key={idx} className="ml-2">{ans}</span>
+                                 ))}</p>
+
                               </div>
                            </List.Item>
                         );

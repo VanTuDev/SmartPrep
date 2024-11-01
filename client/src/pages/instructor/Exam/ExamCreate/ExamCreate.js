@@ -6,16 +6,17 @@ import SingleCollapse from "components/Collapse/SingleCollapse";
 import GeneralInformation from "./GeneralInformation";
 import QuestionCard from 'components/Card/QuestionCard';
 import QuestionAdding from "./QuestionAdding";
+import ExamHeader from './ExamHeader';
 
 const ExamCreate = forwardRef(({ examId }, ref) => {
-    const [editMode, setEditMode] = useState(null);
     const [localExam, setLocalExam] = useState({ title: '', description: '', questions: [] });
     const { exam, loading, error } = useSelector((state) => state.exam);
     const dispatch = useDispatch();
     const generalInformationRef = React.useRef();
 
     useImperativeHandle(ref, () => ({
-        handlePostExam: () => generalInformationRef.current.handleCreateExam()
+        handlePostExam: () => generalInformationRef.current.handleCreateExam(),
+        handleSaveDraft: () => generalInformationRef.current.handleCreateExamDraft()  // Thêm handleSaveDraft
     }));
 
     useEffect(() => {
@@ -27,18 +28,8 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
         };
     }, [dispatch, examId]);
 
-    useEffect(() => {
-        // Log questions to the console whenever they change
-        console.log("Current Questions:", localExam.questions);
-    }, [localExam.questions]);
-
     const handleExamInfoUpdate = (field, value) => {
         setLocalExam((prev) => ({ ...prev, [field]: value }));
-    };
-
-    const handleAddQuestionsFromExcel = (newQuestions) => {
-        const updatedQuestions = [...localExam.questions, ...newQuestions];
-        setLocalExam((prev) => ({ ...prev, questions: updatedQuestions }));
     };
 
     const handleAddRandomQuestions = (newQuestions) => {
@@ -72,7 +63,7 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
             questions: prev.questions.filter((q) => q._id !== questionId),
         }));
         if (generalInformationRef.current) {
-            generalInformationRef.current.removeQuestion(questionId);
+            generalInformationRef.current.removeQuestion(questionId); // Remove question ID in GeneralInformation
         }
     };
 
@@ -81,6 +72,13 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
 
     return (
         <div className="w-3/5 mx-auto mt-5 mb-24 relative">
+            <ExamHeader
+                items={[{ key: 'general', label: 'General' }, { key: 'questions', label: 'Questions' }]}
+                onChangeTab={() => { }}
+                onPost={() => generalInformationRef.current.handleCreateExam()}
+                onSaveDraft={() => generalInformationRef.current.handleCreateExamDraft()}  // Truyền onSaveDraft
+                examData={localExam}  // Pass exam data here
+            />
             <SingleCollapse header="Thông tin bài kiểm tra">
                 <GeneralInformation
                     ref={generalInformationRef}
@@ -106,7 +104,7 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
             </div>
 
             <QuestionAdding
-                handleAddQuestionsFromExcel={handleAddQuestionsFromExcel}
+                handleAddQuestionsFromExcel={() => { }}
                 exam={localExam}
                 onAddRandomQuestions={handleAddRandomQuestions}
                 onAddSelectedQuestions={handleAddSelectedQuestions}

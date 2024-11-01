@@ -4,11 +4,9 @@ import {
     Input, Typography, Row, Col, DatePicker, TimePicker, InputNumber,
     Button, message, Space, Divider
 } from 'antd';
-import { Captions, Pencil, Calendar } from 'lucide-react';
+import { Captions, Pencil } from 'lucide-react';
 import dayjs from 'dayjs';
 import CreateExamModal from '../../CreateExamModal';
-import LibraryModal from '../../../../components/instructor/LibraryModal';
-import LibrarySingleModal from '../../../../components/instructor/LibrarySingleModal';
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -26,20 +24,21 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
     const [randomQuestionIds, setRandomQuestionIds] = useState([]);
     const [selectedQuestionIds, setSelectedQuestionIds] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(true);
-    const [isSingleLibraryModalOpen, setIsSingleLibraryModalOpen] = useState(false);
+
     const [selectedGrade, setSelectedGrade] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
-    const [selectedClassRoom, setSelectedClassRoom] = useState('');
+    const [selectedClassRooms, setSelectedClassRooms] = useState([]);
 
     const accessLink = exam.access_link || `http://localhost:3000/${Math.random().toString(36).substring(2)}`;
 
     useImperativeHandle(ref, () => ({
         handleCreateExam,
+        handleCreateExamDraft,  // Chia sẻ hàm này với component cha
         addRandomQuestions,
         addSelectedQuestions,
+        removeQuestion,
     }));
 
     const updateExam = (updatedFields) => {
@@ -47,16 +46,17 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         onUpdateExam(updatedExam);
     };
 
-    const handleModalSubmit = ({ gradeId, categoryId, groupId, classRoomId }) => {
+    const handleModalSubmit = ({ gradeId, categoryId, groupId, classRoomIds }) => {
         setSelectedGrade(gradeId);
         setSelectedCategory(categoryId);
         setSelectedGroup(groupId);
-        setSelectedClassRoom(classRoomId || null);
+        setSelectedClassRooms(classRoomIds);
+
         updateExam({
             grade_id: gradeId,
             category_id: categoryId,
             group_id: groupId,
-            classRoom_id: classRoomId || null,
+            classRoom_ids: classRoomIds,
         });
         setIsModalOpen(false);
     };
@@ -115,9 +115,10 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                 grade_id: selectedGrade || null,
                 category_id: selectedCategory || null,
                 group_id: selectedGroup || null,
-                classRoom_id: selectedClassRoom || null,
+                classRoom_ids: selectedClassRooms || [],
                 questions: allQuestionIds,
             };
+
             const response = await axios.post(
                 'http://localhost:5000/api/instructor/test/create',
                 examData,
@@ -136,6 +137,59 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Function to handle saving the exam as a draft
+    const handleCreateExamDraft = async () => {
+        if (!validateExam()) return;
+        try {
+            setLoading(true);
+            const allQuestionIds = [...new Set([...randomQuestionIds, ...selectedQuestionIds])];
+            const start = dayjs(startDate).set('hour', startTime.hour()).set('minute', startTime.minute());
+            const end = dayjs(endDate).set('hour', endTime.hour()).set('minute', endTime.minute());
+
+            const examData = {
+                title: title.trim(),
+                description: description.trim(),
+                access_type: isPublic ? 'public' : 'private',
+                duration: Number(duration),
+                start_date: start.toISOString(),
+                end_date: end.toISOString(),
+                access_link: accessLink,
+                status: 'draft',  // Set status to draft
+                grade_id: selectedGrade || null,
+                category_id: selectedCategory || null,
+                group_id: selectedGroup || null,
+                classRoom_ids: selectedClassRooms || [],
+                questions: allQuestionIds,
+            };
+
+            const response = await axios.post(
+                'http://localhost:5000/api/instructor/test/create',
+                examData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+
+            message.success('Exam saved as draft successfully!');
+            console.log('Draft creation response:', response.data);
+        } catch (error) {
+            console.error('Failed to save exam as draft:', error);
+            message.error('Failed to save exam as draft.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const removeQuestion = (questionId) => {
+        setQuestions((prevQuestions) => prevQuestions.filter((q) => q._id !== questionId));
+        setRandomQuestionIds((prevIds) => prevIds.filter((id) => id !== questionId));
+        setSelectedQuestionIds((prevIds) => prevIds.filter((id) => id !== questionId));
     };
 
     const disabledDate = (current) => current && current.isBefore(dayjs(), 'day');
@@ -181,7 +235,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                 <Space direction="vertical" className="w-full">
                     <Input placeholder="Selected Grade" value={selectedGrade} disabled />
                     <Input placeholder="Selected Category" value={selectedCategory} disabled />
-                    <Input placeholder="Selected ClassRoom" value={selectedClassRoom} disabled />
+                    <Input placeholder="Selected ClassRoom(s)" value={selectedClassRooms.join(', ')} disabled />
                 </Space>
             </div>
 
@@ -221,7 +275,21 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                         />
                     </Col>
                 </Row>
+                <Row className="mt-4">
+                    <Col span={12}>
+                        <Title level={5}>Duration (minutes)</Title>
+                        <InputNumber
+                            value={duration}
+                            onChange={setDuration}
+                            className="w-full"
+                            placeholder="Enter duration in minutes"
+                        />
+                    </Col>
+                </Row>
             </div>
+            <Button onClick={handleCreateExamDraft} loading={loading}>
+                Save as Draft
+            </Button>
         </div>
     );
 });

@@ -1,4 +1,4 @@
-// File: ExamHeader.jsx
+// ExamHeader.jsx
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import PreviewExam from './PreviewExam';
 import ExportPdfPage from './ExportPdfPage';
 
-const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
+const ExamHeader = ({ items, onChangeTab, onPost, onSaveDraft, loading, examData }) => {
     const navigate = useNavigate();
     const [openPreview, setOpenPreview] = useState(false);
     const [openExportPage, setOpenExportPage] = useState(false);
@@ -46,6 +46,11 @@ const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
                             </Button>
                         </Tooltip>
 
+                        {/* Save Draft Button */}
+                        <Button onClick={onSaveDraft} type="default" loading={loading}>
+                            Save Draft
+                        </Button>
+
                         <Button onClick={onPost} type="primary" loading={loading}>
                             Post
                         </Button>
@@ -78,7 +83,7 @@ const ExamHeader = ({ items, onChangeTab, onPost, loading }) => {
                 </nav>
             </div>
 
-            <PreviewExam visible={openPreview} onClose={() => setOpenPreview(false)} />
+            <PreviewExam visible={openPreview} onClose={() => setOpenPreview(false)} exam={examData} />
             <ExportPdfPage visible={openExportPage} onClose={() => setOpenExportPage(false)} />
         </header>
     );
