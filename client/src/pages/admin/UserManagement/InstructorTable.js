@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Breadcrumb from "components/Breadcrumbs/Breadcrumb";
 import { Eye, Trash } from "lucide-react";
-import { fetchUsersByRole } from "utils/adminAPI";
+import { fetchUsersByRole, deleteUser } from "utils/adminAPI";
 
 // Danh sách giáo viên với _id, username, fullname, email, phone, và is_locked
 const InstructorTable = () => {
@@ -34,6 +34,19 @@ const InstructorTable = () => {
         };
         fetchData();
     }, []);
+
+    // Hàm xóa người dùng
+    const handleDeleteInstructor = async (id) => {
+        if (window.confirm("Are you sure you want to delete this instructor?")) {
+            try {
+                await deleteUser(id); // Gọi API xóa người dùng
+                setTeachersData((prevData) => prevData.filter((instructor) => instructor._id !== id)); // Cập nhật danh sách
+            } catch (error) {
+                console.error("Failed to delete instructor:", error);
+                alert("Failed to delete instructor.");
+            }
+        }
+    };
 
     const handleRowClick = (_id) => {
         console.log("Clicked teacher with ID:", _id);
@@ -126,7 +139,7 @@ const InstructorTable = () => {
                                                     <button className="hover:text-primary" onClick={() => handleOpenTeacherDetail(teacher._id)}>
                                                         <Eye className="w-5 h-5" />
                                                     </button>
-                                                    <button className="hover:text-primary">
+                                                    <button className="hover:text-primary" onClick={() => handleDeleteInstructor(teacher._id)}>
                                                         <Trash className="w-5 h-5" />
                                                     </button>
                                                 </div>

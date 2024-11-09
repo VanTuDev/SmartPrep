@@ -89,7 +89,7 @@ const LearnerHeader = () => {
    return (
       <header className="bg-white shadow-md px-6 py-2 flex items-center justify-between">
          {/* Logo and system name */}
-         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
+         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/learner/dashboard')}>
             <img src="/image/logo.svg" alt="Logo" className="h-20 mr-2" />
             <span className="text-lg font-semibold text-gray-800">Smart Dev</span>
          </div>
@@ -123,7 +123,7 @@ const LearnerHeader = () => {
                </div>
 
                <div className="flex flex-col items-center" onClick={() => setModalIsOpen(true)}>
-                     <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
+                  <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
                   <span className="text-sm text-gray-600">Hỗ trợ</span>
                </div>
                <VideoModal

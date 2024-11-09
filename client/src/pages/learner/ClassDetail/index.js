@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { LogIn,  X } from 'lucide-react';
+import { LogIn, X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import TabPane from 'antd/es/tabs/TabPane';
 import { Tabs } from 'antd';
 import Exam from './Exam';
 import Member from './Member';
+import Chatting from './Chatting';
+
+const { TabPane } = Tabs;
 
 const ClassDetail = () => {
     const { classId } = useParams();
     const [classInfo, setClassInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showConfirmModal, setShowConfirmModal] = useState(false); // State for confirm modal
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const navigate = useNavigate();
-    const token = localStorage.getItem('token'); // Get token from localStorage
+    const token = localStorage.getItem('token');
 
     // Configure axios instance
     const axiosInstance = axios.create({
@@ -27,7 +28,6 @@ const ClassDetail = () => {
         },
     });
 
-    // Fetch class details
     const fetchClassDetails = async () => {
         try {
             const response = await axiosInstance.get(`/classrooms/details/${classId}`);
@@ -44,15 +44,12 @@ const ClassDetail = () => {
         fetchClassDetails();
     }, [classId]);
 
-    // Leave class handler
     const handleLeaveClass = async () => {
         try {
-            console.log('Leaving class with ID:', classId); // Debugging log
-
             const response = await axiosInstance.delete(`/classrooms/learner/${classId}/leave`);
             if (response.status === 200) {
                 toast.success('Đã rời khỏi lớp thành công!');
-                navigate('/learner/dashboard'); // Redirect after successful leave
+                navigate('/learner/dashboard');
             } else {
                 toast.error('Không thể rời khỏi lớp.');
             }
@@ -60,13 +57,26 @@ const ClassDetail = () => {
             console.error('Lỗi khi rời khỏi lớp:', error);
             toast.error('Lỗi trong quá trình rời lớp.');
         } finally {
-            setShowConfirmModal(false); // Close the modal
+            setShowConfirmModal(false);
         }
     };
 
     if (loading) return <p className="text-center">Đang tải thông tin lớp học...</p>;
     if (error) return <p className="text-center text-red-500">{error}</p>;
     if (!classInfo) return <p className="text-center">Không tìm thấy lớp học!</p>;
+
+    const tabItems = [
+        {
+            key: '1',
+            label: 'Thành viên',
+            children: <Member />
+        },
+        {
+            key: '2',
+            label: 'Bài thi',
+            children: <Exam classId={classId} /> // Truyền classId xuống Exam
+        }
+    ];
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -75,42 +85,41 @@ const ClassDetail = () => {
                 <input
                     type="text"
                     placeholder="Nhập tên học sinh"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="px-4 py-2 ms-5 border rounded-md w-1/3 focus:outline-none"
                 />
-                <button className="text-red-500 font-semibold" onClick={() => navigate('/instructor/dashboard/class')}>
+                <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard')}>
                     <X size={20} />
                 </button>
             </div>
 
             {/* Class Info */}
-            <div className="px-16 pt-8 pb-1">
+            <div className="px-16 pt-2 pb-1">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                        <div className='flex justify-between'>
-                            <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
-                            <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                                onClick={() => setShowConfirmModal(true)}
-                            >
-                                <LogIn />
-                            </button>
-                        </div>
-                        <p className="text-gray-600 mt-2">
-                            <span className="font-bold text-blue-500">Code: </span> {classInfo.code}
-                        </p>
-                        <p className="text-gray-400">
-                            <span className="font-bold text-gray-600">Mô tả: </span> {classInfo.description || 'Chưa có mô tả.'}
-                        </p>
+                    <div className='flex justify-between'>
+                        <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
+                        <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                            onClick={() => setShowConfirmModal(true)}
+                        >
+                            <LogIn />
+                        </button>
+                    </div>
+                    <p className="text-gray-600 mt-2">
+                        <span className="font-bold text-blue-500">Code: </span> {classInfo.code}
+                    </p>
+                    <p className="text-gray-400">
+                        <span className="font-bold text-gray-600">Mô tả: </span> {classInfo.description || 'Chưa có mô tả.'}
+                    </p>
                 </div>
             </div>
-
-            {/* Tabs for Members and Exams */}
             <Tabs defaultActiveKey="1" className="px-16">
                 <TabPane tab="Thành viên" key="1">
                     <Member />
                 </TabPane>
                 <TabPane tab="Bài thi" key="2">
-                    <Exam />
+                    <Exam classId={classId} /> {/* Truyền classId vào Exam */}
+                </TabPane>
+                <TabPane tab="Phòng chat" key="3">
+                    <Chatting classId={classId} />
                 </TabPane>
             </Tabs>
 
@@ -123,13 +132,13 @@ const ClassDetail = () => {
                         <div className="flex justify-end mt-6 gap-4">
                             <button
                                 className="px-4 py-2 bg-gray-300 rounded-md"
-                                onClick={() => setShowConfirmModal(false)} // Close modal
+                                onClick={() => setShowConfirmModal(false)}
                             >
                                 Hủy
                             </button>
                             <button
                                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                                onClick={handleLeaveClass} // Leave class
+                                onClick={handleLeaveClass}
                             >
                                 Rời Lớp
                             </button>

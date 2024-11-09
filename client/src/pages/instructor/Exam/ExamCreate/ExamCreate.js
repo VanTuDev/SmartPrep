@@ -1,16 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import dayjs from 'dayjs';
 import { resetExam, fetchExam } from 'store/examSlice';
+import { message } from "antd";
 import SingleCollapse from "components/Collapse/SingleCollapse";
 import GeneralInformation from "./GeneralInformation";
 import QuestionCard from 'components/Card/QuestionCard';
+import QuestionAdding from "./QuestionAdding";
+import ExamHeader from './ExamHeader';
 
-
-function ExamCreate({ examId, exam, setExam, onUpdateExam }) {
-
-    const { examExist, isloading, error } = useSelector((state) => state.exam);
+const ExamCreate = forwardRef(({ examId }, ref) => {
+    const [localExam, setLocalExam] = useState({ title: '', description: '', questions: [] });
+    const { exam, loading, error } = useSelector((state) => state.exam);
     const dispatch = useDispatch();
+    const generalInformationRef = React.useRef();
+
+    useImperativeHandle(ref, () => ({
+        handlePostExam: () => generalInformationRef.current.handleCreateExam(),
+        handleSaveDraft: () => generalInformationRef.current.handleCreateExamDraft()  // Thêm handleSaveDraft
+    }));
 
     useEffect(() => {
         if (examId) {
@@ -21,45 +28,89 @@ function ExamCreate({ examId, exam, setExam, onUpdateExam }) {
         };
     }, [dispatch, examId]);
 
-    useEffect(() => {
-        if (examExist) {
-            setExam((prev) => ({
-                ...prev,
-                ...examExist,
-                start_date: examExist.start_date ? dayjs(examExist.start_date) : null,
-                end_date: examExist.end_date ? dayjs(examExist.end_date) : null,
-                questions: examExist.questions || [], // Đảm bảo luôn là mảng
-            }));
+    const handleExamInfoUpdate = (field, value) => {
+        setLocalExam((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleAddRandomQuestions = (newQuestions) => {
+        if (generalInformationRef.current) {
+            generalInformationRef.current.addRandomQuestions(newQuestions);
+            setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...newQuestions] }));
+        } else {
+            message.error("Unable to add questions: GeneralInformation ref not available.");
         }
-    }, [examExist]);
+    };
 
+    const handleAddSelectedQuestions = (selectedQuestions) => {
+        if (generalInformationRef.current) {
+            generalInformationRef.current.addSelectedQuestions(selectedQuestions);
+            setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...selectedQuestions] }));
+        } else {
+            message.error("Unable to add selected questions: GeneralInformation ref not available.");
+        }
+    };
 
-    if (isloading) return <p>Đang tải...</p>;
-    if (error) return <p>Lỗi: {error}</p>;
+    const handleUpdateQuestion = (updatedQuestion) => {
+        setLocalExam((prev) => ({
+            ...prev,
+            questions: prev.questions.map((q) => (q._id === updatedQuestion._id ? updatedQuestion : q)),
+        }));
+    };
+
+    const handleRemoveQuestion = (questionId) => {
+        setLocalExam((prev) => ({
+            ...prev,
+            questions: prev.questions.filter((q) => q._id !== questionId),
+        }));
+        if (generalInformationRef.current) {
+            generalInformationRef.current.removeQuestion(questionId); // Remove question ID in GeneralInformation
+        }
+    };
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
 
     return (
-        <div className="w-3/5 mx-auto mt-5 mb-24">
-            <div className="mb-4">
-                <SingleCollapse header="Thông tin bài kiểm tra">
-                    <GeneralInformation exam={exam} onUpdateExam={onUpdateExam} />
-                </SingleCollapse>
-            </div>
+        <div className="w-3/5 mx-auto mt-5 mb-24 relative">
+            <ExamHeader
+                items={[{ key: 'general', label: 'General' }, { key: 'questions', label: 'Questions' }]}
+                onChangeTab={() => { }}
+                onPost={() => generalInformationRef.current.handleCreateExam()}
+                onSaveDraft={() => generalInformationRef.current.handleCreateExamDraft()}  // Truyền onSaveDraft
+                examData={localExam}  // Pass exam data here
+            />
+            <SingleCollapse header="Thông tin bài kiểm tra">
+                <GeneralInformation
+                    ref={generalInformationRef}
+                    exam={localExam}
+                    onUpdateExam={handleExamInfoUpdate}
+                />
+            </SingleCollapse>
 
             <div>
-                {exam.questions.length > 0 ? (
-                    exam.questions.map((question, index) => (
+                {localExam.questions.length > 0 ? (
+                    localExam.questions.map((question, index) => (
                         <QuestionCard
-                            key={question._id}
+                            key={question._id || index}
                             question={question}
-                            index={index + 1}
+                            index={index}
+                            onUpdate={handleUpdateQuestion}
+                            onRemove={() => handleRemoveQuestion(question._id)}
                         />
                     ))
                 ) : (
-                    <p>No questions available.</p>
+                    <p>No questions added yet.</p>
                 )}
             </div>
+
+            <QuestionAdding
+                handleAddQuestionsFromExcel={() => { }}
+                exam={localExam}
+                onAddRandomQuestions={handleAddRandomQuestions}
+                onAddSelectedQuestions={handleAddSelectedQuestions}
+            />
         </div>
     );
-}
+});
 
 export default ExamCreate;

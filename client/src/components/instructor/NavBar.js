@@ -15,26 +15,7 @@ const NavBar = () => {
             >
                Bài kiểm tra
             </NavLink>
-            <NavLink
-               to="/history"
-               className={({ isActive }) =>
-                  isActive
-                     ? 'text-purple-700 font-medium border-b-2 border-purple-700'
-                     : 'text-gray-600 hover:text-purple-700 transition-all duration-200'
-               }
-            >
-               Lịch sử
-            </NavLink>
-            <NavLink
-               to="/categories"
-               className={({ isActive }) =>
-                  isActive
-                     ? 'text-purple-700 font-medium border-b-2 border-purple-700'
-                     : 'text-gray-600 hover:text-purple-700 transition-all duration-200'
-               }
-            >
-               Danh mục
-            </NavLink>
+
          </div>
       </nav>
    );

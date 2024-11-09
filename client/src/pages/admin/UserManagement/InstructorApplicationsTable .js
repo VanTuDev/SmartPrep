@@ -78,10 +78,35 @@ const InstructorApplicationsTable = () => {
     const handleRowClick = (_id) => {
         console.log("Clicked application with ID:", _id);
     };
+    
     const handleViewClick = (id) => {
         setSelectedApplicationId(id); // Set the selected application ID
         setIsDialogOpen(true); // Open the dialog
     };
+
+    const refreshApplicationsData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch("http://localhost:5000/api/access_instructor/applications", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            const result = await response.json();
+            setApplicationsData(result.applications);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        refreshApplicationsData();
+    }, []);
 
     // Lọc ứng viên dựa trên search term và status filter
     const filteredApplications = applicationsData?.filter((application) =>
@@ -182,7 +207,7 @@ const InstructorApplicationsTable = () => {
                             <select
                                 value={statusFilter}
                                 onChange={handleStatusFilterChange}
-                                className="border border-gray-300 rounded-md p-2 dark:bg-gray-800 dark:text-white"
+                                className="ml-4 border border-gray-300 rounded-md p-2 dark:bg-gray-800 dark:text-white"
                             >
                                 <option value="">All Status</option>
                                 <option value="pending">Pending</option>
@@ -253,6 +278,7 @@ const InstructorApplicationsTable = () => {
                 applicationId={selectedApplicationId}
                 isOpen={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
+                refreshApplicationsData={refreshApplicationsData}
             />
         </>
     );

@@ -1,3 +1,5 @@
+// ExamHeader.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Tooltip, Tabs, Popover, DatePicker, TimePicker } from 'antd';
@@ -5,7 +7,7 @@ import { X, Eye, Download, CalendarDays } from 'lucide-react';
 import PreviewExam from './PreviewExam';
 import ExportPdfPage from './ExportPdfPage';
 
-const ExamHeader = ({ items, onChangeTab, loading, handleCreateExam }) => {
+const ExamHeader = ({ items, onChangeTab, onPost, onSaveDraft, loading, examData }) => {
     const navigate = useNavigate();
     const [openPreview, setOpenPreview] = useState(false);
     const [openExportPage, setOpenExportPage] = useState(false);
@@ -14,7 +16,6 @@ const ExamHeader = ({ items, onChangeTab, loading, handleCreateExam }) => {
         <header className="bg-white fixed top-0 left-0 right-0 shadow-lg h-20 z-50">
             <div className="w-full h-full px-8">
                 <nav className="w-full h-full grid grid-cols-3 items-center">
-                    {/* Cancel Button */}
                     <div className="flex justify-start">
                         <Tooltip title="Cancel">
                             <button onClick={() => navigate('/instructor/dashboard')}>
@@ -23,7 +24,6 @@ const ExamHeader = ({ items, onChangeTab, loading, handleCreateExam }) => {
                         </Tooltip>
                     </div>
 
-                    {/* Center Tabs */}
                     <div className="flex justify-center h-full">
                         <Tabs
                             defaultActiveKey="1"
@@ -33,7 +33,6 @@ const ExamHeader = ({ items, onChangeTab, loading, handleCreateExam }) => {
                         />
                     </div>
 
-                    {/* Right Action Buttons */}
                     <div className="flex justify-end space-x-1">
                         <Tooltip title="Preview">
                             <Button onClick={() => setOpenPreview(true)}>
@@ -47,7 +46,12 @@ const ExamHeader = ({ items, onChangeTab, loading, handleCreateExam }) => {
                             </Button>
                         </Tooltip>
 
-                        <Button onClick={handleCreateExam} type="primary" loading={loading}>
+                        {/* Save Draft Button */}
+                        <Button onClick={onSaveDraft} type="default" loading={loading}>
+                            Save Draft
+                        </Button>
+
+                        <Button onClick={onPost} type="primary" loading={loading}>
                             Post
                         </Button>
 
@@ -79,10 +83,7 @@ const ExamHeader = ({ items, onChangeTab, loading, handleCreateExam }) => {
                 </nav>
             </div>
 
-            {/* Preview Exam Modal */}
-            <PreviewExam visible={openPreview} onClose={() => setOpenPreview(false)} />
-
-            {/* Export PDF Modal */}
+            <PreviewExam visible={openPreview} onClose={() => setOpenPreview(false)} exam={examData} />
             <ExportPdfPage visible={openExportPage} onClose={() => setOpenExportPage(false)} />
         </header>
     );

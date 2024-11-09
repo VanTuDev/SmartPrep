@@ -1,10 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dropdown, Modal, Space } from 'antd';
 import { EllipsisVertical } from 'lucide-react';
 import dayjs from 'dayjs';
 
 const MiniExamCard = ({ exam = {}, grades = {}, subjects = {}, onUpdate, onDelete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [examStatus, setExamStatus] = useState(exam.status);
+
+    // Check and set the status based on current date
+    useEffect(() => {
+        const now = dayjs();
+        const start = dayjs(exam.start_date);
+        const end = dayjs(exam.end_date);
+
+        if (now.isBefore(start)) {
+            setExamStatus(exam.status); // show as 'published' or 'draft'
+        } else if (now.isAfter(end)) {
+            setExamStatus('end');
+        } else {
+            setExamStatus('start');
+        }
+    }, [exam.start_date, exam.end_date, exam.status]);
 
     const handleDropdownClick = (key) => {
         if (key === 'update') {
@@ -27,6 +43,16 @@ const MiniExamCard = ({ exam = {}, grades = {}, subjects = {}, onUpdate, onDelet
         { label: 'Update', key: 'update' },
         { label: 'Delete', key: 'delete' },
     ];
+
+    // Determine the color based on the status
+    const statusColor =
+        examStatus === 'published'
+            ? 'text-green-600'
+            : examStatus === 'draft'
+                ? 'text-yellow-600'
+                : examStatus === 'start'
+                    ? 'text-blue-600'
+                    : 'text-gray-500';
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 w-full">
@@ -67,13 +93,10 @@ const MiniExamCard = ({ exam = {}, grades = {}, subjects = {}, onUpdate, onDelet
             </div>
 
             <div className="mt-6 flex justify-between items-center">
-                <span
-                    className={`text-sm font-semibold ${exam.status === 'published' ? 'text-green-600' : 'text-yellow-600'
-                        }`}
-                >
+                <span className={`text-sm font-semibold ${statusColor}`}>
                     <div className="flex items-center">
                         <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🌍</span>
-                        {exam.status || 'draft'}
+                        {examStatus}
                     </div>
                 </span>
 

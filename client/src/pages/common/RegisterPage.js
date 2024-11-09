@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify'; // Import toast
 import { CircleUserRound, Mail, PhoneCall, Key, Eye, EyeOff, UserRoundSearch } from 'lucide-react';
 
 const RegisterPage = () => {
+   const location = useLocation();
+
+
    const [username, setUserName] = useState('');
    const [fullName, setFullName] = useState('');
    const [email, setEmail] = useState('');
@@ -39,6 +42,12 @@ const RegisterPage = () => {
    // Mở/đóng mật khẩu
    const toggleShowPassword = () => setShowPassword(!showPassword);
 
+   useEffect(() => {
+      if (location.state?.role) {
+         setRole(location.state.role);
+      }
+   }, [location.state]);
+
    // Xử lý form đăng ký
    const handleRegister = async (e) => {
       e.preventDefault();
@@ -62,9 +71,9 @@ const RegisterPage = () => {
       if (!agreeTerms) {
          validationErrors.agreeTerms = 'Bạn phải đồng ý với các điều khoản sử dụng và bảo mật';
       }
-      if (role === 'instructor' && !cv) {
-         validationErrors.pdfFile = 'Vui lòng tải lên file PDF';
-      }
+      // if (role === 'instructor' && !cv) {
+      //    validationErrors.pdfFile = 'Vui lòng tải lên file PDF';
+      // }
 
       if (Object.keys(validationErrors).length > 0) {
          setErrors(validationErrors);
@@ -79,9 +88,9 @@ const RegisterPage = () => {
          formData.append('phone', phoneNumber);
          formData.append('password', password);
          formData.append('role', role);
-         if (cv) {
-            formData.append('cv', cv);
-         }
+         // if (cv) {
+         //    formData.append('cv', cv);
+         // }
 
          const response = await fetch('http://localhost:5000/api/users/register', {
             method: 'POST',
@@ -188,7 +197,7 @@ const RegisterPage = () => {
                      </div>
                   </div>
                   {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-                  <div className="flex items-center my-2 w-full">
+                  {/* <div className="flex items-center my-2 w-full">
                      <label className="mr-2 text-gray-700">Chọn vai trò:</label>
                      <select
                         value={role}
@@ -198,9 +207,9 @@ const RegisterPage = () => {
                         <option value="learner">Learner</option>
                         <option value="instructor">Instructor</option>
                      </select>
-                  </div>
+                  </div> */}
                    {/* Phần upload file PDF nếu role là instructor */}
-                  {role === 'instructor' && (
+                  {/* {role === 'instructor' && (
                   <div className="my-4">
                      <label className="block text-gray-700 mb-2">Tải lên chứng chỉ (PDF):</label>
                      <input
@@ -211,7 +220,7 @@ const RegisterPage = () => {
                      />
                      {errors.pdfFile && <p className="text-red-500 text-sm">{errors.pdfFile}</p>}
                   </div>
-               )}
+               )} */}
 
                   <div className="flex items-center my-4">
                      <input
