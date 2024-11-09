@@ -15,7 +15,6 @@ const RegisterPage = () => {
    const [showPassword, setShowPassword] = useState(false);
    const [agreeTerms, setAgreeTerms] = useState(false);
    const [role, setRole] = useState('learner'); 
-   const [cv, setCv] = useState(null); 
    const [errors, setErrors] = useState({}); 
    const navigate = useNavigate();
 
@@ -29,15 +28,7 @@ const RegisterPage = () => {
    const validateUsername = (username) => /^[a-zA-Z0-9_]+$/.test(username);
 
    // Xử lý khi chọn file PDF
-   const handleFileChange = (e) => {
-      const file = e.target.files[0];
-      if (file && file.type === 'application/pdf') {
-         setCv(file);
-      } else {
-         toast.error('Chỉ chấp nhận file PDF');
-         setCv(null);
-      }
-   };
+
 
    // Mở/đóng mật khẩu
    const toggleShowPassword = () => setShowPassword(!showPassword);
@@ -100,7 +91,7 @@ const RegisterPage = () => {
          const result = await response.json();
 
          if (response.ok) {
-            toast.success('Đăng ký thành công! Check hòm thư của bạn để hoàn tất đăng kí');
+            toast.success('Đăng ký thành công!');
             navigate('/login');
          } else {
             toast.error(result.error || 'Đăng ký thất bại');
@@ -109,7 +100,6 @@ const RegisterPage = () => {
          toast.error('Có lỗi xảy ra, vui lòng thử lại');
       }
    };
-   
 
    return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -248,8 +238,6 @@ const RegisterPage = () => {
                <div className="flex justify-center items-center my-4">
                   <span className="text-gray-500">Hoặc</span>
                </div>
-
-               
             </form>
 
             <p className="text-center mt-4">

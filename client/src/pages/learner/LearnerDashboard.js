@@ -3,6 +3,7 @@ import HeaderComponent from '../../components/learner/LearnerHeader';
 import CardComponent from '../../components/learner/Card.js';
 import ViewExamResults from '../../pages/learner/ViewExamLeaner';
 import { Video, FileQuestion } from 'lucide-react';
+import ViewExamLeaner from '../../pages/learner/ViewExamLeaner';
 
 const Dashboard = () => {
   const [examCount, setExamCount] = useState(0); // State để lưu số lượng bài kiểm tra
@@ -29,7 +30,7 @@ const Dashboard = () => {
           <h2 className="mb-4 text-2xl font-bold text-gray-700">Bài kiểm tra</h2>
           {/* Điều kiện kiểm tra và hiển thị component */}
 
-          <ViewExamResults onFetchExamCount={(count) => setExamCount(count)} />
+          <ViewExamLeaner onFetchExamCount={(count) => setExamCount(count)} />
 
         </div>
       </div>

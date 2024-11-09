@@ -7,6 +7,7 @@ import {
 import { Captions, Pencil } from 'lucide-react';
 import dayjs from 'dayjs';
 import CreateExamModal from '../../CreateExamModal';
+import { useNavigate } from 'react-router-dom';
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -30,6 +31,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedClassRooms, setSelectedClassRooms] = useState([]);
+    const navigate = useNavigate();
 
     const accessLink = exam.access_link || `http://localhost:3000/${Math.random().toString(36).substring(2)}`;
 
@@ -59,10 +61,6 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
             classRoom_ids: classRoomIds,
         });
         setIsModalOpen(false);
-    };
-
-    const handleFieldChange = (field, value) => {
-        onUpdateExam({ ...exam, [field]: value });
     };
 
     const addRandomQuestions = (newQuestions) => {
@@ -135,6 +133,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
             );
             message.success('Exam created successfully!');
             console.log('Exam creation response:', response.data);
+            navigate("/instructor/dashboard");
         } catch (error) {
             console.error('Failed to create exam:', error);
             message.error('Failed to create exam.');
@@ -218,30 +217,30 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                         className="mx-4 input-custom"
                         size="large"
                         placeholder="Test title"
-                        value={exam.title}
-                        onChange={(e) =>  handleFieldChange('title', e.target.value)}
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
                     />
                 </div>
                 <div className="flex items-start w-full rounded-lg p-2">
                     <Pencil className="primary-color" />
                     <TextArea
                         className="mx-4 input-custom"
-                        value={exam.description}
-                        onChange={(e) => handleFieldChange('description', e.target.value)}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
                         placeholder="Brief description"
                         autoSize={{ minRows: 3, maxRows: 5 }}
                     />
                 </div>
             </div>
 
-            <div className="mt-6 p-3">
+            {/* <div className="mt-6 p-3">
                 <Title level={4}>Grade and Category</Title>
                 <Space direction="vertical" className="w-full">
                     <Input placeholder="Selected Grade" value={selectedGrade} disabled />
                     <Input placeholder="Selected Category" value={selectedCategory} disabled />
                     <Input placeholder="Selected ClassRoom(s)" value={selectedClassRooms.join(', ')} disabled />
                 </Space>
-            </div>
+            </div> */}
 
             <Divider orientation="left">Time Setup</Divider>
             <div className="time-setup-section">
@@ -261,8 +260,6 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                             onChange={setStartTime}
                             className="w-full"
                         />
-                    </Col>
-                    <Col span={12} className='mb-6'>
                     </Col>
                     <Col span={12}>
                         <Title level={5}>End Date & Time</Title>
@@ -300,4 +297,4 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
     );
 });
 
-export default GeneralInformation;
+export default GeneralInformation;  
