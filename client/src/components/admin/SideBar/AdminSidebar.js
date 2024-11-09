@@ -96,7 +96,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                             }`}
                         >
                           <LayoutDashboard className="fill-current" size={18} />
-                          Tổng quan
+                          Statistics
                         </NavLink>
               </li>
 
@@ -124,7 +124,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           }}
                         >
                           <Users className="fill-current" size={18} /> {/* Using Lucide Users icon */}
-                          Người dùng
+                          User Management
                           <ChevronDown
                             className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
                               }`}
@@ -145,7 +145,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                Học sinh
+                                Learner
                               </NavLink>
                             </li>
                             <li>
@@ -156,7 +156,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                Giáo viên
+                                Instructor
                               </NavLink>
                             </li>
                             <li>
@@ -167,7 +167,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                Quản lý
+                                Admin
                               </NavLink>
                             </li>
                             <hr />
@@ -179,7 +179,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                Duyệt giáo viên
+                                Instructor Approve
                               </NavLink>
                             </li>
                           </ul>
@@ -217,7 +217,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           }}
                         >
                           <School className="fill-current" size={18} /> {/* Using Lucide Users icon */}
-                          Lớp và Kiểm tra
+                          Class and Exam
                           <ChevronDown
                             className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
                               }`}
@@ -238,7 +238,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                Bài kiểm tra
+                                Exan
                               </NavLink>
                             </li>
                             <li>
@@ -249,7 +249,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                Lớp học
+                                Class
                               </NavLink>
                             </li>
                           </ul>

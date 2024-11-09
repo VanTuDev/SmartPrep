@@ -32,25 +32,22 @@ const AdminDashboard = () => {
   return (
     <>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-        <CardDataStats title="Total users" total={totalUsers} rate="0.43%" levelUp >
+        <CardDataStats title="Người dùng" total={totalUsers} rate="0.43%" levelUp >
           <Users />
         </CardDataStats>
-        <CardDataStats title="Total classes" total={totalClasses} rate="0.43%" levelUp >
+        <CardDataStats title="Lớp học" total={totalClasses} rate="0.43%" levelUp >
           <School />
         </CardDataStats>
-        <CardDataStats title="Total exams" total={totalExams} rate="0.43%" levelUp >
+        <CardDataStats title="Bài kiểm tra" total={totalExams} rate="0.43%" levelUp >
           <BookOpenCheck />
         </CardDataStats>
-        <CardDataStats title="Total questions" total={totalQuestions} rate="0.43%" levelUp >
+        <CardDataStats title="Câu hỏi" total={totalQuestions} rate="0.43%" levelUp >
           <BookOpenCheck />
         </CardDataStats>
       </div>
       <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
-        <div className="col-span-12 xl:col-span-8">
+        <div className="col-span-12 xl:col-span-12">
           <AdminDashboardTable />
-        </div>
-        <div className="col-span-12 xl:col-span-4">
-          <StudentTopTable/>
         </div>
       </div>
     </>

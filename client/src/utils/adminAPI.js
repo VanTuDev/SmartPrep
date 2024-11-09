@@ -128,3 +128,39 @@ export const fetchAllClasses = async () => {
       console.error('Fetch error:', error);
     }
   };
+
+  export const fetchSortedClasses = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/get_sorted_classes', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error(`Error fetching classes: ${response.statusText}`);
+      // Chuyển đổi kết quả về dạng JSON
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Fetch error:', error);
+    }
+  };
+
+  export const fetchSortedStudentSubmit = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/get_sorted_student_submit', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error(`Error fetching classes: ${response.statusText}`);
+      // Chuyển đổi kết quả về dạng JSON
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Fetch error:', error);
+    }
+  };
