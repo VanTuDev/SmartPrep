@@ -27,7 +27,6 @@ import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
 import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
 
 
-import CreateExamLayout from './pages/instructor/Exams/CreateExamLayout';
 
 // Import các trang Admin
 import AdminLayout from 'layouts/AdminLayout';
@@ -36,6 +35,8 @@ import LearnerTable from 'pages/admin/UserManagement/LearnerTable';
 import InstructorTable from 'pages/admin/UserManagement/InstructorTable';
 import AdminTable from 'pages/admin/UserManagement/AdminTable';
 import InstructorApplicationsTable from 'pages/admin/UserManagement/InstructorApplicationsTable ';
+import ClassTable from 'pages/admin/ClassManagement/ClassTable';
+import ExamTable from 'pages/admin/ExamManagement/ExamTable';
 
 // Import các thành phần chung
 import PrivateRoute from './components/PrivateRoute';
@@ -55,8 +56,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<ChoseRolePage />} />
           <Route path="/register_role" element={<RegisterPage />} />
-          <Route path='/forgot-password'element={<ForgotPassword/>}/>
-          <Route path='/reset-password'element={<ResetPassword/>}/>
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
 
           {/* ========== Learner Pages ========== */}
           <Route
@@ -217,6 +218,8 @@ function App() {
             <Route path="users/instructor" element={<InstructorTable />} />
             <Route path="users/admin" element={<AdminTable />} />
             <Route path="users/instructor-application" element={<InstructorApplicationsTable />} />
+            <Route path="mainfeature/exam" element={<ExamTable />} />
+            <Route path="mainfeature/class" element={<ClassTable />} />
             {/* Các route khác trong khu vực admin */}
           </Route>
 
@@ -226,13 +229,6 @@ function App() {
         </Routes>
 
 
-
-
-
-        <Routes>
-          <Route path="/instructor/exams/exam-create" element={<CreateExamLayout />} />
-          {/* Các route khác */}
-        </Routes>
 
       </div>
     </Router>

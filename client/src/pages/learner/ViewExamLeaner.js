@@ -7,10 +7,12 @@ import { FileQuestion } from 'lucide-react';
 const ViewExamLeaner = ({ onFetchExamCount }) => {
    const [publicExams, setPublicExams] = useState([]);
    const [classroomExams, setClassroomExams] = useState([]);
-   // const [userClassrooms, setUserClassrooms] = useState([]);
+//    const [userClassrooms, setUserClassrooms] = useState([]);
+
    const [isModalVisible, setIsModalVisible] = useState(false);
    const [modalMessage, setModalMessage] = useState('');
    const navigate = useNavigate();
+
 
    // // Fetch user's classrooms
    // useEffect(() => {
@@ -45,8 +47,10 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
          .then((response) => response.json())
          .then((data) => {
             const exams = Array.isArray(data) ? data : data.data || [];
-            const filteredPublicExams = exams.filter((exam) => !exam.classRoom_id);
+            // Lọc các bài kiểm tra chỉ có `classRoom_id` là `null`
+            const filteredPublicExams = exams.filter((exam) => exam.classRoom_id === null);
             setPublicExams(filteredPublicExams);
+            onFetchExamCount(filteredPublicExams.length);
          })
          .catch((error) => {
             console.error("Error fetching public exams:", error);
@@ -81,6 +85,7 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
    }, [publicExams, classroomExams, onFetchExamCount]);
 
    // Show modal with a message
+
    const showModal = (message) => {
       setModalMessage(message);
       setIsModalVisible(true);
@@ -178,6 +183,7 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
          </div>
 
          {/* Modal for Exam Notification */}
+
          <Modal
             title="Thông báo"
             visible={isModalVisible}

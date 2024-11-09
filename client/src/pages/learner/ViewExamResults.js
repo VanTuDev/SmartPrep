@@ -119,7 +119,6 @@ const ViewExamResults = () => {
                      renderItem={(questionWrapper, index) => {
                         const question = questionWrapper.question_id;
                         const correctAnswers = question.correct_answers || []; // Array of correct answers
-
                         return (
                            <List.Item>
                               <div className="w-full">
