@@ -1,6 +1,6 @@
 // File: Exam.jsx
 import { useState, useEffect, useRef } from "react";
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import ExamHeader from "./ExamCreate/ExamHeader";
 import ExamCreate from "./ExamCreate/ExamCreate";
 import Submission from "./Submission/Submission";

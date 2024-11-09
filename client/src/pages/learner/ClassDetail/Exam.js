@@ -21,7 +21,7 @@ const Exam = ({ classId }) => {
             const response = await axios.get(
                 `http://localhost:5000/api/instructor/test/classroom/${classId}/tests`,
                 {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 }
             );
             console.log('Fetched Exams:', response.data); // Kiểm tra dữ liệu trả về từ API
