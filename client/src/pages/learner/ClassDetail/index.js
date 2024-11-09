@@ -65,6 +65,19 @@ const ClassDetail = () => {
     if (error) return <p className="text-center text-red-500">{error}</p>;
     if (!classInfo) return <p className="text-center">Không tìm thấy lớp học!</p>;
 
+    const tabItems = [
+        {
+            key: '1',
+            label: 'Thành viên',
+            children: <Member />
+        },
+        {
+            key: '2',
+            label: 'Bài thi',
+            children: <Exam classId={classId} /> // Truyền classId xuống Exam
+        }
+    ];
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Search Bar and Header */}
@@ -74,10 +87,7 @@ const ClassDetail = () => {
                     placeholder="Nhập tên học sinh"
                     className="px-4 py-2 ms-5 border rounded-md w-1/3 focus:outline-none"
                 />
-
                 <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard')}>
-
-
                     <X size={20} />
                 </button>
             </div>
@@ -85,11 +95,9 @@ const ClassDetail = () => {
             {/* Class Info */}
             <div className="px-16 pt-2 pb-1">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-
                     <div className='flex justify-between'>
                         <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
                         <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-
                             onClick={() => setShowConfirmModal(true)}
                         >
                             <LogIn />
@@ -103,8 +111,6 @@ const ClassDetail = () => {
                     </p>
                 </div>
             </div>
-
-            {/* Tabs for Members and Exams */}
             <Tabs defaultActiveKey="1" className="px-16">
                 <TabPane tab="Thành viên" key="1">
                     <Member />
