@@ -1,8 +1,8 @@
+import LearnerHeader from 'components/learner/LearnerHeader';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import InstructorHeader from './InstructorHeader';
 
-const InstructorProfile = () => {
+const LearnerProfile = () => {
    const [userInfo, setUserInfo] = useState(null); // Trạng thái để lưu thông tin người dùng
    const [editedInfo, setEditedInfo] = useState({}); // Trạng thái để lưu thông tin đã chỉnh sửa
    const [editMode, setEditMode] = useState(false); // Trạng thái để bật tắt chế độ chỉnh sửa
@@ -102,7 +102,7 @@ const InstructorProfile = () => {
    
    return (
       <div className="">
-         <InstructorHeader></InstructorHeader>
+         <LearnerHeader/>
          <div className="container mx-auto p-6">
             {/* Thông báo lỗi và thành công */}
             {error && <p className="text-red-500 text-center">{error}</p>}
@@ -228,4 +228,4 @@ const InstructorProfile = () => {
    );
 };
 
-export default InstructorProfile;
+export default LearnerProfile;

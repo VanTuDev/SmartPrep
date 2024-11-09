@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Card, Radio, Drawer, message, Modal } from "antd";
+import { Button, Card, Checkbox, Drawer, message, Modal } from "antd";
 import { ClockCircleOutlined, CloseOutlined, MenuOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import "tailwindcss/tailwind.css";
@@ -391,17 +391,17 @@ const Exam1 = () => {
                            <div className="font-semibold text-xl mb-4 text-gray-800">
                               {index + 1}. {question.question_text}
                            </div>
-                           <Radio.Group
+                           <Checkbox.Group
                               className="flex flex-col space-y-3"
-                              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-                              value={selectedAnswers[question._id] || null} // Xử lý nếu không có đáp án
+                              onChange={(checkedValues) => handleAnswerChange(question._id, checkedValues)}
+                              value={selectedAnswers[question._id] || []}
                            >
                               {question.options?.map((option, idx) => (
-                                 <Radio key={idx} value={option}>
+                                 <Checkbox key={idx} value={option}>
                                     <span className="font-medium">{String.fromCharCode(65 + idx)}.</span> {option}
-                                 </Radio>
+                                 </Checkbox>
                               ))}
-                           </Radio.Group>
+                           </Checkbox.Group>
                            {!selectedAnswers[question._id] && (
                               <span className="text-sm text-red-500 mt-2 block">Chưa chọn đáp án</span>
                            )}

@@ -61,6 +61,10 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         setIsModalOpen(false);
     };
 
+    const handleFieldChange = (field, value) => {
+        onUpdateExam({ ...exam, [field]: value });
+    };
+
     const addRandomQuestions = (newQuestions) => {
         const newRandomIds = newQuestions.map((q) => q._id);
         setRandomQuestionIds((prevIds) => Array.from(new Set([...prevIds, ...newRandomIds])));
@@ -214,16 +218,16 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                         className="mx-4 input-custom"
                         size="large"
                         placeholder="Test title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        value={exam.title}
+                        onChange={(e) =>  handleFieldChange('title', e.target.value)}
                     />
                 </div>
                 <div className="flex items-start w-full rounded-lg p-2">
                     <Pencil className="primary-color" />
                     <TextArea
                         className="mx-4 input-custom"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        value={exam.description}
+                        onChange={(e) => handleFieldChange('description', e.target.value)}
                         placeholder="Brief description"
                         autoSize={{ minRows: 3, maxRows: 5 }}
                     />
@@ -257,6 +261,8 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                             onChange={setStartTime}
                             className="w-full"
                         />
+                    </Col>
+                    <Col span={12} className='mb-6'>
                     </Col>
                     <Col span={12}>
                         <Title level={5}>End Date & Time</Title>
