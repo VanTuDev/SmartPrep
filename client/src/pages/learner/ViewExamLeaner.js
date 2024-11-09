@@ -1,18 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { Modal, Button } from 'antd';
 import { FileQuestion } from 'lucide-react';
 
-// Component `ViewExamResults` hiển thị các bài kiểm tra đã được công khai (published)
 const ViewExamLeaner = ({ onFetchExamCount }) => {
-   const [publishedExams, setPublishedExams] = useState([]);
-   const navigate = useNavigate(); // Sử dụng useNavigate để điều hướng
+   const [publicExams, setPublicExams] = useState([]);
+   const [classroomExams, setClassroomExams] = useState([]);
+   // const [userClassrooms, setUserClassrooms] = useState([]);
+   const [isModalVisible, setIsModalVisible] = useState(false);
+   const [modalMessage, setModalMessage] = useState('');
+   const navigate = useNavigate();
 
-   // Fetch data từ API
+   // // Fetch user's classrooms
+   // useEffect(() => {
+   //    const userId = localStorage.getItem('userId');
+
+   //    fetch(`http://localhost:5000/api/classrooms/learner/classes`, {
+   //       method: 'GET',
+   //       headers: {
+   //          'Content-Type': 'application/json',
+   //          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+   //       },
+   //    })
+   //       .then((response) => response.json())
+   //       .then((data) => {
+   //          const classroomIds = data.map(classroom => classroom._id);
+   //          setUserClassrooms(classroomIds);
+   //       })
+   //       .catch((error) => console.error("Error fetching user's classrooms:", error));
+   // }, []);
+
+   // Fetch public exams (where classRoom_id is null)
    useEffect(() => {
-      const userId = localStorage.getItem('userId'); // Lấy userId từ localStorage
+      const userId = localStorage.getItem('userId');
 
-      fetch(`http://localhost:5000/api/test/user/${userId}`, {
+      fetch(`http://localhost:5000/api/instructor/test/user/${userId}/classroom-tests`, {
          method: 'GET',
          headers: {
             'Content-Type': 'application/json',
@@ -21,71 +44,153 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
       })
          .then((response) => response.json())
          .then((data) => {
-            console.log("Data fetched from API:", data);
-            let exams = [];
-            if (Array.isArray(data)) {
-               exams = data.filter((exam) => exam.status === 'published');
-               setPublishedExams(exams);
-            } else if (data && Array.isArray(data.data)) {
-               exams = data.data.filter((exam) => exam.status === 'published');
-               setPublishedExams(exams);
-            } else {
-               console.error("API không trả về một mảng hợp lệ:", data);
-            }
-            onFetchExamCount(exams.length);
+            const exams = Array.isArray(data) ? data : data.data || [];
+            const filteredPublicExams = exams.filter((exam) => !exam.classRoom_id);
+            setPublicExams(filteredPublicExams);
          })
          .catch((error) => {
-            console.error("Lỗi khi lấy dữ liệu:", error);
-            onFetchExamCount(0);
+            console.error("Error fetching public exams:", error);
          });
-   }, [onFetchExamCount]);
+   }, []);
 
-   // Hàm xử lý khi người dùng nhấn vào bài kiểm tra
-   const handleExamClick = (examId) => {
-      navigate(`/learner/TakeExam/${examId}`); // Điều hướng đến trang TakeExam với ID bài thi
+   // Fetch classroom exams (where classRoom_id matches user's classrooms)                            
+   // useEffect(() => {
+   //    const userId = localStorage.getItem('userId');
+
+   //    fetch(`http://localhost:5000/api/instructor/test/user/${userId}/classroom-tests`, {
+   //       method: 'GET',
+   //       headers: {
+   //          'Content-Type': 'application/json',
+   //          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+   //       },
+   //    })
+   //       .then((response) => response.json())
+   //       .then((data) => {
+   //          const exams = Array.isArray(data) ? data : data.data || [];
+   //          const filteredClassroomExams = exams.filter(
+   //             (exam) => exam.classRoom_id && userClassrooms.includes(exam.classRoom_id)
+   //          );
+   //          setClassroomExams(filteredClassroomExams);
+   //       })
+   //       .catch((error) => console.error("Error fetching classroom exams:", error));
+   // }, [userClassrooms]);
+
+   // Update exam count whenever public or classroom exams change
+   useEffect(() => {
+      onFetchExamCount(publicExams.length + classroomExams.length);
+   }, [publicExams, classroomExams, onFetchExamCount]);
+
+   // Show modal with a message
+   const showModal = (message) => {
+      setModalMessage(message);
+      setIsModalVisible(true);
+   };
+
+   const handleOk = () => {
+      setIsModalVisible(false);
+   };
+
+   const handleExamClick = (exam) => {
+      const now = dayjs();
+      const start = dayjs(exam.start_date);
+      const end = dayjs(exam.end_date);
+
+      if (now.isBefore(start)) {
+         // Exam has not started yet
+         showModal("Bài kiểm tra chưa bắt đầu. Vui lòng quay lại sau khi bài kiểm tra mở.");
+      } else if (now.isAfter(end)) {
+         // Exam has ended
+         showModal("Bài kiểm tra đã kết thúc. Bạn không thể tham gia vào thời điểm này.");
+      } else {
+         // Exam is ongoing, navigate to exam page
+         navigate(`/learner/TakeExam/${exam._id}`);
+      }
+   };
+
+   const renderExamCard = (exam) => {
+      const now = dayjs();
+      const start = dayjs(exam.start_date);
+      const end = dayjs(exam.end_date);
+
+      const examStatus = now.isBefore(start)
+         ? 'Chưa bắt đầu'
+         : now.isAfter(end)
+            ? 'Đã kết thúc'
+            : 'Đang diễn ra';
+
+      const statusColor =
+         examStatus === 'Chưa bắt đầu'
+            ? 'text-yellow-600'
+            : examStatus === 'Đang diễn ra'
+               ? 'text-blue-600'
+               : 'text-gray-500';
+
+      return (
+         <div
+            key={exam._id}
+            className="bg-white rounded-lg border border-gray-200 p-6 w-full cursor-pointer hover:shadow-md transition"
+            onClick={() => handleExamClick(exam)}
+         >
+            <div className="font-semibold text-gray-800 mb-4 text-lg">{exam.title || 'Untitled Exam'}</div>
+            <div className="text-sm text-gray-600 space-y-2">
+               <div className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🕒</span>
+                  {exam.start_date ? dayjs(exam.start_date).format('DD/MM/YYYY HH:mm') : 'N/A'}
+               </div>
+               <div className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-4 h-4 mr-2">⏰</span>
+                  {exam.end_date ? dayjs(exam.end_date).format('DD/MM/YYYY HH:mm') : 'N/A'}
+               </div>
+               <div className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-4 h-4 mr-2">⏳</span>
+                  Thời gian làm bài: {exam.duration || 0} phút
+               </div>
+               <div className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-4 h-4 mr-2">📋</span>
+                  Số câu hỏi: {exam.questions_id.length}
+               </div>
+            </div>
+            <div className="mt-6 flex justify-between items-center">
+               <span className={`text-sm font-semibold ${statusColor}`}>
+                  <div className="flex items-center">
+                     <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🌍</span>
+                     {examStatus}
+                  </div>
+               </span>
+            </div>
+         </div>
+      );
    };
 
    return (
       <div className="mt-4">
+         {/* Public Exams Section */}
          <h2 className="text-xl font-semibold text-gray-800 mb-4">Danh sách bài kiểm tra công khai</h2>
-
-         {/* Container displaying the exam cards in 4 columns */}
          <div className="grid grid-cols-4 gap-6">
-            {publishedExams.length > 0 ? (
-               publishedExams.map((exam) => (
-                  <div
-                     key={exam._id}
-                     className="bg-white rounded-lg border border-gray-200 p-6 w-full cursor-pointer hover:shadow-md transition"
-                     onClick={() => handleExamClick(exam._id)} // Thêm onClick để điều hướng đến trang TakeExam
-                  >
-                     <div className="font-semibold text-gray-800 mb-4 text-lg">{exam.title}</div>
-                     <div className="text-sm text-gray-600 space-y-2">
-                        <div className="flex items-center">
-                           <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🕒</span>
-                           {dayjs(exam.start_date).format('DD/MM/YYYY HH:mm')}
-                        </div>
-                        <div className="flex items-center">
-                           <span className="inline-flex items-center justify-center w-4 h-4 mr-2">⏰</span>
-                           {dayjs(exam.end_date).format('DD/MM/YYYY HH:mm')}
-                        </div>
-                        <div className="flex items-center">
-                           <span className="inline-flex items-center justify-center w-4 h-4 mr-2">⏳</span>
-                           Thời gian làm bài: {exam.duration}
-                        </div>
-                        <div className="flex items-center">
-                           <span className="inline-flex items-center justify-center w-4 h-4 mr-2">📋</span>
-                           Số câu hỏi: {exam.questions.length}
-                        </div>
-                     </div>
-                  </div>
-               ))
+            {publicExams.length > 0 ? (
+               publicExams.map(renderExamCard)
             ) : (
                <div className="col-span-4 text-center text-gray-500">
                   <FileQuestion />
-                  Hiện tại không có bài kiểm tra nào để hiển thị.
+                  Hiện tại không có bài kiểm tra công khai nào để hiển thị.
                </div>
             )}
          </div>
+
+         {/* Modal for Exam Notification */}
+         <Modal
+            title="Thông báo"
+            visible={isModalVisible}
+            onOk={handleOk}
+            onCancel={() => setIsModalVisible(false)}
+            footer={[
+               <Button key="ok" type="primary" onClick={handleOk}>
+                  OK
+               </Button>
+            ]}
+         >
+            <p>{modalMessage}</p>
+         </Modal>
       </div>
    );
 };

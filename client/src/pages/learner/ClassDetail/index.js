@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { LogIn,  X } from 'lucide-react';
+import { LogIn, X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import TabPane from 'antd/es/tabs/TabPane';
@@ -68,6 +68,19 @@ const ClassDetail = () => {
     if (error) return <p className="text-center text-red-500">{error}</p>;
     if (!classInfo) return <p className="text-center">Không tìm thấy lớp học!</p>;
 
+    const tabItems = [
+        {
+            key: '1',
+            label: 'Thành viên',
+            children: <Member />
+        },
+        {
+            key: '2',
+            label: 'Bài thi',
+            children: <Exam classId={classId} /> // Truyền classId xuống Exam
+        }
+    ];
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Search Bar and Header */}
@@ -79,7 +92,7 @@ const ClassDetail = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="px-4 py-2 ms-5 border rounded-md w-1/3 focus:outline-none"
                 />
-                <button className="text-red-500 font-semibold" onClick={() => navigate('/instructor/dashboard/class')}>
+                <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard/class')}>
                     <X size={20} />
                 </button>
             </div>
@@ -87,32 +100,25 @@ const ClassDetail = () => {
             {/* Class Info */}
             <div className="px-16 pt-8 pb-1">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                        <div className='flex justify-between'>
-                            <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
-                            <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                                onClick={() => setShowConfirmModal(true)}
-                            >
-                                <LogIn />
-                            </button>
-                        </div>
-                        <p className="text-gray-600 mt-2">
-                            <span className="font-bold text-blue-500">Code: </span> {classInfo.code}
-                        </p>
-                        <p className="text-gray-400">
-                            <span className="font-bold text-gray-600">Mô tả: </span> {classInfo.description || 'Chưa có mô tả.'}
-                        </p>
+                    <div className='flex justify-between'>
+                        <h1 className="w-1/2 text-3xl font-bold">{classInfo.name}</h1>
+                        <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                            onClick={() => setShowConfirmModal(true)}
+                        >
+                            <LogIn />
+                        </button>
+                    </div>
+                    <p className="text-gray-600 mt-2">
+                        <span className="font-bold text-blue-500">Code: </span> {classInfo.code}
+                    </p>
+                    <p className="text-gray-400">
+                        <span className="font-bold text-gray-600">Mô tả: </span> {classInfo.description || 'Chưa có mô tả.'}
+                    </p>
                 </div>
             </div>
 
             {/* Tabs for Members and Exams */}
-            <Tabs defaultActiveKey="1" className="px-16">
-                <TabPane tab="Thành viên" key="1">
-                    <Member />
-                </TabPane>
-                <TabPane tab="Bài thi" key="2">
-                    <Exam />
-                </TabPane>
-            </Tabs>
+            <Tabs defaultActiveKey="1" className="px-16" items={tabItems} />
 
             {/* Confirmation Modal */}
             {showConfirmModal && (

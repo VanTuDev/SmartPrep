@@ -7,13 +7,12 @@ import "tailwindcss/tailwind.css";
 import HeaderComponent from '../../components/learner/LearnerHeader';
 
 const ViewExamResults = () => {
-   const { submissionId } = useParams(); // Lấy submissionId từ URL
-   const [submissionData, setSubmissionData] = useState(null); // Trạng thái lưu dữ liệu bài làm
+   const { submissionId } = useParams();
+   const [submissionData, setSubmissionData] = useState(null);
    const navigate = useNavigate();
 
    const SUBMISSION_URL = `http://localhost:5000/api/submissions/${submissionId}`;
 
-   // Lấy dữ liệu từ API
    useEffect(() => {
       const fetchSubmissionData = async () => {
          try {
@@ -27,7 +26,7 @@ const ViewExamResults = () => {
 
             if (response.ok) {
                const data = await response.json();
-               setSubmissionData(data); // Cập nhật dữ liệu vào state
+               setSubmissionData(data);
             } else {
                const error = await response.json();
                message.error(error.message || 'Lỗi khi lấy dữ liệu kết quả bài thi!');
@@ -39,7 +38,7 @@ const ViewExamResults = () => {
       };
 
       if (submissionId) {
-         fetchSubmissionData(); // Gọi hàm lấy dữ liệu
+         fetchSubmissionData();
       }
    }, [submissionId]);
 
@@ -51,24 +50,21 @@ const ViewExamResults = () => {
       );
    }
 
-   // Tính toán số câu trả lời đúng
    const totalQuestions = submissionData.questions.length;
-   const correctAnswers = submissionData.questions.filter(
+   const correctAnswersCount = submissionData.questions.filter(
       (q) => q.is_correct
    ).length;
 
-   const score = ((correctAnswers / totalQuestions) * 10).toFixed(2);
+   const score = ((correctAnswersCount / totalQuestions) * 10).toFixed(2);
 
    return (
       <div>
          <HeaderComponent />
          <div className='flex justify-around py-6 shadow-sm bg-slate-200'>
             <div />
-
             <div className="text-2xl">
                <p>Kết quả bài kiểm tra</p>
             </div>
-
             <div>
                <Button
                   type="primary"
@@ -83,7 +79,6 @@ const ViewExamResults = () => {
 
          <div className="min-h-screen bg-gray-100 flex justify-center">
             <div className="w-7/12 max-w-screen-lg mx-auto py-6">
-               {/* Thông tin bài kiểm tra */}
                <div className="mb-6 bg-gray-200 p-4 border-collapse rounded-xl">
                   <div className="h-16 flex flex-col justify-between border-b-[1px] border-gray-500 py-2">
                      <p><strong>Tên bài thi:</strong> {submissionData.test_id.title}</p>
@@ -92,7 +87,7 @@ const ViewExamResults = () => {
 
                   <div className="h-16 flex justify-between border-b-[1px] border-gray-500 py-2">
                      <p className="font-semibold">Tổng số câu hỏi: {totalQuestions}</p>
-                     <p>Số câu trả lời đúng: {correctAnswers}</p>
+                     <p>Số câu trả lời đúng: {correctAnswersCount}</p>
                      <p><strong>Thời gian làm:</strong> {new Date(submissionData.started_at).toLocaleString()}</p>
                   </div>
 
@@ -110,13 +105,12 @@ const ViewExamResults = () => {
 
                   <div className="h-16">
                      <div className="flex justify-between">
-                        <p>Số câu đã chọn: {correctAnswers}</p>
+                        <p>Số câu đúng: {correctAnswersCount}</p>
                         <p className="text-xl">Điểm: <span className="text-green-600">{score}/10</span></p>
                      </div>
                   </div>
                </div>
 
-               {/* Danh sách câu hỏi và kết quả */}
                <Card>
                   <List
                      header={<h3 className="text-lg font-semibold">Chi tiết câu hỏi</h3>}
@@ -124,6 +118,8 @@ const ViewExamResults = () => {
                      dataSource={submissionData.questions}
                      renderItem={(questionWrapper, index) => {
                         const question = questionWrapper.question_id;
+                        const correctAnswers = question.correct_answers || []; // Array of correct answers
+
                         return (
                            <List.Item>
                               <div className="w-full">
@@ -135,18 +131,14 @@ const ViewExamResults = () => {
                                  {/* Các lựa chọn */}
                                  <div className="mb-2">
                                     {question.options.map((option, idx) => (
-                                       <div key={idx} className={`mb-1 ${questionWrapper.is_correct ? 'text-green-600' : ''}`}>
-                                          <span className="font-medium">{String.fromCharCode(65 + idx)}. {option}</span>
+                                       <div key={idx} className="mb-1">
+                                          <span className="font-medium">
+                                             {String.fromCharCode(65 + idx)}. {option}
+                                          </span>
                                           {questionWrapper.user_answer.includes(option) && (
-                                             questionWrapper.is_correct ? (
-                                                <Tag icon={<CheckCircleOutlined />} color="success" className="ml-2">
-                                                   Đúng
-                                                </Tag>
-                                             ) : (
-                                                <Tag icon={<CloseCircleOutlined />} color="error" className="ml-2">
-                                                   Sai
-                                                </Tag>
-                                             )
+                                             <Tag icon={<CloseCircleOutlined />} color="error" className="ml-2">
+                                                Bạn đã chọn
+                                             </Tag>
                                           )}
                                        </div>
                                     ))}
@@ -154,7 +146,9 @@ const ViewExamResults = () => {
 
                                  {/* Hiển thị đáp án đúng */}
                                  <Divider />
-                                 <p><strong>Đáp án đúng:</strong> {question.options[questionWrapper.user_answer] || 'Chưa trả lời'}</p>
+                                 <p><strong>Đáp án đúng:</strong> {correctAnswers.map((ans, idx) => (
+                                    <span key={idx} className="ml-2">{ans}</span>
+                                 ))}</p>
                               </div>
                            </List.Item>
                         );
