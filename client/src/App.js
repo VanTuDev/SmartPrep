@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import '@livekit/components-styles';
+import '@livekit/components-styles/prefabs';
 
 // Import các trang chung (Common pages)
 import HomePage from "./pages/common/HomePage";
@@ -44,6 +46,8 @@ import InstructorRegistration from 'pages/instructor/InstructorRegistration/Inst
 import ForgotPassword from 'pages/common/ForgotPassword';
 import ResetPassword from 'pages/common/ResetPassword';
 import ChoseRolePage from 'pages/common/ChoseRolePage';
+import Room from "pages/videoChat/Room";
+import OnlineLearningDashboard from "pages/instructor/OnlineLearning/OnlineLearningDashboard";
 
 function App() {
   return (
@@ -58,6 +62,8 @@ function App() {
           <Route path="/register_role" element={<RegisterPage />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path='/room' element={<Room/>} />
+          <Route path="/room/:roomName" element={<Room />} /> {/* Thêm route động */}
 
           {/* ========== Learner Pages ========== */}
           <Route
@@ -181,6 +187,15 @@ function App() {
             element={
               <PrivateRoute role="instructor">
                 <ClassDetail />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="instructor/online-learning"
+            element={
+              <PrivateRoute role="instructor">
+                <OnlineLearningDashboard />
               </PrivateRoute>
             }
           />
