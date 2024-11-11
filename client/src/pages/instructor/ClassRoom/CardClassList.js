@@ -4,7 +4,9 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Pencil, Trash } from 'lucide-react';
 import { Button, Modal } from 'antd';
-
+import { useEffect } from 'react';
+import Select from 'react-select';
+import * as XLSX from 'xlsx';
 
 const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    const [showEditModal, setShowEditModal] = useState(false); // Trạng thái hiển thị modal chỉnh sửa
@@ -14,6 +16,52 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    const [inviteEmails, setInviteEmails] = useState(''); // Input cho danh sách email để mời
    const [isInviting, setIsInviting] = useState(false); // Trạng thái cho quá trình mời thành viên
    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+   const [learnerOptions, setLearnerOptions] = useState([]); // Lưu danh sách người dùng có role learner
+   const [selectedLearners, setSelectedLearners] = useState([]); // Lưu trữ các learner được chọn
+   const [excelLearners, setExcelLearners] = useState([]);
+
+   useEffect(() => {
+      const fetchLearners = async () => {
+         try {
+            const response = await axios.get('http://localhost:5000/api/users/instructors/learners', {
+               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            });
+            if (response.status === 200) {
+               const existingLearnerIds = classInfo.learners.map((learner) => learner._id.toString());
+               const options = response.data
+                  .filter((learner) => !existingLearnerIds.includes(learner._id.toString()))
+                  .map((learner) => ({
+                     value: learner._id,
+                     label: `${learner.fullname} (${learner.email})`,
+                     email: learner.email,
+                  }));
+               setLearnerOptions(options);
+            }
+         } catch (error) {
+            console.error('Lỗi khi lấy danh sách learner:', error);
+         }
+      };
+      fetchLearners();
+   }, [classInfo.learners]);
+
+   // Lọc email từ file Excel để đảm bảo chỉ mời learner
+   const filterLearnerEmails = async (emails) => {
+      try {
+         const response = await axios.get('http://localhost:5000/api/users/instructors/learners', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+         });
+         if (response.status === 200) {
+            // Chỉ lấy các learner có email nằm trong danh sách emails từ file Excel
+            const learnerEmails = response.data
+               .filter((learner) => learner.role === 'learner' && emails.includes(learner.email))
+               .map((learner) => learner.email);
+            return learnerEmails;
+         }
+      } catch (error) {
+         console.error('Lỗi khi lọc danh sách learner từ email:', error);
+         return [];
+      }
+   };
 
    // Hàm xử lý xóa lớp học
    const handleDeleteClass = async () => {
@@ -75,44 +123,93 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
    };
 
 
-   // Hàm xử lý mời thành viên vào lớp học
+   // Hàm xử lý khi tải lên file Excel
+   const handleFileUpload = async (event) => {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+         const data = new Uint8Array(e.target.result);
+         const workbook = XLSX.read(data, { type: 'array' });
+         const sheetName = workbook.SheetNames[0];
+         const sheet = workbook.Sheets[sheetName];
+         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+         // Lấy email từ cột đầu tiên của file Excel
+         const emails = jsonData.slice(1).map((row) => row[0]).filter(Boolean);
+
+         // Lọc chỉ lấy email của learner
+         const filteredEmails = await filterLearnerEmails(emails);
+         setExcelLearners(filteredEmails); // Lưu danh sách email learner hợp lệ từ file Excel
+
+         // Loại bỏ những learner có email từ file Excel trong danh sách learnerOptions
+         const filteredOptions = learnerOptions.filter(
+            (option) => !filteredEmails.includes(option.email)
+         );
+         setLearnerOptions(filteredOptions);
+      };
+
+      reader.readAsArrayBuffer(file);
+   };
+
+   // Hàm mời thành viên khi nhấn "Mời"
    const handleInviteMembers = async () => {
-      const emailList = inviteEmails.split(',').map((email) => email.trim()); // Tách email thành mảng
-      if (emailList.length === 0) {
-         toast.error('Vui lòng nhập ít nhất một email hợp lệ!');
+      const emails = [...excelLearners, ...selectedLearners.map((learner) => learner.email)];
+
+      if (emails.length === 0) {
+         toast.error('Vui lòng chọn ít nhất một learner!');
          return;
       }
 
-      setIsInviting(true); // Bắt đầu trạng thái mời
+      setIsInviting(true);
       try {
-         const response = await axios.post(`http://localhost:5000/api/classrooms/instructor/${classInfo._id}/add-learners`, { emails: emailList }, {
-            headers: {
-               Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-         });
-         if (response.status === 200) {
-            console.log('Phản hồi từ API mời thành viên:', response.data);
-            alert('Mời thành viên thành công!');
-            setInviteEmails(''); // Reset danh sách email
-            setShowInviteModal(false); // Đóng modal mời thành viên
-            // Update classInfo state to reflect the new learners
-            const newLearners = response.data.addedLearners;
-            const updatedClassInfo = {
-               ...classInfo,
-               learners: [...classInfo.learners, ...newLearners],
-            };
+         const response = await axios.post(
+            `http://localhost:5000/api/classrooms/instructor/${classInfo._id}/add-learners`,
+            { emails },
+            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+         );
 
-            // Trigger a re-render with the updated state
-            onEditSuccess(updatedClassInfo); // Ensure onEditSuccess updates classInfo in the parent component
+         if (response.status === 200) {
+            const newLearners = response.data.addedLearners;
+            const updatedClassInfo = { ...classInfo, learners: [...classInfo.learners, ...newLearners] };
+            onEditSuccess(updatedClassInfo);
+            setSelectedLearners([]);
+            setExcelLearners([]);
+            setShowInviteModal(false);
+            toast.success('Mời thành viên thành công!');
          } else {
-            console.error('Phản hồi API không thành công:', response.data);
-            alert('Không thể mời thành viên!');
+            toast.error('Không thể mời thành viên!');
          }
       } catch (error) {
-         console.error('Lỗi khi mời thành viên:', error);
-         alert('Không thể mời thành viên!');
+         console.error('Lỗi khi mời thành viên:', error.response ? error.response.data : error.message);
+         toast.error('Không thể mời thành viên!!!');
       } finally {
-         setIsInviting(false); // Kết thúc trạng thái mời
+         setIsInviting(false);
+      }
+   };
+
+   const handleInviteFromExcel = async (emails) => {
+      setIsInviting(true);
+      try {
+         const response = await axios.post(
+            `http://localhost:5000/api/classrooms/instructor/${classInfo._id}/add-learners`,
+            { emails },
+            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+         );
+
+         if (response.status === 200) {
+            const newLearners = response.data.addedLearners;
+            const updatedClassInfo = { ...classInfo, learners: [...classInfo.learners, ...newLearners] };
+            onEditSuccess(updatedClassInfo);
+            toast.success('Mời thành viên từ file thành công!');
+         } else {
+            toast.error('Không thể mời thành viên từ file!');
+         }
+      } catch (error) {
+         console.error('Lỗi khi mời thành viên từ file:', error.response ? error.response.data : error.message);
+         toast.error('Không thể mời thành viên từ file!');
+      } finally {
+         setIsInviting(false);
       }
    };
 
@@ -222,11 +319,24 @@ const CardClassList = ({ classInfo, onEditSuccess, onDeleteSuccess }) => {
                   <h3 className="text-xl font-semibold mb-4">Mời thành viên</h3>
                   <div className="mb-4">
                      <label className="block text-sm font-medium">Danh sách email (ngăn cách bởi dấu phẩy):</label>
-                     <textarea
-                        value={inviteEmails}
-                        onChange={(e) => setInviteEmails(e.target.value)}
-                        className="border rounded p-2 w-full h-24"
-                        placeholder="Nhập email, cách nhau bằng dấu phẩy"
+                     <Select
+                        isMulti
+                        options={learnerOptions} // Các lựa chọn learner
+                        value={selectedLearners}
+                        onChange={(selected) => setSelectedLearners(selected)}
+                        className="w-full"
+                        placeholder="Chọn learner để mời vào lớp"
+                        noOptionsMessage={() => 'Không còn learner nào để mời'}
+                     />
+                  </div>
+                  {/* Thêm phần tải lên file Excel */}
+                  <div className="mb-4">
+                     <label className="block text-sm font-medium">Tải lên danh sách học sinh (Excel):</label>
+                     <input
+                        type="file"
+                        accept=".xlsx, .xls"
+                        onChange={handleFileUpload}
+                        className="border rounded p-2 w-full"
                      />
                   </div>
                   <div className="flex justify-end space-x-4">

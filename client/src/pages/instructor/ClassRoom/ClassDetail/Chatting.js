@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 
 // Đảm bảo kết nối đến đúng URL
 const socket = io.connect('http://localhost:5000', {
-    auth: { token: localStorage.getItem('token') }
+  auth: { token: localStorage.getItem('token') }
 });
 
 const Chatting = ({ classId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const messagesEndRef = useRef(null); // Ref for automatic scroll
+  const messagesContainerRef = useRef(null); // Ref for tracking scroll position
+  const [autoScroll, setAutoScroll] = useState(true); // Track if auto-scroll should be enabled
   useEffect(() => {
     // Tải tin nhắn cũ từ API khi component mount
     const fetchMessages = async () => {
@@ -26,6 +29,7 @@ const Chatting = ({ classId }) => {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setMessages(response.data);
+        // scrollToBottom();
       } catch (error) {
         console.error("Lỗi khi tải tin nhắn:", error);
       }
@@ -40,10 +44,19 @@ const Chatting = ({ classId }) => {
     socket.on('chat-message', (data) => {
       setMessages([...messages, data]);
     });
-    
+
     // Ngắt kết nối khi component bị unmount
     return () => socket.off('chat-message');
   }, [messages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); // Scroll to bottom whenever messages are updated
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
 
   const sendMessage = async () => {
     if (newMessage.trim() === '') return;
@@ -67,9 +80,29 @@ const Chatting = ({ classId }) => {
     setNewMessage('');
   };
 
+  useEffect(() => {
+    if (autoScroll) scrollToBottom();
+  }, [messages]);
+
+  // Scroll handler to toggle auto-scroll when the user scrolls up
+  const handleScroll = () => {
+    const container = messagesContainerRef.current;
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    setAutoScroll(isNearBottom);
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      sendMessage();
+    }
+  };
+
   return (
     <div className="chat-container bg-white" style={{ height: '60vh', padding: '10px' }}>
-      <div className="messages" style={{ maxHeight: '50vh', overflowY: 'scroll', marginBottom: '10px' }}>
+      <div className="messages"
+        ref={messagesContainerRef} // Reference to the container for scrolling
+        onScroll={handleScroll} // Attach scroll handler
+        style={{ height: '50vh', overflowY: 'scroll', marginBottom: '10px' }}>
         {messages.map((msg, index) => {
           const isCurrentUser = msg.sender?._id === currentUser?._id;
 
@@ -101,13 +134,15 @@ const Chatting = ({ classId }) => {
             </div>
           );
         })}
+        <div ref={messagesEndRef} />
       </div>
       <input
         type="text"
         value={newMessage}
         onChange={(e) => setNewMessage(e.target.value)}
+        onKeyPress={handleKeyPress} // Check for Enter key press
         placeholder="Nhập tin nhắn..."
-        style={{ width: '80%', padding: '8px', marginRight: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+        style={{ width: '95%', padding: '8px', marginRight: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
       />
       <button onClick={sendMessage} style={{ padding: '8px 15px', borderRadius: '4px', background: '#4CAF50', color: '#fff' }}>
         Gửi
