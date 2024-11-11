@@ -13,7 +13,7 @@ export default function VideoChatDashboard() {
 
   const authorId = localStorage.getItem('userId');
 
-  // Fetch ongoing rooms when the component mounts
+  // Fetch ongoing rooms when the component mounts or when authorId changes
   const fetchRooms = async () => {
     try {
       const ongoingResponse = await axios.get(
@@ -31,6 +31,7 @@ export default function VideoChatDashboard() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -45,7 +46,7 @@ export default function VideoChatDashboard() {
 
     fetchRooms();
     fetchClasses();
-  });
+  }, [authorId]);  // Only fetch rooms when authorId changes
 
   if (loading) {
     return <div>Loading...</div>;

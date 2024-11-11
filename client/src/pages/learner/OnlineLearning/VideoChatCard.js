@@ -7,12 +7,6 @@ const VideoChatCard = ({ room, onUpdate, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate(); // Khởi tạo useNavigate để điều hướng
 
-  const handleDropdownClick = (key) => {
-    if (key === "delete") {
-      setIsModalOpen(true);
-    }
-  };
-
   const handleOk = () => {
     onDelete(room._id);
     setIsModalOpen(false);
@@ -66,24 +60,6 @@ const VideoChatCard = ({ room, onUpdate, onDelete }) => {
             Đi đến lớp học
           </Button>
         </span>
-
-        <Dropdown
-          className="mx-3"
-          menu={{
-            items: dropdownItems.map((item) => ({
-              ...item,
-              onClick: () => handleDropdownClick(item.key),
-            })),
-          }}
-          trigger={["click"]}
-        >
-          <a onClick={(e) => e.preventDefault()}>
-            <Space>
-              <EllipsisVertical />
-            </Space>
-          </a>
-        </Dropdown>
-
         <Modal
           title="Confirm Deletion"
           open={isModalOpen}

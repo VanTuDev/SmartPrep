@@ -4,76 +4,71 @@ import { Menu, HelpCircle, Bell } from "lucide-react";
 import { Dropdown, Menu as AntdMenu, Popover } from "antd";
 import VideoModal from "../../components/SupportGuide/SupportGuideModal";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const InstructorHeader = () => {
   const [userInfo, setUserInfo] = useState(null);
-  const [notifications, setNotifications] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const navigate = useNavigate();
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [error, setError] = useState("");
+  const fetchUserData = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
+    try {
+      const response = await fetch("http://localhost:5000/api/users/profile", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        toast.error(
+          `Lỗi khi lấy thông tin người dùng: ${
+            errorResponse.error || "Không xác định"
+          }`
+        );
         return;
       }
 
-      try {
-        const response = await fetch(
-          "http://localhost:5000/api/users/profile",
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+      const data = await response.json();
+      setUserInfo(data);
 
-        if (!response.ok) {
-          const errorResponse = await response.json();
-          toast.error(
-            `Lỗi khi lấy thông tin người dùng: ${
-              errorResponse.error || "Không xác định"
-            }`
-          );
-          return;
+      // Fetch classroom details with pending requests and notifications
+      const classResponse = await fetch(
+        `http://localhost:5000/api/classrooms/details`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
         }
+      );
 
-        const data = await response.json();
-        setUserInfo(data);
-
-        // Fetch classroom details with pending requests and notifications
-        const classResponse = await fetch(
-          `http://localhost:5000/api/classrooms/details`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
+      if (classResponse.ok) {
+        const classData = await classResponse.json();
+        setPendingRequests(
+          classData.classrooms.flatMap((classroom) =>
+            classroom.pending_requests.map((request) => ({
+              ...request,
+              classroomName: classroom.name,
+              classId: classroom._id,
+              description: classroom.description,
+            }))
+          )
         );
-
-        if (classResponse.ok) {
-          const classData = await classResponse.json();
-          setNotifications(
-            classData.classrooms.map((c) => ({ message: c.description }))
-          );
-          setPendingRequests(
-            classData.classrooms.flatMap((classroom) =>
-              classroom.pending_requests.map((request) => ({
-                ...request,
-                classroomName: classroom.name,
-              }))
-            )
-          );
-        }
-      } catch (err) {
-        setError("Có lỗi xảy ra trong quá trình lấy thông tin.");
       }
-    };
-
+    } catch (err) {
+      setError("Có lỗi xảy ra trong quá trình lấy thông tin.");
+      toast.error(error);
+    }
+  };
+  useEffect(() => {
     fetchUserData();
-  }, [navigate]);
+  }, [navigate, error]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -109,17 +104,24 @@ const InstructorHeader = () => {
               <p className="text-sm text-gray-400">
                 Lớp: {request.classroomName}
               </p>
+              <p className="text-sm text-gray-400">
+                Mô tả: {request.description}
+              </p>
             </div>
             <div className="flex space-x-2 ml-4">
               <button
                 className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                onClick={() => handleRequestApproval(request._id)}
+                onClick={() =>
+                  handleRequestApproval(request.classId, request._id)
+                }
               >
                 Phê duyệt
               </button>
               <button
                 className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                onClick={() => handleRequestRejection(request._id)}
+                onClick={() =>
+                  handleRequestRejection(request.classId, request._id)
+                }
               >
                 Từ chối
               </button>
@@ -131,29 +133,45 @@ const InstructorHeader = () => {
           Không có yêu cầu nào đang chờ.
         </p>
       )}
-      {/* <h4 className="font-semibold mt-4 mb-2">Thông báo</h4> */}
-      {/* {notifications.length > 0 ? (
-            <ul>
-               {notifications.map((notification, index) => (
-                  <li key={index} className="border-b py-2">
-                     {notification.message}
-                  </li>
-               ))}
-            </ul>
-         ) : (
-            <p className="text-center text-gray-500">Không có thông báo.</p>
-         )} */}
     </div>
   );
 
-  const handleRequestApproval = (requestId) => {
-    // Handle the approval of a request (e.g., send API request)
-    console.log(`Approved request with ID: ${requestId}`);
+  const handleRequestApproval = async (classId, learnerId) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/classrooms/instructor/${classId}/approve/${learnerId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      toast.success("Yêu cầu tham gia đã được phê duyệt!");
+      fetchUserData(); // Refresh user data and pending requests
+    } catch (error) {
+      console.error("Lỗi khi phê duyệt yêu cầu:", error);
+      toast.error("Không thể phê duyệt yêu cầu!");
+    }
   };
 
-  const handleRequestRejection = (requestId) => {
-    // Handle the rejection of a request (e.g., send API request)
-    console.log(`Rejected request with ID: ${requestId}`);
+  const handleRequestRejection = async (classId, learnerId) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/classrooms/instructor/${classId}/reject/${learnerId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      toast.success("Yêu cầu tham gia đã bị từ chối.");
+      fetchUserData(); // Refresh user data and pending requests
+    } catch (error) {
+      console.error("Lỗi khi từ chối yêu cầu:", error);
+      toast.error("Không thể từ chối yêu cầu!");
+    }
   };
 
   return (
@@ -205,7 +223,6 @@ const InstructorHeader = () => {
 
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-4">
-          {/* Menu Icon */}
           <div className="flex flex-col items-center">
             <NavLink to="/menu">
               <Menu className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
@@ -213,7 +230,6 @@ const InstructorHeader = () => {
             <span className="text-sm text-gray-600">Menu</span>
           </div>
 
-          {/* Help Icon */}
           <div
             onClick={() => setModalIsOpen(true)}
             className="flex flex-col items-center"
@@ -226,7 +242,6 @@ const InstructorHeader = () => {
             />
           </div>
 
-          {/* Notification Icon with Badge */}
           <Popover
             content={notificationContent}
             trigger="click"
@@ -235,7 +250,6 @@ const InstructorHeader = () => {
             placement="bottomRight"
           >
             <div className="flex flex-col items-center cursor-pointer relative">
-              {/* Notification Badge */}
               {pendingRequests.length > 0 && (
                 <div className="absolute -top-2 right-2 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
                   {pendingRequests.length}
