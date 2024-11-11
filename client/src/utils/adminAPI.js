@@ -39,6 +39,39 @@ export const deleteUser = async (id) => {
     return await response.json();
 };
 
+export const addAdmin = async (newAdmin) => {
+  const response = await fetch('http://localhost:5000/api/admin/add_admin_account', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(newAdmin), // Send the new admin data in the request body
+  });
+
+  if (!response.ok) {
+      throw new Error('Failed to add admin.');
+  }
+
+  return await response.json();
+};
+
+export const updateInstructorState = async (id) => {
+  const response = await fetch(`http://localhost:5000/api/admin/deactive_account/${id}`, {
+      method: 'PUT',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+  });
+
+  if (!response.ok) {
+      throw new Error('Failed to update instructor state.');
+  }
+
+  return await response.json();
+};
+
 
 // Dashboard api
 export const fetchAllUsers = async () => {

@@ -80,7 +80,6 @@ const ExamTable = () => {
                                         <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Duration</th>
                                         <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Number Of Questions</th>
                                         <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Status</th>
-                                        <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -90,7 +89,7 @@ const ExamTable = () => {
                                                 <h5 className="font-medium text-black dark:text-white">{exam.title}</h5>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <p className="text-black dark:text-white">{exam.instructor}</p>
+                                                <p className="text-black dark:text-white">{exam.instructor.fullname}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <p className="text-black dark:text-white">{exam.duration} mins</p>
@@ -102,13 +101,6 @@ const ExamTable = () => {
                                                 <p className={`inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium ${exam.status === "draft" ? "bg-warning text-warning" : "bg-success text-success"}`}>
                                                     {exam.status}
                                                 </p>
-                                            </td>
-                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <div className="flex items-center space-x-3.5">
-                                                    <button className="hover:text-primary">
-                                                        <Eye className="w-5 h-5" />
-                                                    </button>
-                                                </div>
                                             </td>
                                         </tr>
                                     ))}

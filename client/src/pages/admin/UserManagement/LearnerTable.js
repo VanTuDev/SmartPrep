@@ -112,9 +112,9 @@ const LearnerTable = () => {
                                 <thead>
                                     <tr className="bg-gray-2 text-left dark:bg-meta-4">
                                         <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">Student Name</th>
+                                        <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">Username</th>
                                         <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">Email</th>
                                         <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Phone</th>
-                                        <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Status</th>
                                         <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
                                     </tr>
                                 </thead>
@@ -125,21 +125,16 @@ const LearnerTable = () => {
                                                 <h5 className="font-medium text-black dark:text-white">{student.fullname}</h5>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                <p className="text-black dark:text-white">{student.username}</p>
+                                            </td>
+                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <p className="text-black dark:text-white">{student.email}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <p className="text-black dark:text-white">{student.phone}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <p className={`inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium ${student.is_locked ? "bg-danger text-danger" : "bg-success text-success" }`}>
-                                                    {student.is_locked ? "Inactive" : "Active"}
-                                                </p>
-                                            </td>
-                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <div className="flex items-center space-x-3.5">
-                                                    <button className="hover:text-primary" onClick={() => handleOpenLearnerDetail(student._id)}>
-                                                        <Eye className="w-5 h-5" />
-                                                    </button>
                                                     <button className="hover:text-primary" onClick={() => handleDeleteLearner(student._id)}>
                                                         <Trash className="w-5 h-5" />
                                                     </button>

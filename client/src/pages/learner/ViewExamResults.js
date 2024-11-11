@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, List, Tag, Button, Divider, message } from 'antd';
+import { Card, List, Tag, Button, Divider, Modal, Spin, message } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { ArrowLeft } from 'lucide-react';
 import "tailwindcss/tailwind.css";
 import HeaderComponent from '../../components/learner/LearnerHeader';
+import GradientButton from 'components/Button/GradientButton';
+import formatBulletPoints from 'utils/formulaText';
 
 const ViewExamResults = () => {
    const { submissionId } = useParams();
    const [submissionData, setSubmissionData] = useState(null);
+   const [aiResponse, setAiResponse] = useState(null);
+   const [loadingAI, setLoadingAI] = useState(false);
    const navigate = useNavigate();
 
    const SUBMISSION_URL = `http://localhost:5000/api/submissions/${submissionId}`;
@@ -41,6 +45,35 @@ const ViewExamResults = () => {
          fetchSubmissionData();
       }
    }, [submissionId]);
+
+   const handleAskAI = async (question, rightAnswer) => {
+      setLoadingAI(true);
+
+      try {
+         const response = await fetch("http://localhost:5000/api/ai_generate/ask_question", {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               question,
+               rightAnswer
+            }),
+         });
+
+         if (response.ok) {
+            const data = await response.json();
+            setAiResponse(data.generatedText);
+         } else {
+            message.error("Lỗi khi hỏi AI! Hãy thử lại sau.");
+         }
+      } catch (error) {
+         console.error("Lỗi khi hỏi AI:", error);
+         message.error("Đã xảy ra lỗi trong quá trình hỏi AI.");
+      } finally {
+         setLoadingAI(false);
+      }
+   };
 
    if (!submissionData) {
       return (
@@ -129,18 +162,26 @@ const ViewExamResults = () => {
 
                                  {/* Các lựa chọn */}
                                  <div className="mb-2">
-                                    {question.options.map((option, idx) => (
-                                       <div key={idx} className="mb-1">
-                                          <span className="font-medium">
-                                             {String.fromCharCode(65 + idx)}. {option}
-                                          </span>
-                                          {questionWrapper.user_answer.includes(option) && (
-                                             <Tag icon={<CloseCircleOutlined />} color="error" className="ml-2">
-                                                Bạn đã chọn
-                                             </Tag>
-                                          )}
-                                       </div>
-                                    ))}
+                                    {question.options.map((option, idx) =>{
+                                       const isCorrect = correctAnswers.includes(option);
+                                       return (
+                                          <div key={idx} className="mb-1">
+                                             <span className="font-medium">
+                                                {String.fromCharCode(65 + idx)}. {option}
+                                             </span>
+                                             {questionWrapper.user_answer.includes(option) && (
+                                                <Tag
+                                                   icon={isCorrect ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                                                   color={isCorrect ? 'success' : 'error'}
+                                                   className="ml-2"
+                                                >
+                                                   {isCorrect ? 'Đúng' : 'Bạn đã chọn'}
+                                                </Tag>
+                                             )}
+                                          </div>
+                                       )
+                                    }
+                                     )}
                                  </div>
 
                                  {/* Hiển thị đáp án đúng */}
@@ -148,12 +189,35 @@ const ViewExamResults = () => {
                                  <p><strong>Đáp án đúng:</strong> {correctAnswers.map((ans, idx) => (
                                     <span key={idx} className="ml-2">{ans}</span>
                                  ))}</p>
+
+                                 <GradientButton
+                                    className="mt-2"
+                                    type="link"
+                                    onClick={() => handleAskAI(question.question_text, correctAnswers)}
+                                 >
+                                    Hỏi AI tại sao?
+                                 </GradientButton>
                               </div>
                            </List.Item>
                         );
                      }}
                   />
                </Card>
+               {loadingAI && (
+                  <Modal visible={loadingAI} footer={null} onCancel={() => setLoadingAI(false)}>
+                     <Spin tip="Đang hỏi AI..." />
+                  </Modal>
+               )}
+               {aiResponse && (
+                  <Modal
+                     visible={!!aiResponse}
+                     footer={null}
+                     onCancel={() => setAiResponse(null)}
+                  >
+                     <p>Giải thích từ AI:</p>
+                     <p>{formatBulletPoints(aiResponse)}</p>
+                  </Modal>
+               )}
             </div>
          </div>
       </div>
