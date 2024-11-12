@@ -8,7 +8,6 @@ import TabPane from 'antd/es/tabs/TabPane';
 import AllTestsTab from './AllTestsTab';
 import CalendarTab from './CalendarTab';
 
-
 const Exam = ({ classId }) => {
     const [classExams, setClassExams] = useState([]);
     const [grades, setGrades] = useState({});
@@ -73,16 +72,24 @@ const Exam = ({ classId }) => {
     };
 
     return (
-        <div className="w-full flex px-4 mt-0">
-            <div className="w-full">
-                <Tabs defaultActiveKey="allTests">
-                    <TabPane tab="Danh sách bài kiểm tra" key="allTests">
-                        <AllTestsTab exams={classExams} grades={grades} subjects={subjects} />
-                    </TabPane>
-                    <TabPane tab="Lịch" key="calendar">
-                        <CalendarTab exams={classExams} />
-                    </TabPane>
-                </Tabs>
+        <div className="w-full flex justify-center items-start mt-0">
+            <div className="w-10/12">
+                <div className="mt-6">
+                    <h1 className="text-xl font-semibold text-gray-700">Danh sách bài kiểm tra</h1>
+                    <div className="border-b border-gray-300 my-4"></div>
+                    {classExams.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-6">
+                            {classExams.map((exam) => (
+                                <CardExamInClass key={exam._id} exam={exam} grades={grades} subjects={subjects} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col justify-center items-center mt-12">
+                            <img src="/image/noExam.png" alt="No Exams" className="h-40 mb-6" />
+                            <p className="text-gray-300 text-lg">Hiện tại không có bài kiểm tra nào</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Breadcrumb from "components/Breadcrumbs/Breadcrumb";
-import { Eye, Trash } from "lucide-react";
-import { fetchUsersByRole, deleteUser } from "utils/adminAPI";
+import { Eye, PenOff, Trash,  } from "lucide-react";
+import { fetchUsersByRole, deleteUser, updateInstructorState } from "utils/adminAPI";
 
 // Danh sách giáo viên với _id, username, fullname, email, phone, và is_locked
 const InstructorTable = () => {
@@ -16,31 +16,34 @@ const InstructorTable = () => {
     const [filterStatus, setFilterStatus] = useState("All");
     const teachersPerPage = 5; // Số lượng giáo viên hiển thị trên mỗi trang
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true); // Đặt loading là true khi bắt đầu fetch
-            setError(null); // Reset lỗi trước khi gọi API
-            try {
-                const data = await fetchUsersByRole('instructor'); // Gọi API để lấy teachers
-                if (!Array.isArray(data) || data.length === 0) {
-                    throw new Error('No teachers found.'); // Ném lỗi nếu không có dữ liệu
-                }
-                setTeachersData(data); // Cập nhật state với dữ liệu nhận được
-            } catch (err) {
-                setError(err.message); // Cập nhật state lỗi nếu có
-            } finally {
-                setLoading(false); // Đặt loading là false sau khi hoàn thành
+    const fetchData = async () => {
+        setLoading(true); // Đặt loading là true khi bắt đầu fetch
+        setError(null); // Reset lỗi trước khi gọi API
+        try {
+            const data = await fetchUsersByRole('instructor'); // Gọi API để lấy teachers
+            if (!Array.isArray(data) || data.length === 0) {
+                throw new Error('No teachers found.'); // Ném lỗi nếu không có dữ liệu
             }
-        };
+            setTeachersData(data); // Cập nhật state với dữ liệu nhận được
+        } catch (err) {
+            setError(err.message); // Cập nhật state lỗi nếu có
+        } finally {
+            setLoading(false); // Đặt loading là false sau khi hoàn thành
+        }
+    };
+
+    useEffect(() => {
+        
         fetchData();
     }, []);
 
     // Hàm xóa người dùng
     const handleDeleteInstructor = async (id) => {
-        if (window.confirm("Are you sure you want to delete this instructor?")) {
+        if (window.confirm("Are you sure you want to deactive this instructor?")) {
             try {
-                await deleteUser(id); // Gọi API xóa người dùng
-                setTeachersData((prevData) => prevData.filter((instructor) => instructor._id !== id)); // Cập nhật danh sách
+                await updateInstructorState(id); // Gọi API xóa người dùng
+                // setTeachersData((prevData) => prevData.filter((instructor) => instructor._id !== id)); // Cập nhật danh sách
+                fetchData();
             } catch (error) {
                 console.error("Failed to delete instructor:", error);
                 alert("Failed to delete instructor.");
@@ -136,11 +139,9 @@ const InstructorTable = () => {
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <div className="flex items-center space-x-3.5">
-                                                    <button className="hover:text-primary" onClick={() => handleOpenTeacherDetail(teacher._id)}>
-                                                        <Eye className="w-5 h-5" />
-                                                    </button>
                                                     <button className="hover:text-primary" onClick={() => handleDeleteInstructor(teacher._id)}>
-                                                        <Trash className="w-5 h-5" />
+                                        
+                                                        <PenOff className="w-5 h-5" />
                                                     </button>
                                                 </div>
                                             </td>

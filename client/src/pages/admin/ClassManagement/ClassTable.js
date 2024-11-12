@@ -64,10 +64,10 @@ const ClassTable = () => {
                                 <thead>
                                     <tr className="bg-gray-2 text-left dark:bg-meta-4">
                                         <th className="min-w-[200px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">Class Name</th>
+                                        <th className="min-w-[300px] py-4 px-4 font-medium text-black dark:text-white">Teacher Name</th>
                                         <th className="min-w-[300px] py-4 px-4 font-medium text-black dark:text-white">Description</th>
                                         <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">Code</th>
                                         <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">Number Of Students</th>
-                                        <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -77,6 +77,9 @@ const ClassTable = () => {
                                                 <h5 className="font-medium text-black dark:text-white">{cls.name}</h5>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                <p className="text-black dark:text-white">{cls.instructor.fullname}</p>
+                                            </td>
+                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <p className="text-black dark:text-white">{cls.description}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
@@ -84,14 +87,6 @@ const ClassTable = () => {
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <p className="text-black dark:text-white">{cls?.learners?.length}</p>
-                                            </td>
-                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <div className="flex items-center space-x-3.5">
-                                                    <button className="hover:text-primary">
-                                                        <Eye className="w-5 h-5" />
-                                                    </button>
-                                                    {/* Add more actions as needed */}
-                                                </div>
                                             </td>
                                         </tr>
                                     ))}

@@ -238,7 +238,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                Exan
+                                Exam
                               </NavLink>
                             </li>
                             <li>

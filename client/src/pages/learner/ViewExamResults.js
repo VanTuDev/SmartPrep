@@ -5,6 +5,8 @@ import { CloseCircleOutlined, EditOutlined, DeleteOutlined, MoreOutlined, CheckC
 import { ArrowLeft } from 'lucide-react';
 import "tailwindcss/tailwind.css";
 import HeaderComponent from '../../components/learner/LearnerHeader';
+import GradientButton from 'components/Button/GradientButton';
+import formatBulletPoints from 'utils/formulaText';
 
 const { TextArea } = Input;
 
@@ -18,6 +20,8 @@ const ViewExamResults = () => {
    const [editContent, setEditContent] = useState('');
    const [replyContent, setReplyContent] = useState('');
    const [replyToCommentId, setReplyToCommentId] = useState(null);
+   const [aiResponse, setAiResponse] = useState(null);
+   const [loadingAI, setLoadingAI] = useState(false);
    const navigate = useNavigate();
 
    const SUBMISSION_URL = `http://localhost:5000/api/submissions/${submissionId}`;
@@ -287,6 +291,35 @@ const ViewExamResults = () => {
       </div>
    );
 
+   const handleAskAI = async (question, rightAnswer) => {
+      setLoadingAI(true);
+
+      try {
+         const response = await fetch("http://localhost:5000/api/ai_generate/ask_question", {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               question,
+               rightAnswer
+            }),
+         });
+
+         if (response.ok) {
+            const data = await response.json();
+            setAiResponse(data.generatedText);
+         } else {
+            message.error("Lỗi khi hỏi AI! Hãy thử lại sau.");
+         }
+      } catch (error) {
+         console.error("Lỗi khi hỏi AI:", error);
+         message.error("Đã xảy ra lỗi trong quá trình hỏi AI.");
+      } finally {
+         setLoadingAI(false);
+      }
+   };
+
    if (!submissionData || !userProfile) {
       return (
          <div className="flex justify-center items-center min-h-screen">
@@ -381,7 +414,6 @@ const ViewExamResults = () => {
                                     {question.options.map((option, idx) => {
                                        const isUserAnswer = questionWrapper.user_answer.includes(option);
                                        const isCorrectAnswer = correctAnswers.includes(option);
-
                                        return (
                                           <div key={idx} className="mb-1">
                                              <span className="font-medium">
@@ -404,6 +436,14 @@ const ViewExamResults = () => {
                                  <p><strong>Đáp án đúng:</strong> {correctAnswers.map((ans, idx) => (
                                     <span key={idx} className="ml-2">{ans}</span>
                                  ))}</p>
+
+                                 <GradientButton
+                                    className="mt-2"
+                                    type="link"
+                                    onClick={() => handleAskAI(question.question_text, correctAnswers)}
+                                 >
+                                    Hỏi AI tại sao?
+                                 </GradientButton>
                               </div>
                            </List.Item>
                         );
@@ -541,6 +581,23 @@ const ViewExamResults = () => {
                   />
                   <Button onClick={addComment} type="primary" className="mt-2">Gửi bình luận</Button>
                </div>
+
+               {loadingAI && (
+                  <Modal visible={loadingAI} footer={null} onCancel={() => setLoadingAI(false)}>
+                     <Spin tip="Đang hỏi AI..." />
+                  </Modal>
+               )}
+               {aiResponse && (
+                  <Modal
+                     visible={!!aiResponse}
+                     footer={null}
+                     onCancel={() => setAiResponse(null)}
+                  >
+                     <p>Giải thích từ AI:</p>
+                     <p>{formatBulletPoints(aiResponse)}</p>
+                  </Modal>
+               )}
+
             </div>
          </div>
       </div>
