@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, List, Button, Input, Modal, message, Divider, Tag, Popover, Avatar } from 'antd';
-import { CloseCircleOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, EditOutlined, DeleteOutlined, MoreOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { ArrowLeft } from 'lucide-react';
 import "tailwindcss/tailwind.css";
 import HeaderComponent from '../../components/learner/LearnerHeader';
@@ -14,8 +14,10 @@ const ViewExamResults = () => {
    const [userProfile, setUserProfile] = useState(null);
    const [comments, setComments] = useState([]);
    const [newComment, setNewComment] = useState('');
-   const [editCommentId, setEditCommentId] = useState(null); // ID của bình luận đang chỉnh sửa
-   const [editContent, setEditContent] = useState(''); // Nội dung bình luận đang chỉnh sửa
+   const [editCommentId, setEditCommentId] = useState(null);
+   const [editContent, setEditContent] = useState('');
+   const [replyContent, setReplyContent] = useState('');
+   const [replyToCommentId, setReplyToCommentId] = useState(null);
    const navigate = useNavigate();
 
    const SUBMISSION_URL = `http://localhost:5000/api/submissions/${submissionId}`;
@@ -94,18 +96,14 @@ const ViewExamResults = () => {
             message.error('Lỗi khi lấy danh sách bình luận');
          }
       } catch (error) {
-         console.error('Lỗi khi lấy danh sách bình luận:', error);
          message.error('Đã xảy ra lỗi khi lấy danh sách bình luận!');
       }
    };
 
    useEffect(() => {
-      if (submissionData) {
-         fetchComments();
-      }
+      if (submissionData) fetchComments();
    }, [submissionData]);
 
-   // Add new comment
    const addComment = async () => {
       if (!newComment) return;
       try {
@@ -117,22 +115,18 @@ const ViewExamResults = () => {
             },
             body: JSON.stringify({ test_id: submissionData.test_id._id, user_id: userProfile._id, content: newComment }),
          });
-
          if (response.ok) {
-            const data = await response.json();
-            setComments([...comments, data]);
             setNewComment('');
+            fetchComments();
             message.success('Bình luận đã được thêm');
          } else {
             message.error('Lỗi khi thêm bình luận');
          }
       } catch (error) {
-         console.error('Lỗi khi thêm bình luận:', error);
          message.error('Đã xảy ra lỗi khi thêm bình luận!');
       }
    };
 
-   // Edit comment
    const editComment = async (commentId) => {
       try {
          const response = await fetch(`${COMMENTS_URL}/${commentId}`, {
@@ -143,23 +137,19 @@ const ViewExamResults = () => {
             },
             body: JSON.stringify({ content: editContent, user_id: userProfile._id }),
          });
-
          if (response.ok) {
-            const updatedComment = await response.json();
-            setComments(comments.map(comment => comment._id === commentId ? updatedComment : comment));
             setEditCommentId(null);
             setEditContent('');
+            fetchComments();
             message.success('Bình luận đã được cập nhật');
          } else {
             message.error('Lỗi khi cập nhật bình luận');
          }
       } catch (error) {
-         console.error('Lỗi khi cập nhật bình luận:', error);
          message.error('Đã xảy ra lỗi khi cập nhật bình luận!');
       }
    };
 
-   // Delete comment
    const deleteComment = async (commentId) => {
       try {
          const response = await fetch(`${COMMENTS_URL}/${commentId}`, {
@@ -170,38 +160,129 @@ const ViewExamResults = () => {
             },
             body: JSON.stringify({ user_id: userProfile._id, role: userProfile.role }),
          });
-
          if (response.ok) {
-            setComments(comments.filter(comment => comment._id !== commentId));
+            fetchComments();
             message.success('Bình luận đã được xóa');
          } else {
             message.error('Lỗi khi xóa bình luận');
          }
       } catch (error) {
-         console.error('Lỗi khi xóa bình luận:', error);
          message.error('Đã xảy ra lỗi khi xóa bình luận!');
+      }
+   };
+
+   // Reply to a comment
+   const replyToComment = async (commentId) => {
+      if (!replyContent) return;
+      try {
+         const response = await fetch(`${COMMENTS_URL}/${commentId}/reply`, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ user_id: userProfile._id, content: replyContent }),
+         });
+         if (response.ok) {
+            setReplyContent('');
+            setReplyToCommentId(null); // Reset after reply
+            fetchComments();
+            message.success('Đã trả lời bình luận');
+         } else {
+            message.error('Lỗi khi trả lời bình luận');
+         }
+      } catch (error) {
+         console.error('Lỗi khi trả lời bình luận:', error);
+         message.error('Đã xảy ra lỗi khi trả lời bình luận!');
+      }
+   };
+
+   // Hàm xóa reply của chính mình từ frontend
+   const deleteReply = async (commentId, replyId) => {
+      if (!replyId) {
+         console.error('replyId is undefined'); // Thêm dòng này để kiểm tra
+         return; // Dừng nếu replyId chưa được truyền
+      }
+
+      try {
+         const response = await fetch(`${COMMENTS_URL}/${commentId}/reply/${replyId}`, {
+            method: 'DELETE',
+            headers: {
+               'Content-Type': 'application/json',
+               Authorization: `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({ user_id: userProfile._id, role: userProfile.role })
+         });
+
+         if (response.ok) {
+            fetchComments(); // Tải lại danh sách bình luận
+            message.success('Reply đã được xóa');
+         } else {
+            const errorData = await response.json();
+            message.error(errorData.error || 'Lỗi khi xóa reply');
+         }
+      } catch (error) {
+         console.error('Lỗi khi xóa reply:', error);
+         message.error('Đã xảy ra lỗi khi xóa reply');
       }
    };
 
    const commentActions = (comment) => (
       <div className="flex space-x-2">
-         <Button
-            icon={<EditOutlined />}
-            onClick={() => {
-               setEditCommentId(comment._id);
-               setEditContent(comment.content);
-            }}
-            type="text"
-         >
-            Sửa
+         {comment.user_id && comment.user_id._id === userProfile?._id && (
+            <>
+               <Button
+                  icon={<EditOutlined />}
+                  onClick={() => {
+                     setEditCommentId(comment._id);
+                     setEditContent(comment.content);
+                  }}
+                  type="text"
+               >
+                  Sửa
+               </Button>
+               <Button
+                  icon={<DeleteOutlined />}
+                  onClick={() => deleteComment(comment._id)}
+                  type="text"
+                  danger
+               >
+                  Xóa
+               </Button>
+            </>
+         )}
+         <Button onClick={() => setReplyToCommentId(comment._id)} type="text">
+            Trả lời
          </Button>
-         <Button
-            icon={<DeleteOutlined />}
-            onClick={() => deleteComment(comment._id)}
-            type="text"
-            danger
-         >
-            Xóa
+      </div>
+   );
+
+   const replyActions = (commentId, reply) => (
+      <div className="flex space-x-2">
+         {reply?.user_id && reply.user_id._id === userProfile?._id && (
+            <>
+               <Button
+                  icon={<EditOutlined />}
+                  onClick={() => {
+                     setEditCommentId(reply._id);
+                     setEditContent(reply.content);
+                  }}
+                  type="text"
+               >
+                  Sửa
+               </Button>
+               <Button
+                  icon={<DeleteOutlined />}
+                  onClick={() => deleteReply(commentId, reply._id)}
+                  type="text"
+                  danger
+               >
+                  Xóa
+               </Button>
+            </>
+         )}
+         <Button onClick={() => setReplyToCommentId(reply._id)} type="text">
+            Trả lời
          </Button>
       </div>
    );
@@ -297,18 +378,27 @@ const ViewExamResults = () => {
                                     <strong>{index + 1}. {question.question_text}</strong>
                                  </div>
                                  <div className="mb-2">
-                                    {question.options.map((option, idx) => (
-                                       <div key={idx} className="mb-1">
-                                          <span className="font-medium">
-                                             {String.fromCharCode(65 + idx)}. {option}
-                                          </span>
-                                          {questionWrapper.user_answer.includes(option) && (
-                                             <Tag icon={<CloseCircleOutlined />} color="error" className="ml-2">
-                                                Bạn đã chọn
-                                             </Tag>
-                                          )}
-                                       </div>
-                                    ))}
+                                    {question.options.map((option, idx) => {
+                                       const isUserAnswer = questionWrapper.user_answer.includes(option);
+                                       const isCorrectAnswer = correctAnswers.includes(option);
+
+                                       return (
+                                          <div key={idx} className="mb-1">
+                                             <span className="font-medium">
+                                                {String.fromCharCode(65 + idx)}. {option}
+                                             </span>
+                                             {isUserAnswer && (
+                                                <Tag
+                                                   icon={isCorrectAnswer ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                                                   color={isCorrectAnswer ? "green" : "red"}
+                                                   className="ml-2"
+                                                >
+                                                   {isCorrectAnswer ? "Bạn đã chọn đúng" : "Bạn đã chọn sai"}
+                                                </Tag>
+                                             )}
+                                          </div>
+                                       );
+                                    })}
                                  </div>
                                  <Divider />
                                  <p><strong>Đáp án đúng:</strong> {correctAnswers.map((ans, idx) => (
@@ -327,51 +417,121 @@ const ViewExamResults = () => {
                   <List
                      dataSource={comments}
                      renderItem={(comment) => (
-                        <List.Item key={comment._id} className="flex items-start space-x-3">
-                           <Avatar
-                              src={
-                                 userProfile?.profile && userProfile.profile.startsWith('http')
-                                    ? userProfile.profile
-                                    : userProfile?.profile
-                                       ? `http://localhost:5000/uploads/${userProfile.profile}`
-                                       : 'https://via.placeholder.com/150' // Fallback image if profile is missing
-                              }
-                              alt="User Avatar"
-                              size={50}
-                           />
-                           <Card className="flex-1 bg-gray-50" bordered={false}>
-                              <div className="flex justify-between">
-                                 <div>
-                                    <p className="font-semibold">{comment.user_id.username || 'Người dùng'}</p>
-                                    {editCommentId === comment._id ? (
-                                       <>
-                                          <TextArea
-                                             rows={2}
-                                             value={editContent}
-                                             onChange={(e) => setEditContent(e.target.value)}
-                                             className="mt-2 mb-2"
-                                          />
-                                          <Button onClick={() => editComment(comment._id)} type="primary" size="small" className="mr-2">
-                                             Lưu
-                                          </Button>
-                                          <Button onClick={() => setEditCommentId(null)} size="small">
-                                             Hủy
-                                          </Button>
-                                       </>
-                                    ) : (
-                                       <p>{comment.content}</p>
-                                    )}
-                                 </div>
-                                 {comment.user_id._id === userProfile._id && (
+                        <div key={comment._id} className="flex flex-col space-y-3">
+                           {/* Khung hiển thị bình luận gốc */}
+                           <List.Item className="flex items-start space-x-3">
+                              <Avatar
+                                 src={
+                                    comment.user_id?.profile
+                                       ? comment.user_id.profile.startsWith('http')
+                                          ? comment.user_id.profile
+                                          : `http://localhost:5000/uploads/${comment.user_id.profile}`
+                                       : 'https://via.placeholder.com/150'
+                                 }
+                                 alt="User Avatar"
+                                 size={50}
+                              />
+                              <Card className="flex-1 bg-gray-50" bordered={false}>
+                                 <div className="flex justify-between">
+                                    <div>
+                                       <p className="font-semibold">{comment.user_id?.username || 'Người dùng'}</p>
+                                       {editCommentId === comment._id ? (
+                                          <>
+                                             <TextArea
+                                                rows={2}
+                                                value={editContent}
+                                                onChange={(e) => setEditContent(e.target.value)}
+                                                className="mt-2 mb-2"
+                                             />
+                                             <Button onClick={() => editComment(comment._id)} type="primary" size="small" className="mr-2">
+                                                Lưu
+                                             </Button>
+                                             <Button onClick={() => setEditCommentId(null)} size="small">
+                                                Hủy
+                                             </Button>
+                                          </>
+                                       ) : (
+                                          <p>{comment.content}</p>
+                                       )}
+                                    </div>
                                     <Popover content={commentActions(comment)} trigger="click">
                                        <Button icon={<MoreOutlined />} type="text" />
                                     </Popover>
+                                 </div>
+                              </Card>
+                           </List.Item>
+
+                           {/* Khung hiển thị các trả lời */}
+                           {comment.replies && comment.replies.length > 0 && (
+                              <List
+                                 className="ml-12"
+                                 dataSource={comment.replies}
+                                 renderItem={(reply, idx) => (
+                                    <List.Item key={idx} className="flex items-start space-x-3">
+                                       <Avatar
+                                          src={
+                                             reply.user_id?.profile
+                                                ? reply.user_id.profile.startsWith('http')
+                                                   ? reply.user_id.profile
+                                                   : `http://localhost:5000/uploads/${reply.user_id.profile}`
+                                                : 'https://via.placeholder.com/150'
+                                          }
+                                          size={40}
+                                       />
+                                       <Card className="flex-1 bg-gray-100 p-2 rounded-md" bordered={false}>
+                                          <div className="flex justify-between">
+                                             <div>
+                                                <p className="font-semibold">{reply.user_id?.username || 'Người dùng'}</p>
+                                                {editCommentId === reply._id ? (
+                                                   <>
+                                                      <TextArea
+                                                         rows={2}
+                                                         value={editContent}
+                                                         onChange={(e) => setEditContent(e.target.value)}
+                                                         className="mt-2 mb-2"
+                                                      />
+                                                      <Button onClick={() => editComment(reply._id)} type="primary" size="small" className="mr-2">
+                                                         Lưu
+                                                      </Button>
+                                                      <Button onClick={() => setEditCommentId(null)} size="small">
+                                                         Hủy
+                                                      </Button>
+                                                   </>
+                                                ) : (
+                                                   <p>{reply.content}</p>
+                                                )}
+                                             </div>
+                                             <Popover content={replyActions(comment._id, reply)} trigger="click">
+                                                <Button icon={<MoreOutlined />} type="text" />
+                                             </Popover>
+                                          </div>
+                                       </Card>
+                                    </List.Item>
                                  )}
+                              />
+                           )}
+
+                           {/* Ô nhập trả lời riêng biệt */}
+                           {replyToCommentId === comment._id && (
+                              <div className="ml-12 mt-2">
+                                 <TextArea
+                                    rows={2}
+                                    value={replyContent}
+                                    onChange={(e) => setReplyContent(e.target.value)}
+                                    placeholder="Nhập câu trả lời của bạn..."
+                                 />
+                                 <Button onClick={() => replyToComment(comment._id)} type="primary" className="mt-2">
+                                    Gửi trả lời
+                                 </Button>
+                                 <Button onClick={() => setReplyToCommentId(null)} danger className="mt-2 ml-4">
+                                    Hủy
+                                 </Button>
                               </div>
-                           </Card>
-                        </List.Item>
+                           )}
+                        </div>
                      )}
                   />
+
                   <TextArea
                      rows={4}
                      value={newComment}

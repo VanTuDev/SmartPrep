@@ -75,8 +75,17 @@ function Submission() {
   return (
     <>
       <ExamHeader
-        items={[{ key: 'general', label: 'General' }, { key: 'submission', label: 'Submissions' }]}
-        onChangeTab={(key) => navigate(`/instructor/exam/${key === 'general' ? `${examId}` : `submissions/${examId}`}`)}
+        items={[
+          { key: 'general', label: 'General' },
+          { key: 'submission', label: 'Submissions' },
+        ]}
+        onChangeTab={(key) =>
+          navigate(
+            key === 'general'
+              ? `/instructor/exam/${examId}/update`
+              : `/instructor/exam/submissions/${examId}`
+          )
+        }
         currentTab="submission"
       />
       <div className="w-5/6 mx-auto mt-5 pt-20">
