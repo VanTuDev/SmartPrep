@@ -9,10 +9,14 @@ import {
 import { Room, VideoPresets } from 'livekit-client';
 import SettingsMenu from './SettingsMenu';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 // Constants
 const CONN_DETAILS_ENDPOINT = '/api/room/join-room';
 const SHOW_SETTINGS_MENU = 'true';
+const userInfo = jwtDecode(localStorage.getItem('token'))
+console.log(userInfo);
+
 
 export default function PageClientImpl() {
   const { roomName } = useParams();
@@ -106,7 +110,7 @@ function VideoConferenceComponent({ connectionDetails, userChoices, options }) {
   console.log(room);
   
   
-  const handleOnLeave = useCallback(() => navigate('/'), [navigate]);
+  const handleOnLeave = useCallback(() => navigate(`/${userInfo.role}/dashboard`), [navigate]);
   const handleError = useCallback((error) => {
     console.error(error);
     alert(`Unexpected error: ${error.message}`);
