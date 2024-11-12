@@ -44,6 +44,8 @@ import InstructorRegistration from 'pages/instructor/InstructorRegistration/Inst
 import ForgotPassword from 'pages/common/ForgotPassword';
 import ResetPassword from 'pages/common/ResetPassword';
 import ChoseRolePage from 'pages/common/ChoseRolePage';
+import Submission from "pages/instructor/Exam/Submission/Submission";
+import SubmissionDetail from "pages/instructor/Exam/Submission/SubmissionDetail";
 
 function App() {
   return (
@@ -164,6 +166,22 @@ function App() {
             element={
               <PrivateRoute role="instructor">
                 <QuestionLibrary />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/instructor/exam/submissions/:examId"
+            element={
+              <PrivateRoute role="instructor">
+                <Submission />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/instructor/exam/submission-detail/:submissionId"
+            element={
+              <PrivateRoute role="instructor">
+                <SubmissionDetail />
               </PrivateRoute>
             }
           />

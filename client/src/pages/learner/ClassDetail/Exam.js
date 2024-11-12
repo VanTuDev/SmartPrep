@@ -1,8 +1,8 @@
 // Exam.js
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-//import CardExamInClass from './CardExcamInClass';
-import CardExamInClass from './CardExamInClass';
+import CardExamInClass from './CardExcamInClass';
+// import CardExamInClass from './CardExamInClass';
 
 const Exam = ({ classId }) => {
     const [classExams, setClassExams] = useState([]);

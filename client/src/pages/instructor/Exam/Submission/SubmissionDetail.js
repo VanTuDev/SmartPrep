@@ -1,96 +1,196 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, Drawer, Typography } from "antd";
-import { Download, RefreshCcw } from "lucide-react";
-import 'styles/instructor/SubmissionDetail.css';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, List, Button, Divider, Tag, Avatar, message } from 'antd';
+import { CloseCircleOutlined } from '@ant-design/icons';
+import { ArrowLeft } from 'lucide-react';
+import "tailwindcss/tailwind.css";
 
-const { Text } = Typography;
+const SubmissionDetail = () => {
+  const { submissionId } = useParams();
+  const [submissionData, setSubmissionData] = useState(null);
+  const [learnerProfile, setLearnerProfile] = useState(null);
+  const navigate = useNavigate();
 
-function SubmissionDetail({ visible, onClose, student }) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const questionsPerPage = 5;
-  const questionContainerRef = useRef(null);
+  const SUBMISSION_URL = `http://localhost:5000/api/submissions/${submissionId}`;
+  const USER_PROFILE_URL = `http://localhost:5000/api/users/user/profile/`;
 
+  // Fetch submission data
   useEffect(() => {
-    if (questionContainerRef.current) {
-      questionContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const fetchSubmissionData = async () => {
+      try {
+        const response = await fetch(SUBMISSION_URL, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setSubmissionData(data);
+
+          // Fetch learner profile by user ID from the submission data
+          if (data.learner && data.learner._id) {
+            fetchLearnerProfile(data.learner._id);
+          }
+        } else {
+          const error = await response.json();
+          message.error(error.message || 'Lỗi khi lấy dữ liệu kết quả bài thi!');
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu bài thi:', error);
+        message.error('Đã xảy ra lỗi trong quá trình lấy dữ liệu bài thi!');
+      }
+    };
+
+    if (submissionId) {
+      fetchSubmissionData();
     }
-  }, [currentPage]);
+  }, [submissionId]);
 
-  if (!student) return null;
+  // Fetch learner profile by ID
+  const fetchLearnerProfile = async (learnerId) => {
+    try {
+      const response = await fetch(`${USER_PROFILE_URL}${learnerId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-  // Xác định các câu hỏi trên mỗi trang
-  const startIndex = currentPage * questionsPerPage;
-  const currentQuestions = student.questions.slice(startIndex, startIndex + questionsPerPage);
+      if (response.ok) {
+        const profileData = await response.json();
+        setLearnerProfile(profileData);
+      } else {
+        const error = await response.json();
+        message.error(error.message || 'Lỗi khi lấy thông tin học viên!');
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy thông tin học viên:', error);
+      message.error('Đã xảy ra lỗi trong quá trình lấy thông tin học viên!');
+    }
+  };
+
+  if (!submissionData || !learnerProfile) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-lg font-medium text-gray-600">Đang tải dữ liệu...</div>
+      </div>
+    );
+  }
+
+  const totalQuestions = submissionData.questions.length;
+  const correctAnswersCount = submissionData.questions.filter(
+    (q) => q.is_correct
+  ).length;
+
+  const score = ((correctAnswersCount / totalQuestions) * 10).toFixed(2);
 
   return (
-    <Drawer
-      title={
-        <div className="drawer-header">
-          <div className="title">Test Result</div>
-          {/* <div className="flex items-center space-x-4">
-            <button className="flex flex-col items-center">
-              <Download />
-              <div className="text-xs">Download</div>
-            </button>
-            <button className="flex flex-col items-center">
-              <RefreshCcw />
-              <div className="text-xs">Rescore</div>
-            </button>
-            <button className="button-outlined-custom">Score confirmed</button>
-          </div> */}
+    <div>
+      <div className='flex justify-around py-6 shadow-sm bg-slate-200'>
+        <div />
+        <div className="text-2xl">
+          <p>Kết quả bài kiểm tra</p>
         </div>
-      }
-      placement="right"
-      onClose={onClose}
-      visible={visible}
-      width="100vw"
-    >
-      <div className="bg-gray-100 min-h-screen p-6">
-        {/* Hiển thị thông tin học sinh */}
-        <div className="w-full bg-white shadow-lg rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Avatar className="mx-3" size="large" src={<img src={student.imgSrc} alt="avatar" />} />
-            <div>
-              <div className="font-semibold">{student.studentName}</div>
-              <div className="text-gray-500">{student.email}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Hiển thị câu hỏi và các tùy chọn */}
-        <div className="w-full bg-white shadow-lg rounded-lg p-6" ref={questionContainerRef}>
-          {currentQuestions.length > 0 ? (
-            currentQuestions.map((question, index) => (
-              <div key={index} className="mb-4">
-                <div className="text-md font-medium mb-2">
-                  Câu {startIndex + index + 1}: {question.question_text}
-                </div>
-                <div className="flex flex-col space-y-2">
-                  {question.options.map((option, i) => (
-                    <div
-                      key={i}
-                      className={`p-2 border rounded-md flex items-center space-x-2 ${
-                        question.answer === option
-                          ? question.correct_answers.includes(option)
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                          : ""
-                      }`}
-                    >
-                      <input type="radio" checked={question.answer === option} readOnly />
-                      <label>{String.fromCharCode(65 + i)}. {option}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div>Không có câu hỏi</div>
-          )}
+        <div>
+          <Button
+            type="primary"
+            onClick={() => navigate(-1)}
+            icon={<ArrowLeft size={16} />}
+            className="bg-blue-500 hover:bg-blue-600 focus:bg-blue-700"
+          >
+            Quay lại
+          </Button>
         </div>
       </div>
-    </Drawer>
+
+      <div className="min-h-screen bg-gray-100 flex justify-center">
+        <div className="w-7/12 max-w-screen-lg mx-auto py-6">
+          {/* Thông tin chi tiết bài thi và học viên */}
+          <div className="mb-6 bg-gray-200 p-4 border-collapse rounded-xl">
+            <div className="h-16 flex flex-col justify-between border-b-[1px] border-gray-500 py-2">
+              <p><strong>Tên bài thi:</strong> {submissionData.test_id.title}</p>
+              <p className="text-gray-600">ID: {submissionData._id}</p>
+            </div>
+
+            <div className="h-16 flex justify-between border-b-[1px] border-gray-500 py-2">
+              <p className="font-semibold">Tổng số câu hỏi: {totalQuestions}</p>
+              <p>Số câu trả lời đúng: {correctAnswersCount}</p>
+              <p><strong>Thời gian làm:</strong> {new Date(submissionData.started_at).toLocaleString()}</p>
+            </div>
+
+            <div className="flex items-center gap-4 border-b-[1px] border-gray-300 py-4">
+              <Avatar
+                className="h-16 w-16 rounded-full object-cover border-2"
+                src={
+                  learnerProfile?.profile && learnerProfile.profile.startsWith('http')
+                    ? learnerProfile.profile
+                    : learnerProfile?.profile
+                      ? `http://localhost:5000/uploads/${learnerProfile.profile}`
+                      : 'https://via.placeholder.com/150' // Fallback image if profile is missing
+                }
+                alt="Learner Avatar"
+              />
+              <div className="flex flex-col">
+                <p className="text-lg font-semibold text-gray-800">{learnerProfile.fullname || 'Người dùng'}</p>
+                <p className="text-sm text-gray-500">{learnerProfile._id}</p>
+              </div>
+            </div>
+
+            <div className="h-16">
+              <div className="flex justify-between">
+                <p>Số câu đúng: {correctAnswersCount}</p>
+                <p className="text-xl">Điểm: <span className="text-green-600">{score}/10</span></p>
+              </div>
+            </div>
+          </div>
+
+          {/* Chi tiết câu hỏi */}
+          <Card>
+            <List
+              header={<h3 className="text-lg font-semibold">Chi tiết câu hỏi</h3>}
+              bordered
+              dataSource={submissionData.questions}
+              renderItem={(questionWrapper, index) => {
+                const question = questionWrapper.question_id;
+                const correctAnswers = question.correct_answers || [];
+                return (
+                  <List.Item>
+                    <div className="w-full">
+                      <div className="mb-2">
+                        <strong>{index + 1}. {question.question_text}</strong>
+                      </div>
+                      <div className="mb-2">
+                        {question.options.map((option, idx) => (
+                          <div key={idx} className="mb-1">
+                            <span className="font-medium">
+                              {String.fromCharCode(65 + idx)}. {option}
+                            </span>
+                            {questionWrapper.user_answer.includes(option) && (
+                              <Tag icon={<CloseCircleOutlined />} color="error" className="ml-2">
+                                Đã chọn
+                              </Tag>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Divider />
+                      <p><strong>Đáp án đúng:</strong> {correctAnswers.map((ans, idx) => (
+                        <span key={idx} className="ml-2">{ans}</span>
+                      ))}</p>
+                    </div>
+                  </List.Item>
+                );
+              }}
+            />
+          </Card>
+        </div>
+      </div>
+    </div>
   );
-}
+};
 
 export default SubmissionDetail;
