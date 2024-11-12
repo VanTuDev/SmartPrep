@@ -10,6 +10,7 @@ import ExamHeader from './ExamHeader';
 
 const ExamCreate = forwardRef(({ examId }, ref) => {
     const [localExam, setLocalExam] = useState({ title: '', description: '', questions: [] });
+    const [activeTab, setActiveTab] = useState('general');
     const { exam, loading, error } = useSelector((state) => state.exam);
     const dispatch = useDispatch();
     const generalInformationRef = React.useRef();
@@ -73,11 +74,10 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
     return (
         <div className="w-3/5 mx-auto mt-5 mb-24 relative">
             <ExamHeader
-                items={[{ key: 'general', label: 'General' }, { key: 'questions', label: 'Questions' }]}
+                items={[]}
                 onChangeTab={() => { }}
                 onPost={() => generalInformationRef.current.handleCreateExam()}
-                onSaveDraft={() => generalInformationRef.current.handleCreateExamDraft()}  // Truyền onSaveDraft
-                examData={localExam}  // Pass exam data here
+                onSaveDraft={() => generalInformationRef.current.handleCreateExamDraft()}  
             />
             <SingleCollapse header="Thông tin bài kiểm tra">
                 <GeneralInformation

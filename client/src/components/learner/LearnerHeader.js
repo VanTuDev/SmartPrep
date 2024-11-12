@@ -115,13 +115,6 @@ const LearnerHeader = () => {
          {/* User icons and information */}
          <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-4">
-               <div className="flex flex-col items-center">
-                  <NavLink to="/menu">
-                     <Menu className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
-                  </NavLink>
-                  <span className="text-sm text-gray-600">Menu</span>
-               </div>
-
                <div className="flex flex-col items-center" onClick={() => setModalIsOpen(true)}>
                   <HelpCircle className="h-8 w-8 text-gray-500 hover:text-gray-700 transition duration-200" />
                   <span className="text-sm text-gray-600">Hỗ trợ</span>
