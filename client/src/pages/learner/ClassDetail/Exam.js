@@ -1,7 +1,6 @@
 // Exam.js
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-//import CardExamInClass from './CardExcamInClass';
 import CardExamInClass from './CardExamInClass';
 import { Tabs } from 'antd';
 import TabPane from 'antd/es/tabs/TabPane';
@@ -13,11 +12,10 @@ const Exam = ({ classId }) => {
     const [grades, setGrades] = useState({});
     const [subjects, setSubjects] = useState({});
 
-
     useEffect(() => {
-        fetchClassExams();
-        fetchGrades();
-        fetchSubjects();
+        fetchClassExams();  // Lấy danh sách các bài kiểm tra trong lớp
+        fetchGrades();      // Lấy danh sách các cấp độ (grades)
+        fetchSubjects();    // Lấy danh sách các môn học (subjects)
     }, [classId]);
 
     const fetchClassExams = async () => {
@@ -30,7 +28,7 @@ const Exam = ({ classId }) => {
             );
             console.log('Fetched Exams:', response.data); // Kiểm tra dữ liệu trả về từ API
 
-            setClassExams(response.data);
+            setClassExams(response.data); // Cập nhật danh sách bài kiểm tra
         } catch (error) {
             console.error('Error fetching exams for the class:', error);
         }
@@ -39,7 +37,6 @@ const Exam = ({ classId }) => {
     const fetchGrades = async () => {
         try {
             const response = await axios.get(`http://localhost:5000/api/instructor/grades`, {
-
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             });
             const gradesData = response.data.reduce((acc, grade) => {
@@ -76,9 +73,11 @@ const Exam = ({ classId }) => {
             <div className="w-full">
                 <Tabs defaultActiveKey="allTests">
                     <TabPane tab="Danh sách bài kiểm tra" key="allTests">
+                        {/* Truyền dữ liệu vào AllTestsTab để hiển thị danh sách bài kiểm tra */}
                         <AllTestsTab exams={classExams} grades={grades} subjects={subjects} />
                     </TabPane>
                     <TabPane tab="Lịch" key="calendar">
+                        {/* Truyền dữ liệu vào CalendarTab để hiển thị lịch của các bài kiểm tra */}
                         <CalendarTab exams={classExams} />
                     </TabPane>
                 </Tabs>
