@@ -14,6 +14,7 @@ const Chatting = ({ classId }) => {
   const messagesEndRef = useRef(null); // Ref for automatic scroll
   const messagesContainerRef = useRef(null); // Ref for tracking scroll position
   const [autoScroll, setAutoScroll] = useState(true); // Track if auto-scroll should be enabled
+  
   useEffect(() => {
     // Tải tin nhắn cũ từ API khi component mount
     const fetchMessages = async () => {
@@ -34,7 +35,6 @@ const Chatting = ({ classId }) => {
         console.error("Lỗi khi tải tin nhắn:", error);
       }
     };
-
     fetchMessages();
 
     // Kết nối với phòng chat của lớp qua Socket.IO
@@ -42,20 +42,37 @@ const Chatting = ({ classId }) => {
 
     // Nhận tin nhắn mới từ server qua WebSocket
     socket.on('chat-message', (data) => {
-      setMessages([...messages, data]);
+      setMessages((prevMessages) => [...prevMessages, data]);
     });
 
     // Ngắt kết nối khi component bị unmount
     return () => socket.off('chat-message');
   }, [messages]);
 
+  // Auto-scroll only if autoScroll is true
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]); // Scroll to bottom whenever messages are updated
+    if (autoScroll) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+
+  useEffect(() => {
+    if (autoScroll) scrollToBottom();
+  }, [messages]);
+
+  // Handle scroll events to toggle autoScroll
+  const handleScroll = () => {
+    const container = messagesContainerRef.current;
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    setAutoScroll(isNearBottom); // Only enable auto-scroll if user is near bottom
+  };
+
 
 
   const sendMessage = async () => {
@@ -78,17 +95,6 @@ const Chatting = ({ classId }) => {
     }
 
     setNewMessage('');
-  };
-
-  useEffect(() => {
-    if (autoScroll) scrollToBottom();
-  }, [messages]);
-
-  // Scroll handler to toggle auto-scroll when the user scrolls up
-  const handleScroll = () => {
-    const container = messagesContainerRef.current;
-    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-    setAutoScroll(isNearBottom);
   };
 
   const handleKeyPress = (event) => {
@@ -140,7 +146,7 @@ const Chatting = ({ classId }) => {
         type="text"
         value={newMessage}
         onChange={(e) => setNewMessage(e.target.value)}
-        onKeyPress={handleKeyPress} // Check for Enter key press
+        onKeyPress={handleKeyPress} 
         placeholder="Nhập tin nhắn..."
         style={{ width: '95%', padding: '8px', marginRight: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
       />

@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { Tabs } from 'antd';
 import Exam from './Exam';
 import Member from './Member';
-import Chatting from './Chatting';
+import Chatting from '../../common/Chatting';
 
 const { TabPane } = Tabs;
 
@@ -81,13 +81,8 @@ const ClassDetail = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Search Bar and Header */}
-            <div className="flex justify-between items-center p-4 bg-white shadow-md mt-4">
-                <input
-                    type="text"
-                    placeholder="Nhập tên học sinh"
-                    className="px-4 py-2 ms-5 border rounded-md w-1/3 focus:outline-none"
-                />
-                <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard')}>
+            <div className="flex justify-end items-center p-4 bg-white shadow-md">
+                <button className="text-red-500 font-semibold" onClick={() => navigate('/learner/dashboard/class')}>
                     <X size={20} />
                 </button>
             </div>
