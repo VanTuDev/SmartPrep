@@ -5,8 +5,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 1rem;
-    background-color: #f5f7fa; /* Light background */
+    background-color: hsl(216, 33%, 97%); /* Light background */
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
@@ -14,7 +13,6 @@
 /* Calendar Grid */
 .react-calendar {
     width: 100%;
-    max-width: 1000px;
     background-color: white;
     border: none;
     font-family: Arial, sans-serif;

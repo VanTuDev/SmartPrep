@@ -20,7 +20,7 @@ const CalendarTab = ({ exams }) => {
             start: dayjs(exam.start_date).toDate(),
             end: dayjs(exam.end_date).toDate(),
             expired: dayjs().isAfter(dayjs(exam.end_date)),
-            color: generateRandomColor(),
+            color: generateRandomColor()
         }))
     );
 
@@ -29,10 +29,10 @@ const CalendarTab = ({ exams }) => {
     const [selectedExams, setSelectedExams] = useState([]);
 
     function generateRandomColor() {
-        const r = Math.floor(Math.random() * 256);
-        const g = Math.floor(Math.random() * 256);
-        const b = Math.floor(Math.random() * 256);
-        return `rgba(${r}, ${g}, ${b}, 0.3)`;
+        const r = Math.floor(66);
+        const g = Math.floor(133);
+        const b = Math.floor(244);
+        return `rgba(${r}, ${g}, ${b}, 0.6)`;
     }
 
     const handleExamClick = (examId, expired, start) => {
@@ -58,15 +58,15 @@ const CalendarTab = ({ exams }) => {
         setIsModalVisible(true);
     };
 
+    // Adjust renderCalendarEvents to only show colors on the start date
     const renderCalendarEvents = ({ date }) => {
-        const eventsOnDate = calendarEvents.filter(event =>
-            dayjs(event.start).isSameOrBefore(date, 'day') &&
-            dayjs(event.end).isSameOrAfter(date, 'day')
+        const eventsOnStartDate = calendarEvents.filter(event =>
+            dayjs(event.start).isSame(date, 'day') // Only match the start date for displaying color
         );
 
         return (
-            <div className="relative h-full w-full">
-                {eventsOnDate.map((event, index) => (
+            <div className="relative h-full w-full mb-3">
+                {eventsOnStartDate.map((event, index) => (
                     <div
                         key={event.id}
                         className="absolute top-0 left-0 right-0 bottom-0 rounded"
@@ -81,16 +81,15 @@ const CalendarTab = ({ exams }) => {
     };
 
     return (
-        <div className="calendar-container p-6">
-            <Calendar
+        <div className="calendar-container w-full">
+            <Calendar className="w-full p-3"
                 onClickDay={handleDateClick}
                 tileContent={renderCalendarEvents}
                 tileClassName={({ date }) =>
                     calendarEvents.some(event =>
-                        dayjs(event.start).isSameOrBefore(date, 'day') &&
-                        dayjs(event.end).isSameOrAfter(date, 'day')
+                        dayjs(event.start).isSame(date, 'day') // Only highlight the start date
                     )
-                        ? 'highlight' // Ensures each tile with an event has the highlight class
+                        ? 'highlight' // Ensures each tile with an event start date has the highlight class
                         : ''
                 }
             />
