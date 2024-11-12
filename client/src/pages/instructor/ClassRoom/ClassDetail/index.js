@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { Tabs } from 'antd';
 import TabPane from 'antd/es/tabs/TabPane';
 import Exam from './Exam';
-import Chatting from './Chatting';
+import Chatting from '../../../common/Chatting';
 
 const ClassDetail = () => {
     const { classId } = useParams();
@@ -165,7 +165,7 @@ const ClassDetail = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Search Bar and Header */}
-            <div className="flex justify-end items-center p-4 bg-white shadow-md mt-4">
+            <div className="flex justify-end items-center p-4 bg-white shadow-md">
                 <button className="text-red-500 font-semibold" onClick={() => navigate('/instructor/dashboard/class')}>
                     <X size={20} />
                 </button>
