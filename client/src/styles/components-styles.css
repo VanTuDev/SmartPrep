@@ -1,0 +1,19 @@
+/* src/pages/videoChat/components-styles.css */
+
+.lk-button {
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6; /* Màu xanh Tailwind */
+    color: white;
+    border-radius: 0.25rem;
+    transition: background-color 0.3s;
+  }
+  
+  .lk-button:hover {
+    background-color: #2563eb; /* Màu xanh đậm khi hover */
+  }
+  
+  .lk-focus-toggle-button:focus {
+    outline: 2px solid #93c5fd; /* Màu viền xanh nhạt khi focus */
+    outline-offset: 2px;
+  }
+  
