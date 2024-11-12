@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Tooltip, Tabs, Popover, DatePicker, TimePicker } from 'antd';
-import { X, Eye, Download, CalendarDays } from 'lucide-react';
+import { X, Eye, Download } from 'lucide-react';
 import PreviewExam from './PreviewExam';
 import ExportPdfPage from './ExportPdfPage';
 
@@ -75,9 +75,6 @@ const ExamHeader = ({ items, onChangeTab, onPost, onSaveDraft, loading, examData
                             }
                             trigger="click"
                         >
-                            <button className="button-normal-custom bg-red-300 px-2 py-2">
-                                <CalendarDays />
-                            </button>
                         </Popover>
                     </div>
                 </nav>

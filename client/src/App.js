@@ -1,3 +1,4 @@
+// App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -21,12 +22,11 @@ import ClassDetailforLeaner from './pages/learner/ClassDetail';
 // Import các trang Instructor
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import Exam from './pages/instructor/Exam/Exam';
+import UpdateExamForm from './pages/instructor/Exam/ExamUpdate/UpdateExamForm';
 import QuestionLibrary from './pages/instructor/QuestionLibrary';
 import InstructorProfile from './components/instructor/InstructorProfile';
 import ClassRoom from './pages/instructor/ClassRoom/ViewClassList';
 import ClassDetail from 'pages/instructor/ClassRoom/ClassDetail';
-
-
 
 // Import các trang Admin
 import AdminLayout from 'layouts/AdminLayout';
@@ -49,15 +49,16 @@ function App() {
   return (
     <Router>
       <div>
-        <ToastContainer /> {/* Thêm ToastContainer để hiển thị thông báo */}
+        <ToastContainer /> {/* Hiển thị thông báo */}
+
         <Routes>
           {/* ========== Common Pages ========== */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<ChoseRolePage />} />
           <Route path="/register_role" element={<RegisterPage />} />
-          <Route path='/forgot-password' element={<ForgotPassword />} />
-          <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* ========== Learner Pages ========== */}
           <Route
@@ -116,7 +117,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
           <Route
             path="/learner/dashboard/class/detail/:classId"
             element={
@@ -136,6 +136,14 @@ function App() {
             }
           />
           <Route
+            path="/instructor/exam/exam-create"
+            element={
+              <PrivateRoute role="instructor">
+                <Exam />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/instructor/exam/:examId"
             element={
               <PrivateRoute role="instructor">
@@ -144,10 +152,10 @@ function App() {
             }
           />
           <Route
-            path="/instructor/exam/exam-create"
+            path="/instructor/exam/:examId/update"
             element={
               <PrivateRoute role="instructor">
-                <Exam />
+                <UpdateExamForm />
               </PrivateRoute>
             }
           />
@@ -175,7 +183,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
           <Route
             path="/instructor/dashboard/class/detail/:classId"
             element={
@@ -184,8 +191,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
-          {/* ========== Admin Pages ========== */}
           <Route
             path="/instructor/registration"
             element={
@@ -196,19 +201,11 @@ function App() {
           />
 
           {/* ========== Admin Pages ========== */}
-          {/* <Route
-            path="/admin/dashboard"
-            element={
-              <PrivateRoute role="admin">
-                <AdminDashboard />
-              </PrivateRoute>
-            }
-          /> */}
           <Route
             path="/admin"
             element={
               <PrivateRoute role="admin">
-                <AdminLayout /> {/* Layout của Admin */}
+                <AdminLayout />
               </PrivateRoute>
             }
           >
@@ -219,16 +216,12 @@ function App() {
             <Route path="users/instructor-application" element={<InstructorApplicationsTable />} />
             <Route path="mainfeature/exam" element={<ExamTable />} />
             <Route path="mainfeature/class" element={<ClassTable />} />
-            {/* Các route khác trong khu vực admin */}
           </Route>
 
           {/* ========== Catch-All Route (for 404 Pages) ========== */}
           {/* Uncomment and implement NotFound component if needed */}
           {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
-
-
-
       </div>
     </Router>
   );
