@@ -9,7 +9,7 @@ const CardExamInClass = ({ exam = {}, grades = {}, subjects = {} }) => {
    const [infoMessage, setInfoMessage] = useState(''); // State để hiển thị thông báo
    const navigate = useNavigate();
 
-   useEffect(() => {
+   useEffect(() => { 
       const now = dayjs();
       const start = dayjs(exam.start_date);
       const end = dayjs(exam.end_date);
@@ -51,7 +51,7 @@ const CardExamInClass = ({ exam = {}, grades = {}, subjects = {} }) => {
          {/* Hiển thị thông báo nếu có */}
          {infoMessage && (
             <div className="text-red-500 text-sm mb-4">
-               {infoMessage}
+               {infoMessage} 
             </div>
          )}
 

@@ -1,0 +1,150 @@
+/* calendar.css */
+
+/* General Calendar Container */
+.calendar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f5f7fa; /* Light background */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Calendar Grid */
+.react-calendar {
+    width: 100%;
+    max-width: 1000px;
+    background-color: white;
+    border: none;
+    font-family: Arial, sans-serif;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Calendar Header */
+.react-calendar__navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: #4285f4; /* Google Calendar blue */
+    color: white;
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.react-calendar__navigation button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.react-calendar__navigation button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Day Labels */
+.react-calendar__month-view__weekdays {
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.875rem;
+    color: #5f6368; /* Google Calendar grey */
+    padding: 0.5rem;
+    background-color: #f1f3f4;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+    padding: 0.5rem;
+}
+
+/* Calendar Tiles */
+.react-calendar__tile {
+    padding: 1rem 0.5rem;
+    position: relative;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.react-calendar__tile--now {
+    background-color: #eaf1fb; /* Light blue for current day */
+    border-radius: 4px;
+}
+
+.react-calendar__tile--active {
+    background-color: #4285f4;
+    color: white;
+    border-radius: 4px;
+}
+
+.react-calendar__tile:hover {
+    background-color: #e0e0e0;
+}
+
+/* Highlighted Events for Each Day */
+.highlight {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+/* Layered Event Colors with z-index for Overlapping */
+.highlight div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 4px;
+    transition: transform 0.2s ease;
+}
+
+.highlight div:hover {
+    transform: scale(1.03);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Disabled Days */
+.react-calendar__tile--disabled {
+    color: #b0b0b0;
+    background-color: #f7f7f7;
+    cursor: not-allowed;
+}
+
+/* Styling for Modal and Exam Items */
+.modal-content {
+    font-size: 0.875rem;
+    color: #202124;
+    line-height: 1.5;
+}
+
+.exam-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+}
+
+.exam-item:hover {
+    background-color: #d1e3fa;
+}
+
+/* Active and Expired Exam Item Styles */
+.exam-item.active {
+    background-color: #4285f4;
+    color: white;
+}
+
+.exam-item.expired {
+    background-color: #e0e0e0;
+    color: #5f6368;
+    cursor: not-allowed;
+}
