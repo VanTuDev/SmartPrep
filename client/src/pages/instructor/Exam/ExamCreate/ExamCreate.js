@@ -7,11 +7,15 @@ import GeneralInformation from "./GeneralInformation";
 import QuestionCard from 'components/Card/QuestionCard';
 import QuestionAdding from "./QuestionAdding";
 import ExamHeader from './ExamHeader';
+import Submission from '../Submission/Submission';
+import { useNavigate } from 'react-router-dom';
 
 const ExamCreate = forwardRef(({ examId }, ref) => {
     const [localExam, setLocalExam] = useState({ title: '', description: '', questions: [] });
+    const [activeTab, setActiveTab] = useState('general');
     const { exam, loading, error } = useSelector((state) => state.exam);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const generalInformationRef = React.useRef();
 
     useImperativeHandle(ref, () => ({
@@ -67,48 +71,61 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
         }
     };
 
+    const handleTabChange = (key) => {
+        setActiveTab(key);
+        if (key === 'submission') {
+            navigate(`/instructor/exam/submissions/${examId}`);  
+        }
+    };
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
     return (
         <div className="w-3/5 mx-auto mt-5 mb-24 relative">
             <ExamHeader
-                items={[{ key: 'general', label: 'General' }, { key: 'questions', label: 'Questions' }]}
-                onChangeTab={() => { }}
+                items={[{ key: 'general', label: 'General' }, { key: 'submission', label: 'Submissions' }]}
+                onChangeTab={handleTabChange}
                 onPost={() => generalInformationRef.current.handleCreateExam()}
                 onSaveDraft={() => generalInformationRef.current.handleCreateExamDraft()}  // Truyền onSaveDraft
                 examData={localExam}  // Pass exam data here
             />
-            <SingleCollapse header="Thông tin bài kiểm tra">
-                <GeneralInformation
-                    ref={generalInformationRef}
-                    exam={localExam}
-                    onUpdateExam={handleExamInfoUpdate}
-                />
-            </SingleCollapse>
-
-            <div>
-                {localExam.questions.length > 0 ? (
-                    localExam.questions.map((question, index) => (
-                        <QuestionCard
-                            key={question._id || index}
-                            question={question}
-                            index={index}
-                            onUpdate={handleUpdateQuestion}
-                            onRemove={() => handleRemoveQuestion(question._id)}
+            {activeTab === 'general' ? (
+                <>
+                    <SingleCollapse header="Thông tin bài kiểm tra">
+                        <GeneralInformation
+                            ref={generalInformationRef}
+                            exam={localExam}
+                            onUpdateExam={handleExamInfoUpdate}
                         />
-                    ))
-                ) : (
-                    <p>No questions added yet.</p>
-                )}
-            </div>
+                    </SingleCollapse>
 
-            <QuestionAdding
-                handleAddQuestionsFromExcel={() => { }}
-                exam={localExam}
-                onAddRandomQuestions={handleAddRandomQuestions}
-                onAddSelectedQuestions={handleAddSelectedQuestions}
-            />
+                    <div>
+                        {localExam.questions.length > 0 ? (
+                            localExam.questions.map((question, index) => (
+                                <QuestionCard
+                                    key={question._id || index}
+                                    question={question}
+                                    index={index}
+                                    onUpdate={handleUpdateQuestion}
+                                    onRemove={() => handleRemoveQuestion(question._id)}
+                                />
+                            ))
+                        ) : (
+                            <p>No questions added yet.</p>
+                        )}
+                    </div>
+
+                    <QuestionAdding
+                        handleAddQuestionsFromExcel={() => { }}
+                        exam={localExam}
+                        onAddRandomQuestions={handleAddRandomQuestions}
+                        onAddSelectedQuestions={handleAddSelectedQuestions}
+                    />
+                </>
+            ) : (
+                <Submission examId={examId} />  
+            )}
         </div>
     );
 });

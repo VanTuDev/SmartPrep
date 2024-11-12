@@ -7,31 +7,11 @@ import { FileQuestion } from 'lucide-react';
 const ViewExamLeaner = ({ onFetchExamCount }) => {
    const [publicExams, setPublicExams] = useState([]);
    const [classroomExams, setClassroomExams] = useState([]);
-//    const [userClassrooms, setUserClassrooms] = useState([]);
+   //    const [userClassrooms, setUserClassrooms] = useState([]);
 
    const [isModalVisible, setIsModalVisible] = useState(false);
    const [modalMessage, setModalMessage] = useState('');
    const navigate = useNavigate();
-
-
-   // // Fetch user's classrooms
-   // useEffect(() => {
-   //    const userId = localStorage.getItem('userId');
-
-   //    fetch(`http://localhost:5000/api/classrooms/learner/classes`, {
-   //       method: 'GET',
-   //       headers: {
-   //          'Content-Type': 'application/json',
-   //          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-   //       },
-   //    })
-   //       .then((response) => response.json())
-   //       .then((data) => {
-   //          const classroomIds = data.map(classroom => classroom._id);
-   //          setUserClassrooms(classroomIds);
-   //       })
-   //       .catch((error) => console.error("Error fetching user's classrooms:", error));
-   // }, []);
 
    // Fetch public exams (where classRoom_id is null)
    useEffect(() => {
@@ -47,8 +27,10 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
          .then((response) => response.json())
          .then((data) => {
             const exams = Array.isArray(data) ? data : data.data || [];
-            // Lọc các bài kiểm tra chỉ có `classRoom_id` là `null`
-            const filteredPublicExams = exams.filter((exam) => exam.classRoom_id === null);
+            // Filter exams where classRoom_id is either null, empty string, or an empty array
+            const filteredPublicExams = exams.filter(
+               (exam) => !exam.classRoom_id || exam.classRoom_id.length === 0
+            );
             setPublicExams(filteredPublicExams);
             onFetchExamCount(filteredPublicExams.length);
          })
@@ -56,28 +38,6 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
             console.error("Error fetching public exams:", error);
          });
    }, []);
-
-   // Fetch classroom exams (where classRoom_id matches user's classrooms)                            
-   // useEffect(() => {
-   //    const userId = localStorage.getItem('userId');
-
-   //    fetch(`http://localhost:5000/api/instructor/test/user/${userId}/classroom-tests`, {
-   //       method: 'GET',
-   //       headers: {
-   //          'Content-Type': 'application/json',
-   //          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-   //       },
-   //    })
-   //       .then((response) => response.json())
-   //       .then((data) => {
-   //          const exams = Array.isArray(data) ? data : data.data || [];
-   //          const filteredClassroomExams = exams.filter(
-   //             (exam) => exam.classRoom_id && userClassrooms.includes(exam.classRoom_id)
-   //          );
-   //          setClassroomExams(filteredClassroomExams);
-   //       })
-   //       .catch((error) => console.error("Error fetching classroom exams:", error));
-   // }, [userClassrooms]);
 
    // Update exam count whenever public or classroom exams change
    useEffect(() => {
