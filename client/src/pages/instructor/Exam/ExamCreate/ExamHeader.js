@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Tooltip, Tabs, Popover, DatePicker, TimePicker } from 'antd';
-import { X, Eye, Download, CalendarDays } from 'lucide-react';
+import { X, Eye, Download } from 'lucide-react';
 import PreviewExam from './PreviewExam';
 import ExportPdfPage from './ExportPdfPage';
 
-const ExamHeader = ({ items, onChangeTab, onPost, onSaveDraft, loading, examData }) => {
+const ExamHeader = ({ items, onChangeTab, onPost, onSaveDraft, loading, examData, currentTab }) => {
     const navigate = useNavigate();
     const [openPreview, setOpenPreview] = useState(false);
     const [openExportPage, setOpenExportPage] = useState(false);
@@ -26,10 +26,22 @@ const ExamHeader = ({ items, onChangeTab, onPost, onSaveDraft, loading, examData
 
                     <div className="flex justify-center h-full">
                         <Tabs
-                            defaultActiveKey="1"
-                            items={items}
+                            activeKey={currentTab}  // Set active key to highlight the current tab
                             onChange={onChangeTab}
                             className="h-full"
+                            items={items.map(item => ({
+                                key: item.key,
+                                label: (
+                                    <span
+                                        style={{
+                                            color: currentTab === item.key ? '#1890ff' : 'inherit',  // Highlight color
+                                            fontWeight: currentTab === item.key ? 'bold' : 'normal', // Bold font for active tab
+                                        }}
+                                    >
+                                        {item.label}
+                                    </span>
+                                ),
+                            }))}
                         />
                     </div>
 
@@ -75,9 +87,6 @@ const ExamHeader = ({ items, onChangeTab, onPost, onSaveDraft, loading, examData
                             }
                             trigger="click"
                         >
-                            <button className="button-normal-custom bg-red-300 px-2 py-2">
-                                <CalendarDays />
-                            </button>
                         </Popover>
                     </div>
                 </nav>

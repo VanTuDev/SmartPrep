@@ -1,4 +1,6 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+// File: GeneralInformation.js
+
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import axios from 'axios';
 import {
     Input, Typography, Row, Col, DatePicker, TimePicker, InputNumber,
@@ -7,12 +9,13 @@ import {
 import { Captions, Pencil } from 'lucide-react';
 import dayjs from 'dayjs';
 import CreateExamModal from '../../CreateExamModal';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const { TextArea } = Input;
 const { Title } = Typography;
 
 const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
+    // State quản lý thông tin cơ bản của bài kiểm tra
     const [title, setTitle] = useState(exam?.title || '');
     const [description, setDescription] = useState(exam?.description || '');
     const [isPublic, setIsPublic] = useState(exam?.access_type === 'public');
@@ -26,28 +29,35 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
     const [selectedQuestionIds, setSelectedQuestionIds] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(true);
+    const { examId } = useParams();
+    const [examData, setExamData] = useState(null);
 
+    // State cho các lựa chọn bổ sung
     const [selectedGrade, setSelectedGrade] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedClassRooms, setSelectedClassRooms] = useState([]);
     const navigate = useNavigate();
 
+    // Đường dẫn cho bài kiểm tra
     const accessLink = exam.access_link || `http://localhost:3000/${Math.random().toString(36).substring(2)}`;
 
+    // Sử dụng `useImperativeHandle` để chia sẻ các hàm với component cha
     useImperativeHandle(ref, () => ({
         handleCreateExam,
-        handleCreateExamDraft,  // Chia sẻ hàm này với component cha
+        handleCreateExamDraft,
         addRandomQuestions,
         addSelectedQuestions,
         removeQuestion,
     }));
 
+    // Hàm cập nhật bài kiểm tra với các trường đã thay đổi
     const updateExam = (updatedFields) => {
         const updatedExam = { ...exam, ...updatedFields, questions };
         onUpdateExam(updatedExam);
     };
 
+    // Hàm xử lý khi modal được submit
     const handleModalSubmit = ({ gradeId, categoryId, groupId, classRoomIds }) => {
         setSelectedGrade(gradeId);
         setSelectedCategory(categoryId);
@@ -63,6 +73,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         setIsModalOpen(false);
     };
 
+    // Hàm thêm câu hỏi ngẫu nhiên vào bài kiểm tra
     const addRandomQuestions = (newQuestions) => {
         const newRandomIds = newQuestions.map((q) => q._id);
         setRandomQuestionIds((prevIds) => Array.from(new Set([...prevIds, ...newRandomIds])));
@@ -70,6 +81,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         message.success('Random questions added successfully!');
     };
 
+    // Hàm thêm câu hỏi được chọn vào bài kiểm tra
     const addSelectedQuestions = (selectedQuestions) => {
         const newSelectedIds = selectedQuestions.map((q) => q._id);
         setSelectedQuestionIds((prevIds) => Array.from(new Set([...prevIds, ...newSelectedIds])));
@@ -77,6 +89,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         message.success('Selected questions added successfully!');
     };
 
+    // Hàm xác thực thông tin bài kiểm tra trước khi lưu
     const validateExam = () => {
         if (!title.trim() || !description.trim() || (randomQuestionIds.length === 0 && selectedQuestionIds.length === 0)) {
             message.error('Please fill out all required fields (title, description, and questions).');
@@ -97,6 +110,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         return true;
     };
 
+    // Hàm tạo bài kiểm tra mới
     const handleCreateExam = async () => {
         if (!validateExam()) return;
         try {
@@ -132,7 +146,6 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                 }
             );
             message.success('Exam created successfully!');
-            console.log('Exam creation response:', response.data);
             navigate("/instructor/dashboard");
         } catch (error) {
             console.error('Failed to create exam:', error);
@@ -142,7 +155,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         }
     };
 
-    // Function to handle saving the exam as a draft
+    // Hàm lưu bài kiểm tra dưới dạng bản nháp
     const handleCreateExamDraft = async () => {
         if (!validateExam()) return;
         try {
@@ -159,7 +172,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                 start_date: start.toISOString(),
                 end_date: end.toISOString(),
                 access_link: accessLink,
-                status: 'draft',  // Set status to draft
+                status: 'draft',
                 grade_id: selectedGrade || null,
                 category_id: selectedCategory || null,
                 group_id: selectedGroup || null,
@@ -179,7 +192,6 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
             );
 
             message.success('Exam saved as draft successfully!');
-            console.log('Draft creation response:', response.data);
         } catch (error) {
             console.error('Failed to save exam as draft:', error);
             message.error('Failed to save exam as draft.');
@@ -188,6 +200,35 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         }
     };
 
+    // useEffect để lấy dữ liệu bài kiểm tra cần chỉnh sửa
+    useEffect(() => {
+        const fetchExamData = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/instructor/test/${examId}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
+                setExamData(response.data);
+            } catch (error) {
+                console.error('Failed to fetch exam data:', error);
+            }
+        };
+        fetchExamData();
+    }, [examId]);
+
+    // Hàm cập nhật bài kiểm tra hiện có
+    const handleUpdateExam = async () => {
+        try {
+            const response = await axios.put(
+                `http://localhost:5000/api/instructor/test/${examId}`,
+                examData,
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            onUpdateExam(response.data);
+            navigate("/instructor/dashboard");
+        } catch (error) {
+            console.error('Failed to update exam:', error);
+        }
+    };
 
     const removeQuestion = (questionId) => {
         setQuestions((prevQuestions) => prevQuestions.filter((q) => q._id !== questionId));
@@ -232,16 +273,6 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                     />
                 </div>
             </div>
-
-            {/* <div className="mt-6 p-3">
-                <Title level={4}>Grade and Category</Title>
-                <Space direction="vertical" className="w-full">
-                    <Input placeholder="Selected Grade" value={selectedGrade} disabled />
-                    <Input placeholder="Selected Category" value={selectedCategory} disabled />
-                    <Input placeholder="Selected ClassRoom(s)" value={selectedClassRooms.join(', ')} disabled />
-                </Space>
-            </div> */}
-
             <Divider orientation="left">Time Setup</Divider>
             <div className="time-setup-section">
                 <Row gutter={16}>
@@ -293,8 +324,11 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
             <Button onClick={handleCreateExamDraft} loading={loading}>
                 Save as Draft
             </Button>
+            <Button onClick={handleUpdateExam} loading={loading}>
+                Update Exam
+            </Button>
         </div>
     );
 });
 
-export default GeneralInformation;  
+export default GeneralInformation;
