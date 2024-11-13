@@ -63,7 +63,7 @@ const CalendarTab = ({ exams }) => {
         const eventsOnStartDate = calendarEvents.filter(event =>
             dayjs(event.start).isSame(date, 'day') // Only match the start date for displaying color
         );
-
+ 
         return (
             <div className="relative h-full w-full mb-3">
                 {eventsOnStartDate.map((event, index) => (
