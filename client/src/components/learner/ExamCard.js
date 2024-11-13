@@ -36,11 +36,6 @@ const ExamCard = ({ id, title, startTime, endTime, duration, questionCount, scor
             <FileText className="w-5 h-5 mr-2" />
             <span>Số câu hỏi: {questionCount} câu</span>
          </div>
-         <div className="flex items-center text-gray-600 mb-4">
-            <Users className="w-5 h-5 mr-2" />
-            {/* Hiển thị ID của submission như là `organization` */}
-            <span>{`ID Submission: ${organization}`}</span>
-         </div>
 
          {/* Nút Xem kết quả */}
          <button

@@ -52,15 +52,15 @@ const LearnerHeader = () => {
             const data = await response.json();
             setUserInfo(data);
 
-            const notificationsResponse = await fetch('http://localhost:5000/api/users/notifications', {
-               method: 'GET',
-               headers: { Authorization: `Bearer ${token}` },
-            });
+            // const notificationsResponse = await fetch('http://localhost:5000/api/users/notifications', {
+            //    method: 'GET',
+            //    headers: { Authorization: `Bearer ${token}` },
+            // });
 
-            if (notificationsResponse.ok) {
-               const notificationsData = await notificationsResponse.json();
-               setNotifications(notificationsData);
-            }
+            // if (notificationsResponse.ok) {
+            //    const notificationsData = await notificationsResponse.json();
+            //    setNotifications(notificationsData);
+            // }
 
          } catch (err) {
             setError('Có lỗi xảy ra trong quá trình lấy thông tin.');
@@ -70,21 +70,21 @@ const LearnerHeader = () => {
       fetchUserData();
    }, [navigate]);
 
-   const notificationContent = (
-      <div className="max-h-60 overflow-y-auto">
-         {notifications.length > 0 ? (
-            <ul>
-               {notifications.map((notification, index) => (
-                  <li key={index} className="border-b py-2">
-                     {notification.message}
-                  </li>
-               ))}
-            </ul>
-         ) : (
-            <p>Không có thông báo.</p>
-         )}
-      </div>
-   );
+   // const notificationContent = (
+   //    <div className="max-h-60 overflow-y-auto">
+   //       {notifications.length > 0 ? (
+   //          <ul>
+   //             {notifications.map((notification, index) => (
+   //                <li key={index} className="border-b py-2">
+   //                   {notification.message}
+   //                </li>
+   //             ))}
+   //          </ul>
+   //       ) : (
+   //          <p>Không có thông báo.</p>
+   //       )}
+   //    </div>
+   // );
 
    return (
       <header className="bg-white shadow-md px-6 py-2 flex items-center justify-between">
@@ -126,7 +126,7 @@ const LearnerHeader = () => {
 
                {/* Notification Popover */}
             <Popover
-               content={notificationContent}
+               // content={notificationContent}
                title="Thông báo"
                trigger="click"
                visible={isPopoverVisible}

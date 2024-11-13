@@ -347,7 +347,7 @@ const ViewExamResults = () => {
             <div>
                <Button
                   type="primary"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate(`/learner/dashboard`)}
                   icon={<ArrowLeft size={16} />}
                   className="bg-blue-500 hover:bg-blue-600 focus:bg-blue-700"
                >
