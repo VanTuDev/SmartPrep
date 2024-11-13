@@ -285,9 +285,6 @@ const ViewExamResults = () => {
                </Button>
             </>
          )}
-         <Button onClick={() => setReplyToCommentId(reply._id)} type="text">
-            Trả lời
-         </Button>
       </div>
    );
 
