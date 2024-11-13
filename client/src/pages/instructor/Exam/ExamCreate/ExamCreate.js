@@ -26,6 +26,7 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
     const [selectedGroup, setSelectedGroup] = useState('');
     const [manualQuestionsFromExcel, setManualQuestionsFromExcel] = useState([]);
 
+
     // Expose functions for saving exam data through ref
     useImperativeHandle(ref, () => ({
         handlePostExam: () => generalInformationRef.current.handleCreateExam(),
@@ -133,6 +134,7 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
                         onAddSelectedQuestions={handleAddSelectedQuestions}
                         addManualQuestion={handleAddManualQuestion} // Pass handleAddManualQuestion here
                         onAddQuestionsFromExcel={handleAddManualQuestionsFromExcel}
+
                     />
                 </>
             ) : (

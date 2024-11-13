@@ -12,6 +12,7 @@ import QuestionCard from 'components/Card/QuestionCard';
 const { TextArea } = Input;
 const { Title } = Typography;
 
+
 const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam, manualQuestionsFromExcel }, ref) => {
     const [title, setTitle] = useState(exam?.title || '');
     const [description, setDescription] = useState(exam?.description || '');
@@ -31,7 +32,6 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam, manualQuestion
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedClassRooms, setSelectedClassRooms] = useState([]);
-    
 
     const { examId } = useParams();
     const navigate = useNavigate();
@@ -285,6 +285,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam, manualQuestion
 
 
             </div>
+
             <div >
                 <Divider orientation="left">Manual Questions</Divider>
                 {newManualQuestions.length > 0 ? (
