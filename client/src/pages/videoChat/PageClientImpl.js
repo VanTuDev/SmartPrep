@@ -14,8 +14,7 @@ import { jwtDecode } from 'jwt-decode';
 // Constants
 const CONN_DETAILS_ENDPOINT = '/api/room/join-room';
 const SHOW_SETTINGS_MENU = 'true';
-const userInfo = jwtDecode(localStorage.getItem('token'))
-console.log(userInfo);
+
 
 
 export default function PageClientImpl() {
@@ -108,7 +107,8 @@ function VideoConferenceComponent({ connectionDetails, userChoices, options }) {
   const room = useMemo(() => new Room(roomOptions), [roomOptions]);
 
   console.log(room);
-  
+  const userInfo = jwtDecode(localStorage.getItem('token'))
+  console.log(userInfo);
   
   const handleOnLeave = useCallback(() => navigate(`/${userInfo.role}/dashboard`), [navigate]);
   const handleError = useCallback((error) => {
