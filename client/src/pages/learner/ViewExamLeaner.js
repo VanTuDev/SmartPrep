@@ -6,9 +6,7 @@ import { FileQuestion } from 'lucide-react';
 
 const ViewExamLeaner = ({ onFetchExamCount }) => {
    const [publicExams, setPublicExams] = useState([]);
-   const [classroomExams, setClassroomExams] = useState([]);
-   //    const [userClassrooms, setUserClassrooms] = useState([]);
-
+   const [completedExamIds, setCompletedExamIds] = useState([]); // List of completed exam IDs
    const [isModalVisible, setIsModalVisible] = useState(false);
    const [modalMessage, setModalMessage] = useState('');
    const navigate = useNavigate();
@@ -16,18 +14,23 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
    // Fetch public exams (where classRoom_id is null)
    useEffect(() => {
       const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
 
+      if (!userId || !token) {
+         return;
+      }
+
+      // Fetch the exams
       fetch(`http://localhost:5000/api/instructor/test/user/${userId}/classroom-tests`, {
          method: 'GET',
          headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${token}`,
          },
       })
          .then((response) => response.json())
          .then((data) => {
             const exams = Array.isArray(data) ? data : data.data || [];
-            // Filter exams where classRoom_id is either null, empty string, or an empty array
             const filteredPublicExams = exams.filter(
                (exam) => !exam.classRoom_id || exam.classRoom_id.length === 0
             );
@@ -37,14 +40,24 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
          .catch((error) => {
             console.error("Error fetching public exams:", error);
          });
-   }, []);
 
-   // Update exam count whenever public or classroom exams change
-   useEffect(() => {
-      onFetchExamCount(publicExams.length + classroomExams.length);
-   }, [publicExams, classroomExams, onFetchExamCount]);
-
-   // Show modal with a message
+      // Fetch completed exams
+      fetch(`http://localhost:5000/api/submissions/user/${userId}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+         },
+      })
+         .then((response) => response.json())
+         .then((data) => {
+            const completedExams = data.map((submission) => submission.test_id._id);
+            setCompletedExamIds(completedExams); // Store completed exam IDs
+         })
+         .catch((error) => {
+            console.error("Error fetching completed exams:", error);
+         });
+   }, [onFetchExamCount]);
 
    const showModal = (message) => {
       setModalMessage(message);
@@ -61,13 +74,12 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
       const end = dayjs(exam.end_date);
 
       if (now.isBefore(start)) {
-         // Exam has not started yet
          showModal("Bài kiểm tra chưa bắt đầu. Vui lòng quay lại sau khi bài kiểm tra mở.");
       } else if (now.isAfter(end)) {
-         // Exam has ended
          showModal("Bài kiểm tra đã kết thúc. Bạn không thể tham gia vào thời điểm này.");
+      } else if (completedExamIds.includes(exam._id)) {
+         showModal("Bạn đã hoàn thành bài kiểm tra này.");
       } else {
-         // Exam is ongoing, navigate to exam page
          navigate(`/learner/TakeExam/${exam._id}`);
       }
    };
@@ -90,13 +102,18 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
                ? 'text-blue-600'
                : 'text-gray-500';
 
+      const isCompleted = completedExamIds.includes(exam._id);
+
       return (
          <div
             key={exam._id}
-            className="bg-white rounded-lg border border-gray-200 p-6 w-full cursor-pointer hover:shadow-md transition"
-            onClick={() => handleExamClick(exam)}
+            className={`bg-white rounded-lg border border-gray-200 p-6 w-full cursor-pointer hover:shadow-md transition ${isCompleted ? 'opacity-50 cursor-not-allowed' : ''
+               }`}
+            onClick={() => !isCompleted && handleExamClick(exam)}
          >
-            <div className="font-semibold text-gray-800 mb-4 text-lg">{exam.title || 'Untitled Exam'}</div>
+            <div className="font-semibold text-gray-800 mb-4 text-lg">
+               {exam.title || 'Untitled Exam'}
+            </div>
             <div className="text-sm text-gray-600 space-y-2">
                <div className="flex items-center">
                   <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🕒</span>
@@ -119,7 +136,7 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
                <span className={`text-sm font-semibold ${statusColor}`}>
                   <div className="flex items-center">
                      <span className="inline-flex items-center justify-center w-4 h-4 mr-2">🌍</span>
-                     {examStatus}
+                     {isCompleted ? 'Đã hoàn thành' : examStatus}
                   </div>
                </span>
             </div>
@@ -129,7 +146,6 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
 
    return (
       <div className="mt-4">
-         {/* Public Exams Section */}
          <h2 className="text-xl font-semibold text-gray-800 mb-4">Danh sách bài kiểm tra công khai</h2>
          <div className="grid grid-cols-4 gap-6">
             {publicExams.length > 0 ? (
@@ -141,8 +157,6 @@ const ViewExamLeaner = ({ onFetchExamCount }) => {
                </div>
             )}
          </div>
-
-         {/* Modal for Exam Notification */}
 
          <Modal
             title="Thông báo"

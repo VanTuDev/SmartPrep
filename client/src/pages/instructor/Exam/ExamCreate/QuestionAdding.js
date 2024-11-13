@@ -1,18 +1,17 @@
-// QuestionAdding.js
+// File: QuestionAdding.js
 
 import React, { useState } from 'react';
 import { Folder, Shuffle, Plus } from 'lucide-react';
-import { Button, Tooltip, message } from 'antd';
+import { Button, Tooltip } from 'antd';
 import LibraryModal from '../../../../components/instructor/LibraryModal';
 import LibrarySingleModal from '../../../../components/instructor/LibrarySingleModal';
 
-const QuestionAdding = ({ onAddRandomQuestions, onAddSelectedQuestions }) => {
+const QuestionAdding = ({ onAddRandomQuestions, onAddSelectedQuestions, addManualQuestion }) => {
    const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
    const [isSingleLibraryModalOpen, setIsSingleLibraryModalOpen] = useState(false);
 
    return (
       <>
-         {/* Floating buttons in the bottom right corner */}
          <div className="fixed bottom-8 right-8 flex flex-col items-center space-y-3 z-50">
             <Tooltip title="Add Random Questions" placement="left">
                <Button
@@ -42,13 +41,13 @@ const QuestionAdding = ({ onAddRandomQuestions, onAddSelectedQuestions }) => {
                   shape="circle"
                   icon={<Plus />}
                   size="large"
-                  onClick={() => message.success("Add New Question action")}
+                  onClick={addManualQuestion} // Directly call addManualQuestion
                   className="bg-purple-500 hover:bg-purple-600 shadow-lg transition-transform transform hover:scale-105"
                />
             </Tooltip>
          </div>
 
-         {/* Modals for selecting questions from the library */}
+         {/* Library Modals */}
          <LibraryModal
             isOpen={isLibraryModalOpen}
             onClose={() => setIsLibraryModalOpen(false)}

@@ -1,3 +1,5 @@
+// File: ExamCreate.js
+
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { resetExam, fetchExam } from 'store/examSlice';
@@ -18,9 +20,15 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
     const navigate = useNavigate();
     const generalInformationRef = React.useRef();
 
+    // States for selected values
+    const [selectedGrade, setSelectedGrade] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedGroup, setSelectedGroup] = useState('');
+
+    // Expose functions for saving exam data through ref
     useImperativeHandle(ref, () => ({
         handlePostExam: () => generalInformationRef.current.handleCreateExam(),
-        handleSaveDraft: () => generalInformationRef.current.handleCreateExamDraft()  // Thêm handleSaveDraft
+        handleSaveDraft: () => generalInformationRef.current.handleCreateExamDraft()
     }));
 
     useEffect(() => {
@@ -36,22 +44,19 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
         setLocalExam((prev) => ({ ...prev, [field]: value }));
     };
 
+    // Method to add a manual question through QuestionAdding
+    const handleAddManualQuestion = (newQuestion) => {
+        generalInformationRef.current?.addManualQuestion(newQuestion);
+    };
+
     const handleAddRandomQuestions = (newQuestions) => {
-        if (generalInformationRef.current) {
-            generalInformationRef.current.addRandomQuestions(newQuestions);
-            setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...newQuestions] }));
-        } else {
-            message.error("Unable to add questions: GeneralInformation ref not available.");
-        }
+        generalInformationRef.current?.addRandomQuestions(newQuestions);
+        setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...newQuestions] }));
     };
 
     const handleAddSelectedQuestions = (selectedQuestions) => {
-        if (generalInformationRef.current) {
-            generalInformationRef.current.addSelectedQuestions(selectedQuestions);
-            setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...selectedQuestions] }));
-        } else {
-            message.error("Unable to add selected questions: GeneralInformation ref not available.");
-        }
+        generalInformationRef.current?.addSelectedQuestions(selectedQuestions);
+        setLocalExam((prev) => ({ ...prev, questions: [...prev.questions, ...selectedQuestions] }));
     };
 
     const handleUpdateQuestion = (updatedQuestion) => {
@@ -66,15 +71,13 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
             ...prev,
             questions: prev.questions.filter((q) => q._id !== questionId),
         }));
-        if (generalInformationRef.current) {
-            generalInformationRef.current.removeQuestion(questionId); // Remove question ID in GeneralInformation
-        }
+        generalInformationRef.current?.removeQuestion(questionId);
     };
 
     const handleTabChange = (key) => {
         setActiveTab(key);
         if (key === 'submission') {
-            navigate(`/instructor/exam/submissions/${examId}`);  
+            navigate(`/instructor/exam/submissions/${examId}`);
         }
     };
 
@@ -87,8 +90,8 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
                 items={[{ key: 'general', label: 'General' }, { key: 'submission', label: 'Submissions' }]}
                 onChangeTab={handleTabChange}
                 onPost={() => generalInformationRef.current.handleCreateExam()}
-                onSaveDraft={() => generalInformationRef.current.handleCreateExamDraft()}  // Truyền onSaveDraft
-                examData={localExam}  // Pass exam data here
+                onSaveDraft={() => generalInformationRef.current.handleCreateExamDraft()}
+                examData={localExam}
             />
             {activeTab === 'general' ? (
                 <>
@@ -97,10 +100,14 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
                             ref={generalInformationRef}
                             exam={localExam}
                             onUpdateExam={handleExamInfoUpdate}
+                            onGradeSelect={setSelectedGrade}
+                            onCategorySelect={setSelectedCategory}
+                            onGroupSelect={setSelectedGroup}
                         />
                     </SingleCollapse>
 
                     <div>
+                        {/* Render Question Cards rand */}
                         {localExam.questions.length > 0 ? (
                             localExam.questions.map((question, index) => (
                                 <QuestionCard
@@ -115,16 +122,14 @@ const ExamCreate = forwardRef(({ examId }, ref) => {
                             <p>No questions added yet.</p>
                         )}
                     </div>
-
                     <QuestionAdding
-                        handleAddQuestionsFromExcel={() => { }}
-                        exam={localExam}
                         onAddRandomQuestions={handleAddRandomQuestions}
                         onAddSelectedQuestions={handleAddSelectedQuestions}
+                        addManualQuestion={handleAddManualQuestion} // Pass handleAddManualQuestion here
                     />
                 </>
             ) : (
-                <Submission examId={examId} />  
+                <Submission examId={examId} />
             )}
         </div>
     );
