@@ -2,20 +2,17 @@
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import axios from 'axios';
-import {
-    Input, Typography, Row, Col, DatePicker, TimePicker, InputNumber,
-    Button, message, Space, Divider
-} from 'antd';
+import { Input, Typography, Row, Col, DatePicker, TimePicker, InputNumber, Button, message, Divider } from 'antd';
 import { Captions, Pencil } from 'lucide-react';
 import dayjs from 'dayjs';
 import CreateExamModal from '../../CreateExamModal';
 import { useParams, useNavigate } from 'react-router-dom';
+import QuestionCard from 'components/Card/QuestionCard';
 
 const { TextArea } = Input;
 const { Title } = Typography;
 
-const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
-    // State quản lý thông tin cơ bản của bài kiểm tra
+const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam, manualQuestionsFromExcel }, ref) => {
     const [title, setTitle] = useState(exam?.title || '');
     const [description, setDescription] = useState(exam?.description || '');
     const [isPublic, setIsPublic] = useState(exam?.access_type === 'public');
@@ -29,41 +26,55 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
     const [selectedQuestionIds, setSelectedQuestionIds] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(true);
-    const { examId } = useParams();
-    const [examData, setExamData] = useState(null);
-
-    // State cho các lựa chọn bổ sung
+    const [newManualQuestions, setNewManualQuestions] = useState([]);
     const [selectedGrade, setSelectedGrade] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedClassRooms, setSelectedClassRooms] = useState([]);
+    
+
+    const { examId } = useParams();
     const navigate = useNavigate();
 
-    // Đường dẫn cho bài kiểm tra
+    // Add Excel questions to manual questions when the prop changes
+    useEffect(() => {
+        if (manualQuestionsFromExcel && manualQuestionsFromExcel.length > 0) {
+            setNewManualQuestions((prevQuestions) => [
+                ...prevQuestions,
+                ...manualQuestionsFromExcel.map((q, index) => ({
+                    ...q,
+                    tempId: `excel-${Date.now()}-${index}` // Unique ID for each question
+                }))
+            ]);
+        }
+    }, [manualQuestionsFromExcel]);
+
     const accessLink = exam.access_link || `http://localhost:3000/${Math.random().toString(36).substring(2)}`;
 
-    // Sử dụng `useImperativeHandle` để chia sẻ các hàm với component cha
+    // Expose functions to the parent component via ref
     useImperativeHandle(ref, () => ({
         handleCreateExam,
-        handleCreateExamDraft,
         addRandomQuestions,
         addSelectedQuestions,
         removeQuestion,
+        addManualQuestion,
+        handleManualQuestionUpdate,
+        handleRemoveManualQuestion
+
     }));
 
-    // Hàm cập nhật bài kiểm tra với các trường đã thay đổi
+    // Update the exam information
     const updateExam = (updatedFields) => {
         const updatedExam = { ...exam, ...updatedFields, questions };
         onUpdateExam(updatedExam);
     };
 
-    // Hàm xử lý khi modal được submit
+    // Handle form modal submission
     const handleModalSubmit = ({ gradeId, categoryId, groupId, classRoomIds }) => {
         setSelectedGrade(gradeId);
         setSelectedCategory(categoryId);
         setSelectedGroup(groupId);
         setSelectedClassRooms(classRoomIds);
-
         updateExam({
             grade_id: gradeId,
             category_id: categoryId,
@@ -73,7 +84,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         setIsModalOpen(false);
     };
 
-    // Hàm thêm câu hỏi ngẫu nhiên vào bài kiểm tra
+    // Add random questions to the exam
     const addRandomQuestions = (newQuestions) => {
         const newRandomIds = newQuestions.map((q) => q._id);
         setRandomQuestionIds((prevIds) => Array.from(new Set([...prevIds, ...newRandomIds])));
@@ -81,7 +92,7 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         message.success('Random questions added successfully!');
     };
 
-    // Hàm thêm câu hỏi được chọn vào bài kiểm tra
+    // Add selected questions to the exam
     const addSelectedQuestions = (selectedQuestions) => {
         const newSelectedIds = selectedQuestions.map((q) => q._id);
         setSelectedQuestionIds((prevIds) => Array.from(new Set([...prevIds, ...newSelectedIds])));
@@ -89,9 +100,9 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         message.success('Selected questions added successfully!');
     };
 
-    // Hàm xác thực thông tin bài kiểm tra trước khi lưu
+    // Validate the exam form fields
     const validateExam = () => {
-        if (!title.trim() || !description.trim() || (randomQuestionIds.length === 0 && selectedQuestionIds.length === 0)) {
+        if (!title.trim() || !description.trim() || (questions.length === 0 && newManualQuestions.length === 0)) {
             message.error('Please fill out all required fields (title, description, and questions).');
             return false;
         }
@@ -110,12 +121,19 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         return true;
     };
 
-    // Hàm tạo bài kiểm tra mới
+    // Submit the exam creation request
     const handleCreateExam = async () => {
         if (!validateExam()) return;
         try {
             setLoading(true);
-            const allQuestionIds = [...new Set([...randomQuestionIds, ...selectedQuestionIds])];
+
+            const allQuestionIds = [
+                ...randomQuestionIds,
+                ...selectedQuestionIds,
+                ...questions.filter(q => typeof q === 'string'),
+                ...newManualQuestions,
+            ];
+
             const start = dayjs(startDate).set('hour', startTime.hour()).set('minute', startTime.minute());
             const end = dayjs(endDate).set('hour', endTime.hour()).set('minute', endTime.minute());
 
@@ -135,16 +153,13 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                 questions: allQuestionIds,
             };
 
-            const response = await axios.post(
-                'http://localhost:5000/api/instructor/test/create',
-                examData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                }
-            );
+            await axios.post('http://localhost:5000/api/instructor/test/create', examData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
             message.success('Exam created successfully!');
             navigate("/instructor/dashboard");
         } catch (error) {
@@ -155,79 +170,26 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
         }
     };
 
-    // Hàm lưu bài kiểm tra dưới dạng bản nháp
-    const handleCreateExamDraft = async () => {
-        if (!validateExam()) return;
-        try {
-            setLoading(true);
-            const allQuestionIds = [...new Set([...randomQuestionIds, ...selectedQuestionIds])];
-            const start = dayjs(startDate).set('hour', startTime.hour()).set('minute', startTime.minute());
-            const end = dayjs(endDate).set('hour', endTime.hour()).set('minute', endTime.minute());
-
-            const examData = {
-                title: title.trim(),
-                description: description.trim(),
-                access_type: isPublic ? 'public' : 'private',
-                duration: Number(duration),
-                start_date: start.toISOString(),
-                end_date: end.toISOString(),
-                access_link: accessLink,
-                status: 'draft',
-                grade_id: selectedGrade || null,
-                category_id: selectedCategory || null,
-                group_id: selectedGroup || null,
-                classRoom_ids: selectedClassRooms || [],
-                questions: allQuestionIds,
-            };
-
-            const response = await axios.post(
-                'http://localhost:5000/api/instructor/test/create',
-                examData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                }
-            );
-
-            message.success('Exam saved as draft successfully!');
-        } catch (error) {
-            console.error('Failed to save exam as draft:', error);
-            message.error('Failed to save exam as draft.');
-        } finally {
-            setLoading(false);
-        }
+    // Add a manually created question
+    const addManualQuestion = () => {
+        const newQuestion = {
+            question_text: '',
+            question_type: 'multiple-choice',
+            options: [''],
+            correct_answers: [],
+            tempId: `temp-${Date.now()}`,
+        };
+        setNewManualQuestions([...newManualQuestions, newQuestion]);
     };
 
-    // useEffect để lấy dữ liệu bài kiểm tra cần chỉnh sửa
-    useEffect(() => {
-        const fetchExamData = async () => {
-            try {
-                const response = await axios.get(`http://localhost:5000/api/instructor/test/${examId}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                });
-                setExamData(response.data);
-            } catch (error) {
-                console.error('Failed to fetch exam data:', error);
-            }
-        };
-        fetchExamData();
-    }, [examId]);
+    const handleManualQuestionUpdate = (updatedQuestion) => {
+        setNewManualQuestions((prevQuestions) =>
+            prevQuestions.map((q) => (q.tempId === updatedQuestion.tempId ? updatedQuestion : q))
+        );
+    };
 
-    // Hàm cập nhật bài kiểm tra hiện có
-    const handleUpdateExam = async () => {
-        try {
-            const response = await axios.put(
-                `http://localhost:5000/api/instructor/test/${examId}`,
-                examData,
-                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-            );
-            onUpdateExam(response.data);
-            navigate("/instructor/dashboard");
-        } catch (error) {
-            console.error('Failed to update exam:', error);
-        }
+    const handleRemoveManualQuestion = (tempId) => {
+        setNewManualQuestions((prevQuestions) => prevQuestions.filter((q) => q.tempId !== tempId));
     };
 
     const removeQuestion = (questionId) => {
@@ -320,13 +282,33 @@ const GeneralInformation = forwardRef(({ exam = {}, onUpdateExam }, ref) => {
                         />
                     </Col>
                 </Row>
+
+
             </div>
-            <Button onClick={handleCreateExamDraft} loading={loading}>
-                Save as Draft
-            </Button>
-            <Button onClick={handleUpdateExam} loading={loading}>
-                Update Exam
-            </Button>
+            <div >
+                <Divider orientation="left">Manual Questions</Divider>
+                {newManualQuestions.length > 0 ? (
+                    newManualQuestions.map((question, index) => (
+                        <QuestionCard
+                            key={question.tempId}
+                            question={question}
+                            index={index}
+                            pdate={(updatedQuestion) => {
+                                setNewManualQuestions((prevQuestions) =>
+                                    prevQuestions.map((q) => (q.tempId === updatedQuestion.tempId ? updatedQuestion : q))
+                                );
+                            }}
+                            onRemove={() => {
+                                setNewManualQuestions((prevQuestions) =>
+                                    prevQuestions.filter((q) => q.tempId !== question.tempId)
+                                );
+                            }}
+                        />
+                    ))
+                ) : (
+                    <p>Chưa có câu hỏi nào.</p>
+                )}
+            </div>
         </div>
     );
 });

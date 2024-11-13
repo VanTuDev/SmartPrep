@@ -1,40 +1,41 @@
 // File: Exam.jsx
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import ExamHeader from "./ExamCreate/ExamHeader";
-import ExamCreate from "./ExamCreate/ExamCreate";
-import Submission from "./Submission/Submission";
 import { Provider } from 'react-redux';
 import { store } from '../../../store/store';
 
-// Các tab trong phần giao diện (Exam và Submission)
+import ExamHeader from "./ExamCreate/ExamHeader";
+import ExamCreate from "./ExamCreate/ExamCreate";
+import Submission from "./Submission/Submission";
+
+// Define tabs for the UI (Exam and Submission)
 const items = [
     { key: '1', label: 'Exam' },
     { key: '2', label: 'Submission' }
 ];
 
 function Exam() {
-    const navigate = useNavigate(); // Điều hướng trang
-    const [activeTab, setActiveTab] = useState('1'); // State cho tab hiện tại (1: Exam, 2: Submission)
-    const { examId: initialExamId } = useParams(); // Lấy examId từ URL
-    const [examId, setExamId] = useState(initialExamId); // State lưu examId của bài kiểm tra hiện tại
+    const navigate = useNavigate(); // For navigation between routes
+    const { examId: initialExamId } = useParams(); // Get examId from the URL
+    const [examId, setExamId] = useState(initialExamId); // Track the current examId
+    const [activeTab, setActiveTab] = useState('1'); // State for active tab ('1': Exam, '2': Submission)
 
-    const examCreateRef = useRef(); // Tạo ref cho component ExamCreate
+    const examCreateRef = useRef(); // Create a ref for ExamCreate to access its functions
 
-    // Xử lý chuyển tab khi người dùng thay đổi lựa chọn
+    // Handle tab change when user switches tabs
     const onChangeTab = (key) => {
         setActiveTab(key);
     };
 
-    // Cập nhật examId khi giá trị trong URL thay đổi
+    // Update examId when the URL param changes
     useEffect(() => {
         setExamId(initialExamId);
     }, [initialExamId]);
 
-    // Hàm xử lý đăng (post) bài kiểm tra mới hoặc cập nhật bài kiểm tra hiện có
+    // Function to handle posting a new exam or updating an existing exam
     const handlePostExam = () => {
         if (examCreateRef.current) {
-            examCreateRef.current.handlePostExam(); // Gọi hàm handlePostExam từ ExamCreate thông qua ref
+            examCreateRef.current.handlePostExam(); // Call handlePostExam in ExamCreate through ref
         }
     };
 
@@ -42,20 +43,22 @@ function Exam() {
         <Provider store={store}>
             <ExamHeader
                 items={items}
-                onChangeTab={onChangeTab} // Truyền hàm onChangeTab vào ExamHeader
-                onPost={handlePostExam} // Truyền hàm handlePostExam vào ExamHeader
-                activeTab={activeTab} // Truyền tab hiện tại vào ExamHeader để xác định tab đang mở
-                setExamId={setExamId} // Truyền hàm setExamId để cập nhật examId
-                examId={examId} // Truyền examId để sử dụng trong ExamHeader
+                onChangeTab={onChangeTab} // Pass onChangeTab to ExamHeader
+                onPost={handlePostExam} // Pass handlePostExam to ExamHeader
+                activeTab={activeTab} // Current active tab to highlight in ExamHeader
+                setExamId={setExamId} // Update examId when needed
+                examId={examId} // Current examId to use in ExamHeader
             />
             <div className="mt-24">
                 {activeTab === '1' && (
                     <ExamCreate
-                        ref={examCreateRef} // Truyền ref vào ExamCreate để có thể truy cập hàm nội bộ của nó
-                        examId={examId} // Truyền examId vào ExamCreate để load dữ liệu bài kiểm tra nếu cần
+                        ref={examCreateRef} // Pass ref to ExamCreate to access its internal functions
+                        examId={examId} // Pass examId to load specific exam data if needed
                     />
                 )}
-                {activeTab === '2' && <Submission examId={examId} />} {/* Tab Submission hiển thị nộp bài */}
+                {activeTab === '2' && (
+                    <Submission examId={examId} /> // Display Submission tab for submissions
+                )}
             </div>
         </Provider>
     );
