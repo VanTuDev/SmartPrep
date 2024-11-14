@@ -110,7 +110,7 @@ const InstructorApplicationsTable = () => {
 
     // Lọc ứng viên dựa trên search term và status filter
     const filteredApplications = applicationsData?.filter((application) =>
-        application.teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        application.teacher?.fullname.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (statusFilter === "" || application.applicationStatus === statusFilter)
     );
 
@@ -233,28 +233,28 @@ const InstructorApplicationsTable = () => {
                                 </thead>
                                 <tbody>
                                     {currentApplications?.map((application) => (
-                                        <tr key={application._id} onClick={() => handleRowClick(application._id)} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <tr key={application?._id} onClick={() => handleRowClick(application?._id)} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
                                             <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                                <h5 className="font-medium text-black dark:text-white">{application.teacher.fullname}</h5>
+                                                <h5 className="font-medium text-black dark:text-white">{application?.teacher?.fullname}</h5>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <p className="text-black dark:text-white">{application.teacher.email}</p>
+                                                <p className="text-black dark:text-white">{application?.teacher?.email}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <p className="text-black dark:text-white">{application.specialization}</p>
+                                                <p className="text-black dark:text-white">{application?.specialization}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                <p className="text-black dark:text-white">{new Date(application.applicationDate).toLocaleDateString()}</p>
+                                                <p className="text-black dark:text-white">{new Date(application?.applicationDate).toLocaleDateString()}</p>
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                                {getStatusTag(application.applicationStatus)}
+                                                {getStatusTag(application?.applicationStatus)}
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <div className="flex space-x-2">
                                                     <button className="hover:text-primary">
-                                                        <Eye onClick={() => handleViewClick(application._id)} className="w-5 h-5" />
+                                                        <Eye onClick={() => handleViewClick(application?._id)} className="w-5 h-5" />
                                                     </button>
-                                                    <button onClick={() => handleRemove(application._id)} className="hover:text-primary">
+                                                    <button onClick={() => handleRemove(application?._id)} className="hover:text-primary">
                                                         <Trash className="w-5 h-5" />
                                                     </button>
                                                 </div>
