@@ -69,19 +69,19 @@ const AdminDashboardTable = () => {
             key={key}
           >
             <div className="flex items-center gap-3 p-2.5 xl:p-5">
-              <p className="text-black dark:text-white">{item.className}</p>
+              <p className="text-black dark:text-white">{item?.className}</p>
             </div>
 
             <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <p className="text-black dark:text-white">{item.teacher}</p>
+              <p className="text-black dark:text-white">{item?.teacher}</p>
             </div>
 
             <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <p className="text-meta-3">{item.learners}</p>
+              <p className="text-meta-3">{item?.learners}</p>
             </div>
 
             <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <p className="text-meta-3">{item.exams}</p>
+              <p className="text-meta-3">{item?.exams}</p>
             </div>
           </div>
         ))}
