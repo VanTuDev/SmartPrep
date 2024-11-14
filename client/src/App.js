@@ -50,6 +50,7 @@ import Room from "pages/videoChat/Room";
 import OnlineLearningDashboard from "pages/instructor/OnlineLearning/OnlineLearningDashboard";
 import Submission from "pages/instructor/Exam/Submission/Submission";
 import SubmissionDetail from "pages/instructor/Exam/Submission/SubmissionDetail";
+import VerifyUser from "pages/common/VerifyUser";
 
 function App() {
   return (
@@ -64,6 +65,7 @@ function App() {
           <Route path="/register" element={<ChoseRolePage />} />
           <Route path="/register_role" element={<RegisterPage />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/verify'element={<VerifyUser/>}/>
           <Route path='/reset-password' element={<ResetPassword />} />
           <Route path='/room' element={<Room/>} />
           <Route path="/room/:roomName" element={<Room />} /> {/* Thêm route động */}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify'; // Import toast
 import { CircleUserRound, Mail, PhoneCall, Key, Eye, EyeOff, UserRoundSearch } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 
 const RegisterPage = () => {
    const location = useLocation();
@@ -91,7 +92,7 @@ const RegisterPage = () => {
          const result = await response.json();
 
          if (response.ok) {
-            toast.success('Đăng ký thành công!');
+            toast.success('Đăng ký thành công! Check hòm thư của bạn để hoàn tất đăng kí');
             navigate('/login');
          } else {
             toast.error(result.error || 'Đăng ký thất bại');
