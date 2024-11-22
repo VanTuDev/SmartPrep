@@ -6,7 +6,7 @@ import { Popover } from '@headlessui/react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const ClassList = () => {
+const  ClassList = () => {
     const [classes, setClasses] = useState([]); // Danh sách lớp học đã tham gia
     const [classCode, setClassCode] = useState(''); // Mã lớp học để tham gia
     const [isLoading, setIsLoading] = useState(true); // Trạng thái tải dữ liệu

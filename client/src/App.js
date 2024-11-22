@@ -1,12 +1,12 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Import các trang chung (Common pages)
-import HomePage from './pages/common/HomePage';
-import LoginPage from './pages/common/LoginPage';
-import RegisterPage from './pages/common/RegisterPage';
+import HomePage from "./pages/common/HomePage";
+import LoginPage from "./pages/common/LoginPage";
+import RegisterPage from "./pages/common/RegisterPage";
 
 // Import các trang Learner
 import LearnerDashboard from './pages/learner/LearnerDashboard';
@@ -175,7 +175,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
 
           <Route
             path="/instructor/dashboard/class/detail/:classId"

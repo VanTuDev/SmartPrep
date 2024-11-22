@@ -100,7 +100,7 @@ const RegisterPage = () => {
          const result = await response.json();
 
          if (response.ok) {
-            toast.success('Đăng ký thành công!');
+            toast.success('Đăng ký thành công! Check hòm thư của bạn để hoàn tất đăng kí');
             navigate('/login');
          } else {
             toast.error(result.error || 'Đăng ký thất bại');
@@ -109,6 +109,7 @@ const RegisterPage = () => {
          toast.error('Có lỗi xảy ra, vui lòng thử lại');
       }
    };
+   
 
    return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -248,20 +249,7 @@ const RegisterPage = () => {
                   <span className="text-gray-500">Hoặc</span>
                </div>
 
-               {/* Google Login Button (dummy for UI) */}
-               <div className="flex  justify-center text-gray-600 font-bold ">
-                  <button
-                     type="button"
-                     className="bg-white border shadow-lg border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-100 flex items-center"
-                  >
-                     <img
-                        src="https://www.svgrepo.com/show/355037/google.svg"
-                        alt="Google Icon"
-                        className="w-6 h-6 mr-2 "
-                     />
-                     Sign in with google
-                  </button>
-               </div>
+               
             </form>
 
             <p className="text-center mt-4">
